@@ -1,27 +1,26 @@
-import {Snowflake} from "../utils/mod.ts";
-
-import GuildMember from "./GuildMember.ts";
+import {Snowflake} from "./generics.ts";
+import {GuildMember} from "./guildMember.ts";
 
 
 /** a voice region */
 export interface VoiceRegion {
 	/** unique ID for the region */
-	id: string,
+	id: string;
 	/** name of the region */
-	name: string,
+	name: string;
 	/** true if this is a vip-only server */
-	vip: boolean,
+	vip: boolean;
 	/** true for a single server that is closest to the current user's client */
-	optimal: boolean,
+	optimal: boolean;
 	/** whether this is a deprecated voice region (avoid switching to these) */
-	deprecated: boolean,
+	deprecated: boolean;
 	/** whether this is a custom voice region (used for events/etc) */
-	custom: boolean
+	custom: boolean;
 }
 
 
 /** a voice state. used to represent a user's voice connection status */
-export default class VoiceState {
+export interface VoiceState {
 	/** the guild id this voice state is for */
 	guild_id?: Snowflake;
 	/** the channel id this user is connected to */

@@ -1,4 +1,4 @@
-import {Snowflake} from "../utils/mod.ts";
+import {Snowflake} from "./generics.ts";
 
 
 /** an enum of all possible permissions */
@@ -67,7 +67,7 @@ export enum Permissions {
 
 
 /** a role */
-export default class Role {
+export interface Role {
 	/** role id */
 	id: Snowflake;
 	/** role name */
@@ -85,3 +85,10 @@ export default class Role {
 	/** whether this role is mentionable */
 	mentionable: boolean;
 }
+
+
+export type Create = Pick<Role, "name" | "permissions" | "color" | "hoist" | "mentionable">;
+
+export type ModifyPosition = Pick<Role, "id" | "position">;
+
+export type Modify = Partial<Create>;

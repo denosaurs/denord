@@ -1,8 +1,8 @@
-import Emoji from "./Emoji.ts";
+import {Emoji} from "./emoji.ts";
 
 
 /** a message reaction */
-export default class Reaction {
+export interface Reaction {
 	/** times this emoji has been used to react */
 	count: number;
 	/** whether the current user reacted using this emoji */

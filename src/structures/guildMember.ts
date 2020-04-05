@@ -1,11 +1,9 @@
-import {ISO8601, Snowflake} from "../utils/mod.ts";
-
-import User from "./User.ts";
-import Guild from "./Guild.ts";
+import {ISO8601, Snowflake} from "./generics.ts";
+import {User} from "./user.ts";
 
 
 /** a member of a guild */
-export default class GuildMember {
+export interface GuildMember {
 	/** the user this guild member represents */
 	user: User;
 	/** this user's guild nickname (if one is set) */
@@ -20,7 +18,24 @@ export default class GuildMember {
 	deaf: boolean;
 	/** whether the user is muted in voice channels */
 	mute: boolean;
-	
-	/** the guild the member is part of */
-	guild: Guild;
+}
+
+
+export interface List {
+	limit?: number;
+	after?: Snowflake;
+}
+
+type MinimalGuildMember = Partial<Pick<GuildMember, "nick" | "roles" | "mute" | "deaf">>;
+
+export interface Add extends MinimalGuildMember {
+	access_token: string;
+}
+
+export interface Modify extends MinimalGuildMember {
+	channel_id?: Snowflake | null;
+}
+
+export interface ModifyCurrentNick {
+	nick: string;
 }

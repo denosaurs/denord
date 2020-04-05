@@ -1,8 +1,8 @@
-import {Snowflake} from "../utils/mod.ts";
+import {Snowflake} from "./generics.ts";
 
 
 /** a file attachment */
-export default class Attachment {
+export interface Attachment {
 	/** attachment id */
 	id: Snowflake;
 	/** name of file attached */

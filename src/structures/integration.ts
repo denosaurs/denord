@@ -1,10 +1,9 @@
-import {ISO8601, Snowflake} from "../utils/mod.ts";
-
-import User from "./User.ts";
+import {ISO8601, Snowflake} from "./generics.ts";
+import {User} from "./user.ts";
 
 
 /** the integration expire behaviors */
-export enum ExpireBehaviors {
+export enum ExpireBehavior {
 	REMOVE_ROLE = 0,
 	KICK = 1
 }
@@ -12,14 +11,14 @@ export enum ExpireBehaviors {
 /** an integration account */
 export interface Account {
 	/** id of the account */
-	id: string,
+	id: string;
 	/** name of the account */
-	name: string
+	name: string;
 }
 
 
 /** an integration */
-export default class Integration {
+export interface Integration {
 	/** integration id */
 	id: Snowflake;
 	/** integration name */
@@ -35,7 +34,7 @@ export default class Integration {
 	/** whether emoticons should be synced for this integration (twitch only currently) */
 	enable_emoticons?: boolean;
 	/** the behavior of expiring subscribers */
-	expire_behavior: ExpireBehaviors;
+	expire_behavior: ExpireBehavior;
 	/** the grace period (in days) before expiring subscribers */
 	expire_grace_period: number;
 	/** user for this integration */
@@ -45,3 +44,11 @@ export default class Integration {
 	/** when this integration was last synced */
 	synced_at: ISO8601;
 }
+
+
+export type Create = Pick<Integration, "id" | "type">;
+
+/*export interface Create extends Pick<Integration, "id" | "type"> {
+}*/
+
+export type Modify = Partial<Pick<Integration, "expire_behavior" | "expire_grace_period" | "enable_emoticons">>;

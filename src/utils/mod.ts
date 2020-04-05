@@ -1,2 +1,9 @@
-export * from "./Snowflake.ts";
-export * from "./ISO8601.ts";
+export function stringifyQueryParams(obj: any) {
+	const stringifiedParams = (new URLSearchParams(obj)).toString();
+	
+	if (stringifiedParams) {
+		return "?" + stringifiedParams;
+	} else {
+		return "";
+	}
+}

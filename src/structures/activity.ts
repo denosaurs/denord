@@ -1,6 +1,5 @@
-import {Snowflake} from "../utils/mod.ts";
-
-import Emoji from "./Emoji.ts";
+import {Snowflake} from "./generics.ts";
+import {Emoji} from "./emoji.ts";
 
 
 /** the type of the activity */
@@ -24,46 +23,47 @@ export enum Flags {
 /** unix timestamps for start and/or end of the game */
 export interface Timestamps {
 	/** unix timestamp for start of the game */
-	start?: number,
+	start?: number;
 	/** unix timestamp for end of the game */
-	end?: number
+	end?: number;
 }
 
 /** information for an activity's party */
 export interface Party {
 	/** the id of the party */
-	id?: string,
+	id?: string;
 	/** two integers (current_size, max_size), used to show the party's current and maximum size */
-	size?: [number, number]
+	size?: [number, number];
 }
 
 /** assets an activity may have */
 export interface Assets {
 	/** the id for a large asset of the activity, usually a snowflake */
-	large_image?: string,
+	large_image?: string;
 	/** text displayed when hovering over the large image of the activity */
-	large_text?: string,
+	large_text?: string;
 	/** the id for a small asset of the activity, usually a snowflake */
-	small_image?: string,
+	small_image?: string;
 	/** text displayed when hovering over the small image of the activity */
-	small_text?: string
+	small_text?: string;
 }
 
 /** secrets for Rich Presence joining and spectating */
 export interface Secrets {
 	/** the secret for joining a party */
-	join?: string,
+	join?: string;
 	/** the secret for spectating a game */
-	spectate?: string,
+	spectate?: string;
 	/** the secret for a specific instanced match */
-	match?: string
+	match?: string;
 }
 
 
-/** an activity
- * NOTE: Bots are only able to send `name`, `type`, and optionally `url`.
+/**
+ * an activity
+ * NOTE: bots are only able to send `name`, `type`, and optionally `url`.
  */
-export default class Activity {
+export interface Activity {
 	/** the activity's name */
 	name: string;
 	/** the type of the activity */

@@ -1,60 +1,59 @@
-import {ISO8601, Snowflake} from "../utils/mod.ts";
-
-import Activity from "./Activity.ts";
-import Channel from "./Channel.ts";
-import Emoji from "./Emoji.ts";
-import GuildMember from "./GuildMember.ts";
-import Role from "./Role.ts";
-import User from "./User.ts";
-import VoiceState from "./VoiceState.ts";
+import {ISO8601, Snowflake} from "./generics.ts";
+import {Activity} from "./activity.ts";
+import {Channel} from "./channel.ts";
+import {GuildMember} from "./guildMember.ts";
+import {User} from "./user.ts";
+import {VoiceState} from "./voice.ts";
+import {Role} from "./role.ts";
+import {Emoji} from "./emoji.ts";
 
 
 /** a guild embed */
 export interface Embed {
 	/** whether the embed is enabled */
-	enabled: boolean,
+	enabled: boolean;
 	/** the embed channel id */
-	channel_id: Snowflake | null
+	channel_id: Snowflake | null;
 }
 
 /** a guild ban */
 export interface Ban {
 	/** the reason for the ban */
-	reason: string | null,
+	reason: string | null;
 	/** the banned user */
-	user: User
+	user: User;
 }
 
 /** a user's status. active sessions are indicated with an "online", "idle", or "dnd" string per platform. If a user is offline or invisible, the corresponding field is not present. */
 export interface ClientStatus {
 	/** the user's status set for an active desktop (Windows, Linux, Mac) application session */
-	desktop?: ActiveStatus,
+	desktop?: ActiveStatus;
 	/** the user's status set for an active mobile (iOS, Android) application session */
-	mobile?: ActiveStatus,
+	mobile?: ActiveStatus;
 	/** the user's status set for an active web (browser, bot account) application session */
-	web?: ActiveStatus
+	web?: ActiveStatus;
 }
 
 /** A user's presence is their current state on a guild. This event is sent when a user's presence or info, such as name or avatar, is updated. */
 export interface PresenceUpdateEvent {
 	/** the user presence is being updated for */
-	user: User,
+	user: User;
 	/** roles this user is in */
-	roles: Snowflake[],
+	roles: Snowflake[];
 	/** null, or the user's current activity */
-	game: Activity | null,
+	game: Activity | null;
 	/** id of the guild */
-	guild_id: Snowflake,
+	guild_id: Snowflake;
 	/** the status of the user */
-	status: ActiveStatus | "offline",
+	status: ActiveStatus | "offline";
 	/** user's current activities */
-	activities: Activity[],
+	activities: Activity[];
 	/** user's platform-dependent status */
-	client_status: ClientStatus,
+	client_status: ClientStatus;
 	/** when the user started boosting the guild */
-	premium_since?: string | null,
+	premium_since?: string | null;
 	/** this users guild nickname (if one is set) */
-	nick?: string | null
+	nick?: string | null;
 }
 
 
@@ -150,7 +149,7 @@ export enum PremiumTier {
 
 
 /** a guild */
-export default class Guild {
+export interface Guild {
 	/** guild id */
 	id: Snowflake;
 	/** guild name (2-100 characters) */
@@ -237,4 +236,48 @@ export default class Guild {
 	preferred_locale: string;
 	/** the id of the channel where admins and moderators of "PUBLIC" guilds receive notices from Discord */
 	public_updates_channel_id: Snowflake | null;
+}
+
+
+export interface Create {
+	name: string;
+	region?: string;
+	icon?: string;
+	verification_level?: VerificationLevel;
+	default_message_notifications?: DefaultMessageNotificationLevel;
+	explicit_content_filter?: ExplicitContentFilterLevel;
+	roles?: Role[];
+	channels?: Partial<Channel>[];
+	afk_channel_id?: Snowflake;
+	afk_timeout?: number;
+	system_channel_id?: Snowflake;
+}
+
+export interface Modify extends Partial<Create> {
+	owner_id?: Snowflake;
+	splash?: string;
+	banner?: string;
+	rules_channel_id?: Snowflake;
+	public_updates_channel_id?: Snowflake;
+	preferred_locale?: string;
+}
+
+export interface CreateBan {
+	"delete-message-days"?: number;
+	reason?: string;
+}
+
+export interface PruneCount {
+	days?: number;
+}
+
+export interface BeginPrune {
+	days: number;
+	compute_prune_count: boolean;
+}
+
+export type EmbedModify = Partial<Embed>;
+
+export interface WidgetEmbedStyle {
+	style?: "shield" | "banner1" | "banner2" | "banner3" | "banner4"
 }

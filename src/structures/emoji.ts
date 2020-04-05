@@ -1,10 +1,9 @@
-import {Snowflake} from "../utils/mod.ts";
-
-import User from "./User.ts";
+import {Snowflake} from "./generics.ts";
+import {User} from "./user.ts";
 
 
 /** an emoji */
-export default class Emoji {
+export interface Emoji {
 	/** emoji id */
 	id: Snowflake | null;
 	/** emoji name (can be null only in reaction emoji objects) */
@@ -19,4 +18,16 @@ export default class Emoji {
 	managed?: boolean;
 	/** whether this emoji is animated */
 	animated?: boolean;
+}
+
+
+export interface Create {
+	name: string;
+	image: string;
+	roles: Snowflake[];
+}
+
+export interface Modify {
+	name: string;
+	roles: Snowflake[];
 }

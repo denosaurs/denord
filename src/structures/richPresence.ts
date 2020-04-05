@@ -1,5 +1,5 @@
 /** a rich presence */
-export default class RichPresence {
+export interface RichPresence {
 	/** the user's current party status */
 	state: string;
 	/** what the player is currently doing */

@@ -1,6 +1,5 @@
-import {Snowflake} from "../utils/mod.ts";
-
-import Integration from "./Integration.ts";
+import {Snowflake} from "./generics.ts";
+import {Integration} from "./integration.ts";
 
 
 /** possible user flags */
@@ -37,28 +36,28 @@ export enum ConnectionVisibilityType {
 /** the connection object that the user has attached */
 export interface Connection {
 	/** id of the connection account */
-	id: string,
+	id: string;
 	/** the username of the connection account */
-	name: string,
+	name: string;
 	/** the service of the connection (twitch, youtube) */
-	type: string,
+	type: string;
 	/** whether the connection is revoked */
-	revoked: boolean,
+	revoked: boolean;
 	/** an array of partial server integrations */
-	integrations: Partial<Integration>[],
+	integrations: Partial<Integration>[];
 	/** whether the connection is verified */
-	verified: boolean,
+	verified: boolean;
 	/** whether friend sync is enabled for this connection */
-	friend_sync: boolean,
+	friend_sync: boolean;
 	/** whether activities related to this connection will be shown in presence updates */
-	show_activity: boolean,
+	show_activity: boolean;
 	/** visibility of this connection */
-	visibility: ConnectionVisibilityType
+	visibility: ConnectionVisibilityType;
 }
 
 
 /** a user */
-export default class User {
+export interface User {
 	/** the user's id */
 	id: Snowflake;
 	/** the user's username, not unique across the platform */
@@ -80,7 +79,16 @@ export default class User {
 	/** the user's email */
 	email?: string;
 	/** user flags `OR`d together, describes extra characteristics of a user */
-	flags?: UserFlags;
+	flags?: number;
 	/** the type of Nitro subscription on a user's account */
 	premium_type?: PremiumType;
+}
+
+
+export type Modify = Partial<NonNullable<Pick<User, "username" | "avatar">>>;
+
+export interface GetGuilds {
+	before?: Snowflake;
+	after?: Snowflake;
+	limit?: number;
 }

@@ -1,6 +1,5 @@
-import {ISO8601, Snowflake} from "../utils/mod.ts";
-
-import User from "./User.ts";
+import {ISO8601, Snowflake} from "./generics.ts";
+import {User} from "./user.ts";
 
 
 /** types of channels */
@@ -21,39 +20,17 @@ export enum Type {
 	GUILD_STORE = 6
 }
 
-/** allowed mentions */
-export enum AllowedMentionTypes {
-	/** Controls role mentions */
-	ROLE_MENTIONS = "roles",
-	/** Controls user mentions */
-	USER_MENTIONS = "users",
-	/** Controls @everyone and @here mentions */
-	EVERYONE_MENTIONS = "everyone"
-}
-
 
 /** explicit permission overwrites for members and roles */
-
-
 export interface Overwrite {
 	/** role id or user id */
-	id: Snowflake,
+	id: Snowflake;
 	/** what type of id you want to overwrite */
-	type: "role" | "member",
+	type: "role" | "member";
 	/** permission bit set */
-	allow: number,
+	allow: number;
 	/** permission bit set */
-	deny: number
-}
-
-/** allowed mentions allows for more granular control over mentions without various hacks to the message content. this will always validate against message content to avoid phantom pings (e.g. to ping everyone, you must still have `@everyone` in the message content), and check against user/bot permissions */
-export interface AllowedMentions {
-	/** An array of allowed mention types to parse from the content. */
-	parse: AllowedMentionTypes[],
-	/** Array of role_ids to mention (Max size of 100) */
-	roles: Snowflake[],
-	/** Array of user_ids to mention (Max size of 100) */
-	users: Snowflake[]
+	deny: number;
 }
 
 /** a channel mention */
@@ -70,7 +47,7 @@ export interface Mention {
 
 
 /** a channel */
-export default class Channel {
+export interface Channel {
 	/** the id of this channel */
 	id: Snowflake;
 	/** the type of channel */
@@ -107,4 +84,59 @@ export default class Channel {
 	parent_id?: Snowflake | null;
 	/** when the last pinned message was pinned */
 	last_pin_timestamp?: ISO8601;
+}
+
+
+export interface GetMessages {
+	around?: Snowflake;
+	before?: Snowflake;
+	after?: Snowflake;
+	limit?: number;
+}
+
+export interface GetReactions {
+	before?: Snowflake;
+	after?: Snowflake;
+	limit?: number;
+}
+
+export interface BulkDelete {
+	messages: Snowflake[];
+}
+
+export interface GroupDMAddRecipient {
+	access_token: string;
+	nick: string;
+}
+
+export interface CreateGuildChannel {
+	name: string;
+	type?: Type;
+	topic?: string;
+	bitrate?: number;
+	user_limit?: number;
+	rate_limit_per_user?: number;
+	position?: number;
+	permission_overwrites?: Overwrite[];
+	parent_id?: Snowflake;
+	nsfw?: boolean;
+}
+
+//type x = Pick<Channel, "name" | "type" | "topic" | "bitrate" | "user_limit" | "rate_limit_per_user" | "position" | "permission_overwrites" | "parent_id" | "nsfw">;
+
+export type Modify = Partial<Omit<CreateGuildChannel, "type">>;
+
+
+export interface GuildPosition {
+	id: Snowflake;
+	position: number;
+}
+
+export interface CreateDM {
+	recipient_id: Snowflake;
+}
+
+export interface CreateGroupDM {
+	access_tokens: string[];
+	nicks: { [key: string]: string }
 }

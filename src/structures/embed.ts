@@ -1,4 +1,4 @@
-import {ISO8601} from "../utils/mod.ts";
+import {ISO8601} from "./generics.ts";
 
 
 /** embed type */
@@ -21,80 +21,80 @@ export enum Type {
 /** an embed footer */
 export interface Footer {
 	/** footer text */
-	text: string,
+	text: string;
 	/** url of footer icon (only supports http(s) and attachments) */
-	icon_url?: string,
+	icon_url?: string;
 	/** a proxied url of footer icon */
-	proxy_icon_url?: string
+	proxy_icon_url?: string;
 }
 
 /** an embed image */
 export interface Image {
 	/** source url of image (only supports http(s) and attachments) */
-	url?: string,
+	url?: string;
 	/** a proxied url of the image */
-	proxy_url?: string,
+	proxy_url?: string;
 	/** height of image */
-	height?: number,
+	height?: number;
 	/** width of image */
-	width?: number
+	width?: number;
 }
 
 /** an embed thumbnail */
 export interface Thumbnail {
 	/** source url of thumbnail (only supports http(s) and attachments) */
-	url?: string,
+	url?: string;
 	/** a proxied url of the thumbnail */
-	proxy_url?: string,
+	proxy_url?: string;
 	/** height of thumbnail */
-	height?: number,
+	height?: number;
 	/** width of thumbnail */
-	width?: number
+	width?: number;
 }
 
 /** an embed video */
 export interface Video {
 	/** source url of video */
-	url?: string,
+	url?: string;
 	/** height of video */
-	height?: number,
+	height?: number;
 	/** width of video */
-	width?: number
+	width?: number;
 }
 
 /** an embed provider */
 export interface Provider {
 	/** name of provider */
-	name?: string,
+	name?: string;
 	/** url of provider */
-	url?: string
+	url?: string;
 }
 
 /** an embed author */
 export interface Author {
 	/** name of author */
-	name?: string,
+	name?: string;
 	/** url of author */
-	url?: string,
+	url?: string;
 	/** url of author icon (only supports http(s) and attachments) */
-	icon_url?: string,
+	icon_url?: string;
 	/** a proxied url of author icon */
-	proxy_icon_url?: string
+	proxy_icon_url?: string;
 }
 
 /** an embed field */
 export interface Field {
 	/** name of the field */
-	name: string,
+	name: string;
 	/** value of the field */
-	value: string,
+	value: string;
 	/** whether or not this field should display inline */
-	inline?: boolean
+	inline?: boolean;
 }
 
 
 /** an embed */
-export default class Embed {
+export interface Embed {
 	/** title of embed */
 	title?: string;
 	/** type of embed (always "rich" for webhook embeds) */
