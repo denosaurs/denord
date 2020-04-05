@@ -77,9 +77,6 @@ export class RestClient {
 			case 204:
 				return;
 			
-			case 304: //TODO: does this ever happen? is there any need for this case?
-				return;
-			
 			case 400:
 			case 404:
 				throw new Error(`HTTP: ${res.status}\nJSON: ${JSON.stringify(await res.json())}`);
