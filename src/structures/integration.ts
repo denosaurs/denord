@@ -48,7 +48,4 @@ export interface Integration {
 
 export type Create = Pick<Integration, "id" | "type">;
 
-/*export interface Create extends Pick<Integration, "id" | "type"> {
-}*/
-
 export type Modify = Partial<Pick<Integration, "expire_behavior" | "expire_grace_period" | "enable_emoticons">>;

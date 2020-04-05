@@ -165,7 +165,6 @@ export interface Message {
 }
 
 
-/** the interface for creating a message */
 export interface Create extends Partial<Pick<Message, "content" | "nonce" | "tts">> {
 	/** the contents of the file being sent */
 	file?: File;
@@ -177,5 +176,4 @@ export interface Create extends Partial<Pick<Message, "content" | "nonce" | "tts
 	allowed_mentions?: AllowedMentions;
 }
 
-/** the interface for editing a message */
 export type Edit = Partial<Pick<Message, "content" | "flags"> & Pick<Create, "embed">>;

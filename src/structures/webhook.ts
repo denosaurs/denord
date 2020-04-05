@@ -1,7 +1,7 @@
 import {Snowflake} from "./generics.ts";
 import {User} from "./user.ts";
 import {Embed} from "./embed.ts";
-import {AllowedMentions} from "./message.ts";
+import {Create as MessageCreate} from "./message.ts";
 
 
 /** the types of webhooks */
@@ -34,28 +34,20 @@ export interface Webhook {
 }
 
 
-export interface Create {
-	name: string;
-	avatar: string | null;
-}
+export type Create = NonNullable<Pick<Webhook, "name">> & Required<Pick<Webhook, "name">>;
 
-export interface Modify {
-	name?: string;
-	avatar?: string;
-	channel_id?: Snowflake;
-}
+export type Modify = Partial<NonNullable<Pick<Webhook, "name" | "avatar" | "channel_id">>>;
 
 export interface ExecuteParams {
+	/** waits for server confirmation of message send before response, and returns the created message body (defaults to `false`; when `false` a message that is not saved does not return an error) */
 	wait?: boolean;
 }
 
-export interface ExecuteBody {
-	content?: string;
+export interface ExecuteBody extends Omit<MessageCreate, "embed" | "nonce"> {
+	/** override the default username of the webhook */
 	username?: string;
+	/** override the default avatar of the webhook */
 	avatar_url?: string;
-	tts?: boolean;
-	file?: File;
+	/** embedded `rich` content */
 	embeds?: Embed[];
-	payload_json?: string;
-	allowed_mentions?: AllowedMentions;
 }

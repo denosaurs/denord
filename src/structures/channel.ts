@@ -88,55 +88,77 @@ export interface Channel {
 
 
 export interface GetMessages {
+	/** get messages around this message ID */
 	around?: Snowflake;
+	/** get messages before this message ID */
 	before?: Snowflake;
+	/** get messages after this message ID */
 	after?: Snowflake;
+	/** max number of messages to return (1-100) */
 	limit?: number;
 }
 
 export interface GetReactions {
+	/** get users before this user ID */
 	before?: Snowflake;
+	/** get users after this user ID */
 	after?: Snowflake;
+	/** max number of users to return (1-100) */
 	limit?: number;
 }
 
 export interface BulkDelete {
+	/** an array of message ids to delete (2-100) */
 	messages: Snowflake[];
 }
 
 export interface GroupDMAddRecipient {
+	/** access token of a user that has granted your app the `gdm.join` scope */
 	access_token: string;
+	/** nickname of the user being added */
 	nick: string;
 }
 
 export interface CreateGuildChannel {
+	/** channel name (2-100 characters) */
 	name: string;
+	/** the type of channel */
 	type?: Type;
+	/** channel topic (0-1024 characters) */
 	topic?: string;
+	/** the bitrate (in bits) of the voice channel (voice only) */
 	bitrate?: number;
+	/** the user limit of the voice channel (voice only) */
 	user_limit?: number;
+	/** amount of seconds a user has to wait before sending another message (0-21600); bots, as well as users with the permission `manage_messages` or `manage_channel`, are unaffected */
 	rate_limit_per_user?: number;
+	/** sorting position of the channel */
 	position?: number;
+	/** the channel's permission overwrites */
 	permission_overwrites?: Overwrite[];
+	/** id of the parent category for a channel */
 	parent_id?: Snowflake;
+	/** whether the channel is nsfw */
 	nsfw?: boolean;
 }
 
-//type x = Pick<Channel, "name" | "type" | "topic" | "bitrate" | "user_limit" | "rate_limit_per_user" | "position" | "permission_overwrites" | "parent_id" | "nsfw">;
-
 export type Modify = Partial<Omit<CreateGuildChannel, "type">>;
 
-
 export interface GuildPosition {
+	/** channel id */
 	id: Snowflake;
+	/** sorting position of the channel */
 	position: number;
 }
 
 export interface CreateDM {
+	/** the recipient to open a DM channel with */
 	recipient_id: Snowflake;
 }
 
 export interface CreateGroupDM {
+	/** access tokens of users that have granted your app the `gdm.join` scope */
 	access_tokens: string[];
+	/** a dictionary of user ids to their respective nicknames */
 	nicks: { [key: string]: string }
 }

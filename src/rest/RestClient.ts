@@ -349,7 +349,7 @@ export class RestClient {
 	}
 	
 	async getGuildVoiceRegions(guildId: Snowflake) {
-		return await this.request(`guilds/${guildId}/regions`, "GET") as voice.VoiceRegion[];
+		return await this.request(`guilds/${guildId}/regions`, "GET") as voice.Region[];
 	}
 	
 	async getGuildInvites(guildId: Snowflake) {
@@ -450,7 +450,7 @@ export class RestClient {
 	
 	//region Voice
 	async listVoiceRegions() {
-		return await this.request("voice/regions", "GET") as voice.VoiceRegion[];
+		return await this.request("voice/regions", "GET") as voice.Region[];
 	}
 	
 	//endregion

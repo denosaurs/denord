@@ -3,7 +3,7 @@ import {Activity} from "./activity.ts";
 import {Channel} from "./channel.ts";
 import {GuildMember} from "./guildMember.ts";
 import {User} from "./user.ts";
-import {VoiceState} from "./voice.ts";
+import {State as VoiceState} from "./voice.ts";
 import {Role} from "./role.ts";
 import {Emoji} from "./emoji.ts";
 
@@ -239,45 +239,36 @@ export interface Guild {
 }
 
 
-export interface Create {
-	name: string;
-	region?: string;
-	icon?: string;
-	verification_level?: VerificationLevel;
-	default_message_notifications?: DefaultMessageNotificationLevel;
-	explicit_content_filter?: ExplicitContentFilterLevel;
-	roles?: Role[];
-	channels?: Partial<Channel>[];
-	afk_channel_id?: Snowflake;
-	afk_timeout?: number;
-	system_channel_id?: Snowflake;
-}
+export type Create =
+	Pick<Guild, "name">
+	& Partial<NonNullable<Pick<Guild, "region" | "icon" | "verification_level" | "default_message_notifications" | "explicit_content_filter" | "roles" | "channels" | "afk_channel_id" | "afk_timeout" | "system_channel_id">>>;
 
-export interface Modify extends Partial<Create> {
-	owner_id?: Snowflake;
-	splash?: string;
-	banner?: string;
-	rules_channel_id?: Snowflake;
-	public_updates_channel_id?: Snowflake;
-	preferred_locale?: string;
-}
+export type Modify =
+	Partial<Create>
+	& Partial<NonNullable<Pick<Guild, "owner_id" | "splash" | "banner" | "rules_channel_id" | "public_updates_channel_id" | "preferred_locale">>>;
 
 export interface CreateBan {
+	/** number of days to delete messages for (0-7) */
 	"delete-message-days"?: number;
+	/** reason for the ban */
 	reason?: string;
 }
 
 export interface PruneCount {
+	/** number of days to count prune for (1 or more) */
 	days?: number;
 }
 
 export interface BeginPrune {
+	/** number of days to prune (1 or more) */
 	days: number;
+	/** whether 'pruned' is returned, discouraged for large guilds */
 	compute_prune_count: boolean;
 }
 
 export type EmbedModify = Partial<Embed>;
 
 export interface WidgetEmbedStyle {
+	/** style of the widget image returned */
 	style?: "shield" | "banner1" | "banner2" | "banner3" | "banner4"
 }

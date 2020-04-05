@@ -45,7 +45,6 @@ export interface Invite {
 }
 
 
-/** the interface for creating an invite */
 export interface Create extends Partial<Pick<MetadataInvite, "max_age" | "max_uses" | "temporary" | "target_user_type">> {
 	/** if true, don't try to reuse a similar invite (useful for creating many unique one time use invites) (default: false) */
 	unique?: boolean;

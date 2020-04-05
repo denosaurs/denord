@@ -3,7 +3,7 @@ import {GuildMember} from "./guildMember.ts";
 
 
 /** a voice region */
-export interface VoiceRegion {
+export interface Region {
 	/** unique ID for the region */
 	id: string;
 	/** name of the region */
@@ -20,7 +20,7 @@ export interface VoiceRegion {
 
 
 /** a voice state. used to represent a user's voice connection status */
-export interface VoiceState {
+export interface State {
 	/** the guild id this voice state is for */
 	guild_id?: Snowflake;
 	/** the channel id this user is connected to */

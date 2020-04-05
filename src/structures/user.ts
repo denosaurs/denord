@@ -88,7 +88,10 @@ export interface User {
 export type Modify = Partial<NonNullable<Pick<User, "username" | "avatar">>>;
 
 export interface GetGuilds {
+	/** get guilds before this guild ID */
 	before?: Snowflake;
+	/** get guilds after this guild ID */
 	after?: Snowflake;
+	/** max number of guilds to return (1-100) */
 	limit?: number;
 }
