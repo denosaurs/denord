@@ -63,11 +63,16 @@ export class RestClient {
 		}
 		
 		
+		const startTime = Date.now();
+		
 		const res = await fetch("https://discordapp.com/api/v6/" + endpoint, {
 			method,
 			headers,
 			body
 		});
+		
+		const requestDuration = Date.now() - startTime;
+		console.log(requestDuration);
 		
 		
 		switch (res.status) {
