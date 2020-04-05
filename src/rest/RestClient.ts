@@ -1,4 +1,5 @@
 import {stringifyQueryParams as stringify} from "../utils/mod.ts";
+import {DiscordJSONError, HTTPError} from "./Error.ts";
 
 import {
 	auditLog,
@@ -49,7 +50,7 @@ export class RestClient {
 				let {file, ...otherData} = data;
 				
 				data = new FormData();
-				data.append("file", file);
+				data.append("file", file, file.name);
 				data.append("payload_json", otherData);
 			}
 			
@@ -79,29 +80,29 @@ export class RestClient {
 			
 			case 400:
 			case 404:
-				throw new Error(`HTTP: ${res.status}\nJSON: ${JSON.stringify(await res.json())}`);
+				throw new DiscordJSONError(res.status, await res.json());
 			
 			case 401:
-				throw new Error("You supplied an invalid token");
+				throw new HTTPError(res.status, "You supplied an invalid token");
 			
 			case 403:
-				throw new Error("You don't have permission to do this");
+				throw new HTTPError(res.status, "You don't have permission to do this");
 			
 			case 429:
-				throw new Error("You are getting rate-limited");
+				throw new HTTPError(res.status, "You are getting rate-limited");
 			
 			case 502:
-				throw new Error("Gateway unavailable. Wait and retry");
+				throw new HTTPError(res.status, "Gateway unavailable. Wait and retry");
 			
 			case 500:
 			case 503:
 			case 504:
 			case 507:
 			case 508:
-				throw new Error("Discord internal error");
+				throw new HTTPError(res.status, "Discord internal error");
 			
 			default:
-				throw new Error("Unexpected response: " + res.status);
+				throw new HTTPError(res.status, "Unexpected response");
 		}
 	}
 	
