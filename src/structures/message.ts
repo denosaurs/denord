@@ -139,7 +139,7 @@ export interface Message {
 	/** roles specifically mentioned in this message */
 	mention_roles: Snowflake[];
 	/** channels specifically mentioned in this message */
-	mention_channels?: ChannelMention;
+	mention_channels?: ChannelMention[];
 	/** any attached files */
 	attachments: Attachment[];
 	/** any embedded content */
@@ -161,7 +161,7 @@ export interface Message {
 	/** reference data sent with crossposted messages */
 	message_reference?: Reference;
 	/** message flags `OR`d together, describes extra features of the message */
-	flags?: Flags;
+	flags?: number;
 }
 
 
