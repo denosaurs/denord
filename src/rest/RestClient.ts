@@ -1,24 +1,7 @@
+// @deno-types="../discord.d.ts"
+
 import {stringifyQueryParams as stringify} from "../utils/mod.ts";
 import {DiscordJSONError, HTTPError} from "./Error.ts";
-
-import {
-	auditLog,
-	channel,
-	emoji,
-	generics,
-	guild,
-	guildMember,
-	integration,
-	invite,
-	message,
-	role,
-	user,
-	voice,
-	webhook
-} from "../structures/mod.ts";
-
-
-type Snowflake = generics.Snowflake;
 
 
 /**
@@ -109,289 +92,290 @@ export class RestClient {
 
 
 	//region Audit Log
-	async getGuildAuditLog(guildId: Snowflake) {
-		return await this.request(`guilds/${guildId}/audit-logs`, "GET") as auditLog.AuditLog;
+	async getGuildAuditLog(guildId: Discord.Snowflake) {
+		return await this.request(`guilds/${guildId}/audit-logs`, "GET") as Discord.auditLog.AuditLog;
 	}
 
 	//endregion
 
 	//region Channel
-	async getChannel(channelId: Snowflake) {
-		return await this.request(`channels/${channelId}`, "GET") as channel.Channel;
+	async getChannel(channelId: Discord.Snowflake) {
+		return await this.request(`channels/${channelId}`, "GET") as Discord.channel.Channel;
 	}
 
-	async modifyChannel(channelId: Snowflake, data: channel.Modify) {
-		return await this.request(`channels/${channelId}`, "PATCH", data) as channel.Channel;
+	async modifyChannel(channelId: Discord.Snowflake, data: Discord.channel.Modify) {
+		return await this.request(`channels/${channelId}`, "PATCH", data) as Discord.channel.Channel;
 	}
 
-	async deleteChannel(channelId: Snowflake) {
-		return await this.request(`channels/${channelId}`, "DELETE") as channel.Channel;
+	async deleteChannel(channelId: Discord.Snowflake) {
+		return await this.request(`channels/${channelId}`, "DELETE") as Discord.channel.Channel;
 	}
 
-	async getChannelMessages(channelId: Snowflake, params: channel.GetMessages) {
-		return await this.request(`channels/${channelId}/messages${stringify(params)}`, "GET") as message.Message[];
+	async getChannelMessages(channelId: Discord.Snowflake, params: Discord.channel.GetMessages) {
+		return await this.request(`channels/${channelId}/messages${stringify(params)}`, "GET") as Discord.message.Message[];
 	}
 
-	async getChannelMessage(channelId: Snowflake, messageId: Snowflake) {
-		return await this.request(`channels/${channelId}/messages/${messageId}`, "GET") as message.Message;
+	async getChannelMessage(channelId: Discord.Snowflake, messageId: Discord.Snowflake) {
+		return await this.request(`channels/${channelId}/messages/${messageId}`, "GET") as Discord.message.Message;
 	}
 
-	async createMessage(channelId: Snowflake, data: message.Create) {
-		return await this.request(`channels/${channelId}/messages`, "POST", data) as message.Message;
+	async createMessage(channelId: Discord.Snowflake, data: Discord.message.Create) {
+		return await this.request(`channels/${channelId}/messages`, "POST", data) as Discord.message.Message;
 	}
 
-	//TODO: correct type for emoji?
-	async createReaction(channelId: Snowflake, messageId: Snowflake, emoji: string) {
+	async createReaction(channelId: Discord.Snowflake, messageId: Discord.Snowflake, emoji: string) {
 		await this.request(`channels/${channelId}/messages/${messageId}/reactions/${emoji}/@me`, "PUT");
 	}
 
-	async deleteOwnReaction(channelId: Snowflake, messageId: Snowflake, emoji: string) {
+	async deleteOwnReaction(channelId: Discord.Snowflake, messageId: Discord.Snowflake, emoji: string) {
 		await this.request(`channels/${channelId}/messages/${messageId}/reactions/${emoji}/@me`, "DELETE");
 	}
 
-	async deleteUserReaction(channelId: Snowflake, messageId: Snowflake, emoji: string, userId: Snowflake) {
+	async deleteUserReaction(channelId: Discord.Snowflake, messageId: Discord.Snowflake, emoji: string, userId: Discord.Snowflake) {
 		await this.request(`channels/${channelId}/messages/${messageId}/${emoji}/reactions/${userId}`, "DELETE");
 	}
 
-	async getReactions(channelId: Snowflake, messageId: Snowflake, emoji: string, params: channel.GetReactions) {
-		return await this.request(`channels/${channelId}/messages/${messageId}/reactions/${emoji}${stringify(params)}`, "GET") as user.User[];
+	async getReactions(channelId: Discord.Snowflake, messageId: Discord.Snowflake, emoji: string, params: Discord.channel.GetReactions) {
+		return await this.request(`channels/${channelId}/messages/${messageId}/reactions/${emoji}${stringify(params)}`, "GET") as Discord.user.User[];
 	}
 
-	async deleteAllReactions(channelId: Snowflake, messageId: Snowflake) {
+	async deleteAllReactions(channelId: Discord.Snowflake, messageId: Discord.Snowflake) {
 		await this.request(`channels/${channelId}/messages/${messageId}/reactions`, "DELETE");
 	}
 
-	async deleteAllReactionsForEmoji(channelId: Snowflake, messageId: Snowflake, emoji: string) {
+	async deleteAllReactionsForEmoji(channelId: Discord.Snowflake, messageId: Discord.Snowflake, emoji: string) {
 		await this.request(`channels/${channelId}/messages/${messageId}/reactions/${emoji}`, "DELETE");
 	}
 
-	async editMessage(channelId: Snowflake, messageId: Snowflake, data: message.Edit) {
-		return await this.request(`channels/${channelId}/messages/${messageId}`, "PATCH", data) as message.Message;
+	async editMessage(channelId: Discord.Snowflake, messageId: Discord.Snowflake, data: Discord.message.Edit) {
+		return await this.request(`channels/${channelId}/messages/${messageId}`, "PATCH", data) as Discord.message.Message;
 	}
 
-	async deleteMessage(channelId: Snowflake, messageId: Snowflake) {
+	async deleteMessage(channelId: Discord.Snowflake, messageId: Discord.Snowflake) {
 		await this.request(`channels/${channelId}/messages/${messageId}`, "DELETE");
 	}
 
-	async bulkDeleteMessages(channelId: Snowflake, data: channel.BulkDelete) {
+	async bulkDeleteMessages(channelId: Discord.Snowflake, data: Discord.channel.BulkDelete) {
 		await this.request(`channels/${channelId}/messages/bulk-delete`, "POST", data);
 	}
 
-	async editChannelPermissions(channelId: Snowflake, overwriteId: Snowflake, data: Omit<channel.Overwrite, "id">) {
+	async editChannelPermissions(channelId: Discord.Snowflake, overwriteId: Discord.Snowflake, data: Omit<Discord.channel.Overwrite, "id">) {
 		await this.request(`channels/${channelId}/permissions/${overwriteId}`, "PUT", data);
 	}
 
-	async getChannelInvites(channelId: Snowflake) {
-		return await this.request(`channels/${channelId}/invites`, "GET") as invite.Invite[];
+	async getChannelInvites(channelId: Discord.Snowflake) {
+		return await this.request(`channels/${channelId}/invites`, "GET") as Discord.invite.Invite[];
 	}
 
-	async createChannelInvite(channelId: Snowflake, data: invite.Create) {
-		return await this.request(`channels/${channelId}/invites`, "POST", data) as invite.Invite;
+	async createChannelInvite(channelId: Discord.Snowflake, data: Discord.invite.Create) {
+		return await this.request(`channels/${channelId}/invites`, "POST", data) as Discord.invite.Invite;
 	}
 
-	async deleteChannelPermission(channelId: Snowflake, overwriteId: Snowflake) {
+	async deleteChannelPermission(channelId: Discord.Snowflake, overwriteId: Discord.Snowflake) {
 		await this.request(`channels/${channelId}/permissions/${overwriteId}`, "DELETE");
 	}
 
-	async triggerTypingIndicator(channelId: Snowflake) {
+	async triggerTypingIndicator(channelId: Discord.Snowflake) {
 		await this.request(`channels/${channelId}/typing`, "POST");
 	}
 
-	async getPinnedMessages(channelId: Snowflake) {
-		return await this.request(`channels/${channelId}/pins`, "GET") as message.Message[];
+	async getPinnedMessages(channelId: Discord.Snowflake) {
+		return await this.request(`channels/${channelId}/pins`, "GET") as Discord.message.Message[];
 	}
 
-	async addPinnedChannelMessage(channelId: Snowflake, messageId: Snowflake) {
+	async addPinnedChannelMessage(channelId: Discord.Snowflake, messageId: Discord.Snowflake) {
 		await this.request(`channels/${channelId}/pins/${messageId}`, "PUT");
 	}
 
-	async deletePinnedChannelMessage(channelId: Snowflake, messageId: Snowflake) {
+	async deletePinnedChannelMessage(channelId: Discord.Snowflake, messageId: Discord.Snowflake) {
 		await this.request(`channels/${channelId}/pins/${messageId}`, "DELETE");
 	}
 
-	async groupDMAddRecipient(channelId: Snowflake, userId: Snowflake, data: channel.GroupDMAddRecipient) {
+	async groupDMAddRecipient(channelId: Discord.Snowflake, userId: Discord.Snowflake, data: Discord.channel.GroupDMAddRecipient) {
 		await this.request(`channels/${channelId}/recipients/${userId}`, "PUT", data);
 	}
 
-	async groupDMRemoveRecipient(channelId: Snowflake, userId: Snowflake) {
+	async groupDMRemoveRecipient(channelId: Discord.Snowflake, userId: Discord.Snowflake) {
 		await this.request(`channels/${channelId}/recipients/${userId}`, "DELETE");
 	}
 
 	//endregion
 
 	//region Emoji
-	async listGuildEmojis(guildId: Snowflake) {
-		return await this.request(`guilds/${guildId}/emojis`, "GET") as emoji.Emoji[];
+	async listGuildEmojis(guildId: Discord.Snowflake) {
+		return await this.request(`guilds/${guildId}/emojis`, "GET") as Discord.emoji.Emoji[];
 	}
 
-	async getGuildEmoji(guildId: Snowflake, emojiId: Snowflake) {
-		return await this.request(`guilds/${guildId}/emojis/${emojiId}`, "GET") as emoji.Emoji;
+	async getGuildEmoji(guildId: Discord.Snowflake, emojiId: Discord.Snowflake) {
+		return await this.request(`guilds/${guildId}/emojis/${emojiId}`, "GET") as Discord.emoji.Emoji;
 	}
 
-	async createGuildEmoji(guildId: Snowflake, data: emoji.Create) {
-		return await this.request(`guilds/${guildId}/emojis`, "POST", data) as emoji.Emoji;
+	async createGuildEmoji(guildId: Discord.Snowflake, data: Discord.emoji.Create) {
+		return await this.request(`guilds/${guildId}/emojis`, "POST", data) as Discord.emoji.Emoji;
 	}
 
-	async modifyGuildEmoji(guildId: Snowflake, emojiId: Snowflake, data: emoji.Modify) {
-		return await this.request(`guilds/${guildId}/emojis/${emojiId}`, "PATCH", data) as emoji.Emoji;
+	async modifyGuildEmoji(guildId: Discord.Snowflake, emojiId: Discord.Snowflake, data: Discord.emoji.Modify) {
+		return await this.request(`guilds/${guildId}/emojis/${emojiId}`, "PATCH", data) as Discord.emoji.Emoji;
 	}
 
-	async deleteGuildEmoji(guildId: Snowflake, emojiId: Snowflake) {
+	async deleteGuildEmoji(guildId: Discord.Snowflake, emojiId: Discord.Snowflake) {
 		await this.request(`guilds/${guildId}/emojis/${emojiId}`, "DELETE");
 	}
 
 	//endregion
 
 	//region Guild
-	async createGuild(data: guild.Create) {
-		return await this.request("guilds", "POST", data) as guild.Guild;
+	async createGuild(data: Discord.guild.Create) {
+		return await this.request("guilds", "POST", data) as Discord.guild.Guild;
 	}
 
-	async getGuild(guildId: Snowflake) {
-		return await this.request(`guilds/${guildId}`, "GET") as guild.Guild;
+	async getGuild(guildId: Discord.Snowflake) {
+		return await this.request(`guilds/${guildId}`, "GET") as Discord.guild.Guild;
 	}
 
-	async modifyGuild(guildId: Snowflake, data: guild.Modify) {
-		return await this.request(`guilds/${guildId}`, "PATCH", data) as guild.Guild;
+	async modifyGuild(guildId: Discord.Snowflake, data: Discord.guild.Modify) {
+		return await this.request(`guilds/${guildId}`, "PATCH", data) as Discord.guild.Guild;
 	}
 
-	async deleteGuild(guildId: Snowflake) {
+	async deleteGuild(guildId: Discord.Snowflake) {
 		await this.request(`guilds/${guildId}`, "DELETE");
 	}
 
-	async getGuildChannels(guildId: Snowflake) {
-		return await this.request(`guilds/${guildId}/channels`, "GET") as channel.Channel[];
+	async getGuildChannels(guildId: Discord.Snowflake) {
+		return await this.request(`guilds/${guildId}/channels`, "GET") as Discord.channel.Channel[];
 	}
 
-	async createGuildChannel(guildId: Snowflake, data: channel.CreateGuildChannel) {
-		return await this.request(`guilds/${guildId}/channels`, "POST", data) as channel.Channel;
+	async createGuildChannel(guildId: Discord.Snowflake, data: Discord.channel.CreateGuildChannel) {
+		return await this.request(`guilds/${guildId}/channels`, "POST", data) as Discord.channel.Channel;
 	}
 
-	async modifyGuildChannelPositions(guildId: Snowflake, data: channel.GuildPosition) {
-		return await this.request(`guilds/${guildId}/channels`, "PATCH", data) as channel.Channel[];
+	async modifyGuildChannelPositions(guildId: Discord.Snowflake, data: Discord.channel.GuildPosition) {
+		return await this.request(`guilds/${guildId}/channels`, "PATCH", data) as Discord.channel.Channel[];
 	}
 
-	async getGuildMember(guildId: Snowflake, userId: Snowflake) {
-		return await this.request(`guilds/${guildId}/members/${userId}`, "GET") as guildMember.GuildMember;
+	async getGuildMember(guildId: Discord.Snowflake, userId: Discord.Snowflake) {
+		return await this.request(`guilds/${guildId}/members/${userId}`, "GET") as Discord.guildMember.GuildMember;
 	}
 
-	async listGuildMembers(guildId: Snowflake, params: guildMember.List) {
-		return await this.request(`guilds/${guildId}/members${stringify(params)}`, "GET") as guildMember.GuildMember[];
+	async listGuildMembers(guildId: Discord.Snowflake, params: Discord.guildMember.List) {
+		return await this.request(`guilds/${guildId}/members${stringify(params)}`, "GET") as Discord.guildMember.GuildMember[];
 	}
 
-	async addGuildMember(guildId: Snowflake, userId: Snowflake, body: guildMember.Add) {
-		return await this.request(`guilds/${guildId}/members/${userId}`, "PUT", body) as guildMember.GuildMember;
+	async addGuildMember(guildId: Discord.Snowflake, userId: Discord.Snowflake, data: Discord.guildMember.Add) {
+		return await this.request(`guilds/${guildId}/members/${userId}`, "PUT", data) as Discord.guildMember.GuildMember;
 	}
 
-	async modifyGuildMember(guildId: Snowflake, userId: Snowflake, body: guildMember.Modify) {
-		return await this.request(`guilds/${guildId}/members/${userId}`, "PATCH", body) as guildMember.GuildMember;
+	async modifyGuildMember(guildId: Discord.Snowflake, userId: Discord.Snowflake, data: Discord.guildMember.Modify) {
+		return await this.request(`guilds/${guildId}/members/${userId}`, "PATCH", data) as Discord.guildMember.GuildMember;
 	}
 
-	async modifyCurrentUserNick(guildId: Snowflake, userId: Snowflake, body: guildMember.ModifyCurrentNick) {
-		return await this.request(`guilds/${guildId}/members/@me/nick`, "PATCH", body) as guildMember.GuildMember;
+	async modifyCurrentUserNick(guildId: Discord.Snowflake, userId: Discord.Snowflake, data: Discord.guildMember.ModifyCurrentNick) {
+		return await this.request(`guilds/${guildId}/members/@me/nick`, "PATCH", data) as Discord.guildMember.GuildMember;
 	}
 
-	async addGuildMemberRole(guildId: Snowflake, userId: Snowflake, roleId: Snowflake) {
+	async addGuildMemberRole(guildId: Discord.Snowflake, userId: Discord.Snowflake, roleId: Discord.Snowflake) {
 		await this.request(`guilds/${guildId}/members/${userId}/roles/${roleId}`, "PUT");
 	}
 
-	async removeGuildMemberRole(guildId: Snowflake, userId: Snowflake, roleId: Snowflake) {
+	async removeGuildMemberRole(guildId: Discord.Snowflake, userId: Discord.Snowflake, roleId: Discord.Snowflake) {
 		await this.request(`guilds/${guildId}/members/${userId}/roles/${roleId}`, "DELETE");
 	}
 
-	async removeGuildMember(guildId: Snowflake, userId: Snowflake) {
+	async removeGuildMember(guildId: Discord.Snowflake, userId: Discord.Snowflake) {
 		await this.request(`guilds/${guildId}/members/${userId}`, "DELETE");
 	}
 
-	async getGuildBans(guildId: Snowflake) {
-		return await this.request(`guilds/${guildId}/bans`, "GET") as guild.Ban[];
+	async getGuildBans(guildId: Discord.Snowflake) {
+		return await this.request(`guilds/${guildId}/bans`, "GET") as Discord.guild.Ban[];
 	}
 
-	async getGuildBan(guildId: Snowflake, userId: Snowflake) {
-		return await this.request(`guilds/${guildId}/bans/${userId}`, "GET") as guild.Ban;
+	async getGuildBan(guildId: Discord.Snowflake, userId: Discord.Snowflake) {
+		return await this.request(`guilds/${guildId}/bans/${userId}`, "GET") as Discord.guild.Ban;
 	}
 
-	async createGuildBan(guildId: Snowflake, userId: Snowflake, params: guild.CreateBan) {
+	async createGuildBan(guildId: Discord.Snowflake, userId: Discord.Snowflake, params: Discord.guild.CreateBan) {
 		await this.request(`guilds/${guildId}/bans/${userId}${stringify(params)}`, "PUT");
 	}
 
-	async removeGuildBan(guildId: Snowflake, userId: Snowflake) {
+	async removeGuildBan(guildId: Discord.Snowflake, userId: Discord.Snowflake) {
 		await this.request(`guilds/${guildId}/bans/${userId}`, "DELETE");
 	}
 
-	async getGuildRoles(guildId: Snowflake) {
-		return await this.request(`guilds/${guildId}/roles`, "GET") as role.Role[];
+	async getGuildRoles(guildId: Discord.Snowflake) {
+		return await this.request(`guilds/${guildId}/roles`, "GET") as Discord.role.Role[];
 	}
 
-	async createGuildRole(guildId: Snowflake, data: role.Create) {
-		return await this.request(`guilds/${guildId}/roles`, "POST", data) as role.Role;
+	async createGuildRole(guildId: Discord.Snowflake, data: Discord.role.Create) {
+		return await this.request(`guilds/${guildId}/roles`, "POST", data) as Discord.role.Role;
 	}
 
-	async modifyGuildRolePositions(guildId: Snowflake, data: role.ModifyPosition) {
-		return await this.request(`guilds/${guildId}/roles`, "PATCH", data) as role.Role[];
+	async modifyGuildRolePositions(guildId: Discord.Snowflake, data: Discord.role.ModifyPosition) {
+		return await this.request(`guilds/${guildId}/roles`, "PATCH", data) as Discord.role.Role[];
 	}
 
-	async modifyGuildRole(guildId: Snowflake, data: role.Modify) {
-		return await this.request(`guilds/${guildId}/roles`, "PATCH", data) as role.Role;
+	async modifyGuildRole(guildId: Discord.Snowflake, data: Discord.role.Modify) {
+		return await this.request(`guilds/${guildId}/roles`, "PATCH", data) as Discord.role.Role;
 	}
 
-	async deleteGuildRole(guildId: Snowflake, roleId: Snowflake) {
+	async deleteGuildRole(guildId: Discord.Snowflake, roleId: Discord.Snowflake) {
 		await this.request(`guilds/${guildId}/roles/${roleId}`, "DELETE");
 	}
 
-	async getGuildPruneCount(guildId: Snowflake, params: guild.PruneCount) {
+	async getGuildPruneCount(guildId: Discord.Snowflake, params: Discord.guild.PruneCount) {
 		await this.request(`guilds/${guildId}/prune${stringify(params)}`, "GET");
 	}
 
-	async beginGuildPrune(guildId: Snowflake, params: guild.BeginPrune) {
-		return await this.request(`guilds/${guildId}/prune${stringify(params)}`, "POST") as { pruned: number | null };
+	async beginGuildPrune(guildId: Discord.Snowflake, params: Discord.guild.BeginPrune) {
+		return await this.request(`guilds/${guildId}/prune${stringify(params)}`, "POST") as {
+			pruned: number | null;
+		};
 	}
 
-	async getGuildVoiceRegions(guildId: Snowflake) {
-		return await this.request(`guilds/${guildId}/regions`, "GET") as voice.Region[];
+	async getGuildVoiceRegions(guildId: Discord.Snowflake) {
+		return await this.request(`guilds/${guildId}/regions`, "GET") as Discord.voice.Region[];
 	}
 
-	async getGuildInvites(guildId: Snowflake) {
-		return await this.request(`guilds/${guildId}/invites`, "GET") as invite.MetadataInvite;
+	async getGuildInvites(guildId: Discord.Snowflake) {
+		return await this.request(`guilds/${guildId}/invites`, "GET") as Discord.invite.MetadataInvite;
 	}
 
-	async getGuildIntegrations(guildId: Snowflake) {
-		return await this.request(`guilds/${guildId}/integrations`, "GET") as integration.Integration[];
+	async getGuildIntegrations(guildId: Discord.Snowflake) {
+		return await this.request(`guilds/${guildId}/integrations`, "GET") as Discord.integration.Integration[];
 	}
 
-	async createGuildIntegration(guildId: Snowflake, data: integration.Create) {
+	async createGuildIntegration(guildId: Discord.Snowflake, data: Discord.integration.Create) {
 		await this.request(`guilds/${guildId}/integrations`, "POST", data);
 	}
 
-	async modifyGuildIntegration(guildId: Snowflake, integrationId: Snowflake, data: integration.Modify) {
+	async modifyGuildIntegration(guildId: Discord.Snowflake, integrationId: Discord.Snowflake, data: Discord.integration.Modify) {
 		await this.request(`guilds/${guildId}/integrations/${integrationId}`, "PATCH", data);
 	}
 
-	async deleteGuildIntegration(guildId: Snowflake, integrationId: Snowflake) {
+	async deleteGuildIntegration(guildId: Discord.Snowflake, integrationId: Discord.Snowflake) {
 		await this.request(`guilds/${guildId}/integrations/${integrationId}`, "DELETE");
 	}
 
-	async syncGuildIntegration(guildId: Snowflake, integrationId: Snowflake) {
+	async syncGuildIntegration(guildId: Discord.Snowflake, integrationId: Discord.Snowflake) {
 		await this.request(`guilds/${guildId}/integrations/${integrationId}/sync`, "POST");
 	}
 
-	async getGuildEmbed(guildId: Snowflake) {
-		return await this.request(`guilds/${guildId}/embed`, "GET") as guild.Embed;
+	async getGuildEmbed(guildId: Discord.Snowflake) {
+		return await this.request(`guilds/${guildId}/embed`, "GET") as Discord.guild.Embed;
 	}
 
-	async modifyGuildEmbed(guildId: Snowflake, data: guild.EmbedModify) {
-		return await this.request(`guilds/${guildId}/embed`, "PATCH", data) as guild.Embed;
+	async modifyGuildEmbed(guildId: Discord.Snowflake, data: Discord.guild.EmbedModify) {
+		return await this.request(`guilds/${guildId}/embed`, "PATCH", data) as Discord.guild.Embed;
 	}
 
-	async getGuildVanityURL(guildId: Snowflake) {
-		return await this.request(`guilds/${guildId}/vanity-url`, "GET") as invite.VanityURL;
+	async getGuildVanityURL(guildId: Discord.Snowflake) {
+		return await this.request(`guilds/${guildId}/vanity-url`, "GET") as Discord.invite.VanityURL;
 	}
 
-	async getGuildWidgetImage(guildId: Snowflake, params: guild.WidgetEmbedStyle) {
+	async getGuildWidgetImage(guildId: Discord.Snowflake, params: Discord.guild.WidgetEmbedStyle) {
 		return await this.request(`guilds/${guildId}/widget.png${stringify(params)}`, "GET");
 	}
 
-	async getGuildEmbedImage(guildId: Snowflake, params: guild.WidgetEmbedStyle) {
+	async getGuildEmbedImage(guildId: Discord.Snowflake, params: Discord.guild.WidgetEmbedStyle) {
 		return await this.request(`guilds/${guildId}/embed.png${stringify(params)}`, "GET");
 	}
 
@@ -399,107 +383,107 @@ export class RestClient {
 
 	//region Invite
 	async getInvite(inviteCode: string) {
-		return await this.request(`invites/${inviteCode}`, "GET") as invite.Invite;
+		return await this.request(`invites/${inviteCode}`, "GET") as Discord.invite.Invite;
 	}
 
 	async deleteInvite(inviteCode: string) {
-		return await this.request(`invites/${inviteCode}`, "DELETE") as invite.Invite;
+		return await this.request(`invites/${inviteCode}`, "DELETE") as Discord.invite.Invite;
 	}
 
 	//endregion
 
 	//region User
 	async getCurrentUser() {
-		return await this.request("users/@me", "GET") as user.User;
+		return await this.request("users/@me", "GET") as Discord.user.User;
 	}
 
-	async getUser(userId: Snowflake) {
-		return await this.request(`users/${userId}`, "GET") as user.User;
+	async getUser(userId: Discord.Snowflake) {
+		return await this.request(`users/${userId}`, "GET") as Discord.user.User;
 	}
 
-	async modifyCurrentUser(data: user.Modify) {
-		return await this.request("users/@me", "PATCH", data) as user.User;
+	async modifyCurrentUser(data: Discord.user.Modify) {
+		return await this.request("users/@me", "PATCH", data) as Discord.user.User;
 	}
 
-	async getCurrentUserGuilds(params: user.GetGuilds) {
-		return await this.request(`users/@me/guilds${stringify(params)}`, "GET") as guild.Guild[];
+	async getCurrentUserGuilds(params: Discord.user.GetGuilds) {
+		return await this.request(`users/@me/guilds${stringify(params)}`, "GET") as Discord.guild.Guild[];
 	}
 
-	async leaveGuild(guildId: Snowflake) {
+	async leaveGuild(guildId: Discord.Snowflake) {
 		await this.request(`users/@me/guilds/${guildId}`, "DELETE");
 	}
 
 	async getUserDMs() {
-		return await this.request("users/@me/channels", "GET") as channel.Channel[];
+		return await this.request("users/@me/channels", "GET") as Discord.channel.Channel[];
 	}
 
-	async createDM(data: channel.CreateDM) {
-		return await this.request("users/@me/channels", "POST", data) as channel.Channel;
+	async createDM(data: Discord.channel.CreateDM) {
+		return await this.request("users/@me/channels", "POST", data) as Discord.channel.Channel;
 	}
 
-	async createGroupDM(data: channel.CreateGroupDM) {
-		return await this.request("users/@me/channels", "POST", data) as channel.Channel;
+	async createGroupDM(data: Discord.channel.CreateGroupDM) {
+		return await this.request("users/@me/channels", "POST", data) as Discord.channel.Channel;
 	}
 
 	async getUserConnections() {
-		return await this.request("users/@me/connections", "GET") as user.Connection[];
+		return await this.request("users/@me/connections", "GET") as Discord.user.Connection[];
 	}
 
 	//endregion
 
 	//region Voice
 	async listVoiceRegions() {
-		return await this.request("voice/regions", "GET") as voice.Region[];
+		return await this.request("voice/regions", "GET") as Discord.voice.Region[];
 	}
 
 	//endregion
 
 	//region Webhook
-	async createWebhook(channelId: Snowflake, data: webhook.Create) {
-		return await this.request(`channels/${channelId}/webhooks`, "POST", data) as webhook.Webhook;
+	async createWebhook(channelId: Discord.Snowflake, data: Discord.webhook.Create) {
+		return await this.request(`channels/${channelId}/webhooks`, "POST", data) as Discord.webhook.Webhook;
 	}
 
-	async getChannelWebhooks(channelId: Snowflake) {
-		return await this.request(`channels/${channelId}/webhooks`, "GET") as webhook.Webhook[];
+	async getChannelWebhooks(channelId: Discord.Snowflake) {
+		return await this.request(`channels/${channelId}/webhooks`, "GET") as Discord.webhook.Webhook[];
 	}
 
-	async getGuildWebhooks(guildId: Snowflake) {
-		return await this.request(`guilds/${guildId}/webhooks`, "GET") as webhook.Webhook[];
+	async getGuildWebhooks(guildId: Discord.Snowflake) {
+		return await this.request(`guilds/${guildId}/webhooks`, "GET") as Discord.webhook.Webhook[];
 	}
 
-	async getWebhook(webhookId: Snowflake) {
-		return await this.request(`webhooks/${webhookId}`, "GET") as webhook.Webhook;
+	async getWebhook(webhookId: Discord.Snowflake) {
+		return await this.request(`webhooks/${webhookId}`, "GET") as Discord.webhook.Webhook;
 	}
 
-	async getWebhookWithToken(webhookId: Snowflake, webhookToken: string) {
-		return await this.request(`webhooks/${webhookId}/${webhookToken}`, "GET") as webhook.Webhook;
+	async getWebhookWithToken(webhookId: Discord.Snowflake, webhookToken: string) {
+		return await this.request(`webhooks/${webhookId}/${webhookToken}`, "GET") as Discord.webhook.Webhook;
 	}
 
-	async modifyWebhook(webhookId: Snowflake, data: webhook.Modify) {
-		return await this.request(`webhooks/${webhookId}`, "PATCH", data) as webhook.Webhook;
+	async modifyWebhook(webhookId: Discord.Snowflake, data: Discord.webhook.Modify) {
+		return await this.request(`webhooks/${webhookId}`, "PATCH", data) as Discord.webhook.Webhook;
 	}
 
-	async modifyWebhookWithToken(webhookId: Snowflake, webhookToken: string, data: webhook.Modify) {
-		return await this.request(`webhooks/${webhookId}/${webhookToken}`, "PATCH", data) as webhook.Webhook;
+	async modifyWebhookWithToken(webhookId: Discord.Snowflake, webhookToken: string, data: Discord.webhook.Modify) {
+		return await this.request(`webhooks/${webhookId}/${webhookToken}`, "PATCH", data) as Discord.webhook.Webhook;
 	}
 
-	async deleteWebhook(webhookId: Snowflake) {
+	async deleteWebhook(webhookId: Discord.Snowflake) {
 		await this.request(`webhooks/${webhookId}`, "DELETE");
 	}
 
-	async deleteWebhookWithToken(webhookId: Snowflake, webhookToken: string) {
+	async deleteWebhookWithToken(webhookId: Discord.Snowflake, webhookToken: string) {
 		await this.request(`webhooks/${webhookId}/${webhookToken}`, "DELETE");
 	}
 
-	async executeWebhook(webhookId: Snowflake, webhookToken: string, data: webhook.ExecuteBody, params: webhook.ExecuteParams) {
+	async executeWebhook(webhookId: Discord.Snowflake, webhookToken: string, data: Discord.webhook.ExecuteBody, params: Discord.webhook.ExecuteParams) {
 		await this.request(`webhooks/${webhookId}/${webhookToken}${stringify(params)}`, "POST", data);
 	}
 
-	async executeSlackCompatibleWebhook(webhookId: Snowflake, webhookToken: string, data: any, params: webhook.ExecuteParams) {
+	async executeSlackCompatibleWebhook(webhookId: Discord.Snowflake, webhookToken: string, data: any, params: Discord.webhook.ExecuteParams) {
 		await this.request(`webhooks/${webhookId}/${webhookToken}/slack${stringify(params)}`, "POST", data);
 	}
 
-	async executeGitHubCompatibleWebhook(webhookId: Snowflake, webhookToken: string, data: any, params: webhook.ExecuteParams) {
+	async executeGitHubCompatibleWebhook(webhookId: Discord.Snowflake, webhookToken: string, data: any, params: Discord.webhook.ExecuteParams) {
 		await this.request(`webhooks/${webhookId}/${webhookToken}/github${stringify(params)}`, "POST", data);
 	}
 
