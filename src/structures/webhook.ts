@@ -34,7 +34,9 @@ export interface Webhook {
 }
 
 
-export type Create = NonNullable<Pick<Webhook, "name">> & Required<Pick<Webhook, "name">>;
+export type Create =
+	NonNullable<Pick<Webhook, "name">>
+	& Required<Pick<Webhook, "name">>;
 
 export type Modify = Partial<NonNullable<Pick<Webhook, "name" | "avatar" | "channel_id">>>;
 
@@ -51,3 +53,6 @@ export interface ExecuteBody extends Omit<MessageCreate, "embed" | "nonce"> {
 	/** embedded `rich` content */
 	embeds?: Embed[];
 }
+
+
+export type UpdateEvent = NonNullable<Pick<Webhook, "guild_id" | "channel_id">>

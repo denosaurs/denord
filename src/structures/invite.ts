@@ -53,3 +53,12 @@ export interface Create extends Partial<Pick<MetadataInvite, "max_age" | "max_us
 }
 
 export type VanityURL = Pick<MetadataInvite, "code" | "uses">;
+
+export interface CreateEvent extends Pick<MetadataInvite, "code" | "created_at" | "inviter" | "max_age" | "max_uses" | "target_user" | "target_user_type" | "temporary" | "uses"> {
+	channel_id: Snowflake;
+	guild_id: Snowflake;
+}
+
+export type DeleteEvent =
+	Pick<CreateEvent, "channel_id" | "code">
+	& Partial<Pick<CreateEvent, "guild_id">>

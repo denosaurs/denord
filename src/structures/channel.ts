@@ -1,5 +1,6 @@
 import {ISO8601, Snowflake} from "./generics.ts";
 import {User} from "./user.ts";
+import {GuildMember} from "./guildMember.ts";
 
 
 /** types of channels */
@@ -161,4 +162,26 @@ export interface CreateGroupDM {
 	access_tokens: string[];
 	/** a dictionary of user ids to their respective nicknames */
 	nicks: { [key: string]: string }
+}
+
+
+export interface PinsUpdateEvent {
+	guild_id?: Snowflake;
+	channel_id: Snowflake;
+	last_pin_timestamp?: ISO8601;
+}
+
+
+export interface DeleteBulkEvent {
+	ids: Snowflake[];
+	channel_id: Snowflake;
+	guild_id: Snowflake;
+}
+
+export interface TypingStartEvent {
+	channel_id: Snowflake;
+	guild_id?: Snowflake;
+	user_id: Snowflake;
+	timestamp: number;
+	member?: GuildMember;
 }

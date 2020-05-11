@@ -5,9 +5,9 @@ import {User} from "./user.ts";
 /** a member of a guild */
 export interface GuildMember {
 	/** the user this guild member represents */
-	user: User;
+	user?: User;
 	/** this user's guild nickname (if one is set) */
-	nick?: string;
+	nick: string | null;
 	/** array of role object ids the user has */
 	roles: Snowflake[];
 	/** when the user joined the guild */

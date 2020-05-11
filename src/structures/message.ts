@@ -5,6 +5,7 @@ import {Embed} from "./embed.ts";
 import {GuildMember} from "./guildMember.ts";
 import {Reaction} from "./reaction.ts";
 import {User} from "./user.ts";
+import {Emoji} from "./emoji.ts";
 
 
 /** a message type */
@@ -177,3 +178,20 @@ export interface Create extends Partial<Pick<Message, "content" | "nonce" | "tts
 }
 
 export type Edit = Partial<Pick<Message, "content" | "flags"> & Pick<Create, "embed">>;
+
+export type DeleteEvent = Pick<Message, "id" | "channel_id" | "guild_id">;
+
+export interface ReactionAddEvent {
+	user_id: Snowflake;
+	channel_id: Snowflake;
+	message_id: Snowflake;
+	guild_id?: Snowflake;
+	member?: GuildMember;
+	emoji: Partial<Emoji>;
+}
+
+export type ReactionRemoveEvent = Omit<ReactionAddEvent, "member">
+
+export type ReactionRemoveAllEvent = Omit<ReactionRemoveEvent, "emoji" | "user_id">;
+
+export type ReactionRemoveEmojiEvent = Omit<ReactionRemoveEvent, "user_id">;

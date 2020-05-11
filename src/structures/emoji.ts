@@ -21,18 +21,9 @@ export interface Emoji {
 }
 
 
-export interface Create {
-	/** name of the emoji */
-	name: string;
+export interface Create extends NonNullable<Pick<Emoji, "name" | "roles">> {
 	/** the 128x128 emoji image */
 	image: string;
-	/** roles for which this emoji will be whitelisted */
-	roles: Snowflake[];
 }
 
-export interface Modify {
-	/** name of the emoji */
-	name: string;
-	/** roles to which this emoji will be whitelisted */
-	roles: Snowflake[];
-}
+export type Modify = Pick<Create, "name" | "roles">;

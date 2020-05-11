@@ -33,7 +33,7 @@ export class RestClient {
 	constructor(token?: string) {
 		this.token = token ?? "";
 	}
-	
+
 
 	private async request(endpoint: string, method: ("GET" | "POST" | "PUT" | "PATCH" | "DELETE"), data?: any): Promise<unknown> {
 		const headers = new Headers({

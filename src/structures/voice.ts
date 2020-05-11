@@ -44,3 +44,10 @@ export interface State {
 	/** whether this user is muted by the current user */
 	suppress: boolean;
 }
+
+
+export interface ServerUpdateEvent {
+	token: string;
+	guild_id: Snowflake;
+	endpoint: string;
+}

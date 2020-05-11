@@ -272,3 +272,44 @@ export interface WidgetEmbedStyle {
 	/** style of the widget image returned */
 	style?: "shield" | "banner1" | "banner2" | "banner3" | "banner4"
 }
+
+export type UnavailableGuild = Pick<Guild, "id" | "unavailable">;
+
+
+export interface BanEvent {
+	guild_id: Snowflake;
+	user: User;
+}
+
+export interface EmojisUpdateEvent {
+	guild_id: Snowflake;
+	emojis: Emoji[];
+}
+
+export interface IntegrationsUpdateEvent {
+	guild_id: Snowflake;
+}
+
+export interface MemberAddEvent extends GuildMember {
+	guild_id: Snowflake;
+}
+
+export interface MemberRemoveEvent {
+	guild_id: Snowflake;
+	user: User;
+}
+
+export interface MemberUpdateEvent extends Pick<GuildMember, "roles" | "user" | "premium_since">, Partial<Pick<GuildMember, "nick">> {
+	guild_id: Snowflake;
+}
+
+export interface MembersChunkEvent {
+	guild_id: Snowflake;
+	members: GuildMember[];
+	chunk_index: number;
+	chunk_count: number;
+	not_found?: [];
+	presences?: PresenceUpdateEvent[];
+	nonce?: string;
+}
+

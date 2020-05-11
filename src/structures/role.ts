@@ -92,3 +92,14 @@ export type Create = Pick<Role, "name" | "permissions" | "color" | "hoist" | "me
 export type ModifyPosition = Pick<Role, "id" | "position">;
 
 export type Modify = Partial<Create>;
+
+
+export interface UpdateEvent {
+	guild_id: Snowflake;
+	role: Role;
+}
+
+export interface DeleteEvent {
+	guild_id: Snowflake;
+	role_id: Snowflake;
+}
