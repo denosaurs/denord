@@ -1,19 +1,22 @@
 export class HTTPError extends Error {
-	statusCode: number;
+  statusCode: number;
 
-	constructor(statusCode: number, message: string) {
-		super(message);
+  constructor(statusCode: number, message: string) {
+    super(message);
 
-		this.statusCode = statusCode;
-	}
+    this.statusCode = statusCode;
+  }
 }
 
 export class DiscordJSONError extends HTTPError {
-	jsonCode: number;
+  jsonCode: number;
 
-	constructor(statusCode: number, json: { code: number; message: string; }) {
-		super(statusCode, `\nHTTP Status Code: ${statusCode}\nJSON: ${JSON.stringify(json)}`);
+  constructor(statusCode: number, json: { code: number; message: string }) {
+    super(
+      statusCode,
+      `\nHTTP Status Code: ${statusCode}\nJSON: ${JSON.stringify(json)}`,
+    );
 
-		this.jsonCode = json.code;
-	}
+    this.jsonCode = json.code;
+  }
 }
