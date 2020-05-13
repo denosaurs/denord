@@ -7,6 +7,42 @@ declare namespace Discord {
 
 
 	namespace activity {
+		/**
+		 * an activity
+		 * NOTE: bots are only able to send `name`, `type`, and optionally `url`.
+		 */
+		interface Activity {
+			/** the activity's name */
+			name: string;
+			/** the type of the activity */
+			type: 0 | 1 | 2 | 4;
+			/** stream url, is validated when type is 1 */
+			url?: string | null;
+			/** unix timestamp of when the activity was added to the user's session */
+			created_at: number;
+			/** unix timestamps for start and/or end of the game */
+			timestamps?: Timestamps;
+			/** application id for the game */
+			application_id?: Snowflake;
+			/** what the player is currently doing */
+			details?: string | null;
+			/** the user's current party status */
+			state?: string | null;
+			/** the emoji used for a custom status */
+			emoji?: emoji.Emoji | null;
+			/** information for the current party of the player */
+			party?: Party;
+			/** images for the presence and their hover texts */
+			assets?: Assets;
+			/** secrets for Rich Presence joining and spectating */
+			secrets?: Secrets;
+			/** whether or not the activity is an instanced game session */
+			instance?: boolean;
+			/** activity flags `OR`d together, describes what the payload includes */
+			flags?: number;
+		}
+
+
 		/** unix timestamps for start and/or end of the game */
 		interface Timestamps {
 			/** unix timestamp for start of the game */
@@ -44,42 +80,6 @@ declare namespace Discord {
 			/** the secret for a specific instanced match */
 			match?: string;
 		}
-
-
-		/**
-		 * an activity
-		 * NOTE: bots are only able to send `name`, `type`, and optionally `url`.
-		 */
-		interface Activity {
-			/** the activity's name */
-			name: string;
-			/** the type of the activity */
-			type: 0 | 1 | 2 | 4;
-			/** stream url, is validated when type is 1 */
-			url?: string | null;
-			/** unix timestamp of when the activity was added to the user's session */
-			created_at: number;
-			/** unix timestamps for start and/or end of the game */
-			timestamps?: Timestamps;
-			/** application id for the game */
-			application_id?: Snowflake;
-			/** what the player is currently doing */
-			details?: string | null;
-			/** the user's current party status */
-			state?: string | null;
-			/** the emoji used for a custom status */
-			emoji?: emoji.Emoji | null;
-			/** information for the current party of the player */
-			party?: Party;
-			/** images for the presence and their hover texts */
-			assets?: Assets;
-			/** secrets for Rich Presence joining and spectating */
-			secrets?: Secrets;
-			/** whether or not the activity is an instanced game session */
-			instance?: boolean;
-			/** activity flags `OR`d together, describes what the payload includes */
-			flags?: number;
-		}
 	}
 
 	namespace attachment {
@@ -103,6 +103,14 @@ declare namespace Discord {
 	}
 
 	namespace auditLog {
+		interface AuditLog {
+			webhooks: webhook.Webhook[];
+			users: user.User[];
+			audit_log_entries: AuditLogEntry[];
+			integrations: Partial<integration.Integration>[];
+		}
+
+
 		interface AuditLogChange {
 			new_value?: any;
 			old_value?: any;
@@ -129,46 +137,9 @@ declare namespace Discord {
 			options?: AuditEntryInfo;
 			reason?: string;
 		}
-
-
-		interface AuditLog {
-			webhooks: webhook.Webhook[];
-			users: user.User[];
-			audit_log_entries: AuditLogEntry[];
-			integrations: Partial<integration.Integration>[];
-		}
 	}
 
 	namespace channel {
-		/** types of channels */
-		type Type = 0 | 1 | 2 | 3 | 4 | 5 | 6;
-
-
-		/** explicit permission overwrites for members and roles */
-		interface Overwrite {
-			/** role id or user id */
-			id: Snowflake;
-			/** what type of id you want to overwrite */
-			type: "role" | "member";
-			/** permission bit set */
-			allow: number;
-			/** permission bit set */
-			deny: number;
-		}
-
-		/** a channel mention */
-		interface Mention {
-			/** id of the channel */
-			id: Snowflake;
-			/** id of the guild containing the channel */
-			guild_id: Snowflake;
-			/** the type of channel */
-			type: Type;
-			/** the name of the channel */
-			name: string;
-		}
-
-
 		/** a channel */
 		interface Channel {
 			/** the id of this channel */
@@ -207,6 +178,34 @@ declare namespace Discord {
 			parent_id?: Snowflake | null;
 			/** when the last pinned message was pinned */
 			last_pin_timestamp?: ISO8601;
+		}
+
+
+		/** types of channels */
+		type Type = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+		/** explicit permission overwrites for members and roles */
+		interface Overwrite {
+			/** role id or user id */
+			id: Snowflake;
+			/** what type of id you want to overwrite */
+			type: "role" | "member";
+			/** permission bit set */
+			allow: number;
+			/** permission bit set */
+			deny: number;
+		}
+
+		/** a channel mention */
+		interface Mention {
+			/** id of the channel */
+			id: Snowflake;
+			/** id of the guild containing the channel */
+			guild_id: Snowflake;
+			/** the type of channel */
+			type: Type;
+			/** the name of the channel */
+			name: string;
 		}
 
 
@@ -310,6 +309,37 @@ declare namespace Discord {
 	}
 
 	namespace embed {
+		/** an embed */
+		interface Embed {
+			/** title of embed */
+			title?: string;
+			/** type of embed (always "rich" for webhook embeds) */
+			type?: "rich" | "image" | "video" | "gifv" | "article" | "link";
+			/** description of embed */
+			description?: string;
+			/** url of embed */
+			url?: string;
+			/** timestamp of embed content */
+			timestamp?: ISO8601;
+			/** color code of the embed */
+			color?: number;
+			/** footer information */
+			footer?: Footer;
+			/** image information */
+			image?: Image;
+			/** thumbnail information */
+			thumbnail?: Thumbnail;
+			/** video information */
+			video?: Video;
+			/** provider information */
+			provider?: Provider;
+			/** author information */
+			author?: Author;
+			/** fields information */
+			fields?: Field[];
+		}
+
+
 		/** an embed footer */
 		interface Footer {
 			/** footer text */
@@ -383,37 +413,6 @@ declare namespace Discord {
 			/** whether or not this field should display inline */
 			inline?: boolean;
 		}
-
-
-		/** an embed */
-		interface Embed {
-			/** title of embed */
-			title?: string;
-			/** type of embed (always "rich" for webhook embeds) */
-			type?: "rich" | "image" | "video" | "gifv" | "article" | "link";
-			/** description of embed */
-			description?: string;
-			/** url of embed */
-			url?: string;
-			/** timestamp of embed content */
-			timestamp?: ISO8601;
-			/** color code of the embed */
-			color?: number;
-			/** footer information */
-			footer?: Footer;
-			/** image information */
-			image?: Image;
-			/** thumbnail information */
-			thumbnail?: Thumbnail;
-			/** video information */
-			video?: Video;
-			/** provider information */
-			provider?: Provider;
-			/** author information */
-			author?: Author;
-			/** fields information */
-			fields?: Field[];
-		}
 	}
 
 	namespace emoji {
@@ -445,59 +444,6 @@ declare namespace Discord {
 	}
 
 	namespace guild {
-		/** a guild embed */
-		interface Embed {
-			/** whether the embed is enabled */
-			enabled: boolean;
-			/** the embed channel id */
-			channel_id: Snowflake | null;
-		}
-
-		/** a guild ban */
-		interface Ban {
-			/** the reason for the ban */
-			reason: string | null;
-			/** the banned user */
-			user: user.User;
-		}
-
-		/** a user's status. active sessions are indicated with an "online", "idle", or "dnd" string per platform. If a user is offline or invisible, the corresponding field is not present. */
-		interface ClientStatus {
-			/** the user's status set for an active desktop (Windows, Linux, Mac) application session */
-			desktop?: ActiveStatus;
-			/** the user's status set for an active mobile (iOS, Android) application session */
-			mobile?: ActiveStatus;
-			/** the user's status set for an active web (browser, bot account) application session */
-			web?: ActiveStatus;
-		}
-
-		/** A user's presence is their current state on a guild. This event is sent when a user's presence or info, such as name or avatar, is updated. */
-		interface PresenceUpdateEvent {
-			/** the user presence is being updated for */
-			user: user.User;
-			/** roles this user is in */
-			roles: Snowflake[];
-			/** null, or the user's current activity */
-			game: activity.Activity | null;
-			/** id of the guild */
-			guild_id: Snowflake;
-			/** the status of the user */
-			status: ActiveStatus | "offline";
-			/** user's current activities */
-			activities: activity.Activity[];
-			/** user's platform-dependent status */
-			client_status: ClientStatus;
-			/** when the user started boosting the guild */
-			premium_since?: string | null;
-			/** this users guild nickname (if one is set) */
-			nick?: string | null;
-		}
-
-
-		/** a user's active activity status */
-		type ActiveStatus = "idle" | "dnd" | "online";
-
-
 		/** a guild */
 		interface Guild {
 			/** guild id */
@@ -589,6 +535,58 @@ declare namespace Discord {
 		}
 
 
+		/** a guild embed */
+		interface Embed {
+			/** whether the embed is enabled */
+			enabled: boolean;
+			/** the embed channel id */
+			channel_id: Snowflake | null;
+		}
+
+		/** a guild ban */
+		interface Ban {
+			/** the reason for the ban */
+			reason: string | null;
+			/** the banned user */
+			user: user.User;
+		}
+
+		/** a user's status. active sessions are indicated with an "online", "idle", or "dnd" string per platform. If a user is offline or invisible, the corresponding field is not present. */
+		interface ClientStatus {
+			/** the user's status set for an active desktop (Windows, Linux, Mac) application session */
+			desktop?: ActiveStatus;
+			/** the user's status set for an active mobile (iOS, Android) application session */
+			mobile?: ActiveStatus;
+			/** the user's status set for an active web (browser, bot account) application session */
+			web?: ActiveStatus;
+		}
+
+		/** A user's presence is their current state on a guild. This event is sent when a user's presence or info, such as name or avatar, is updated. */
+		interface PresenceUpdateEvent {
+			/** the user presence is being updated for */
+			user: user.User;
+			/** roles this user is in */
+			roles: Snowflake[];
+			/** null, or the user's current activity */
+			game: activity.Activity | null;
+			/** id of the guild */
+			guild_id: Snowflake;
+			/** the status of the user */
+			status: ActiveStatus | "offline";
+			/** user's current activities */
+			activities: activity.Activity[];
+			/** user's platform-dependent status */
+			client_status: ClientStatus;
+			/** when the user started boosting the guild */
+			premium_since?: string | null;
+			/** this users guild nickname (if one is set) */
+			nick?: string | null;
+		}
+
+		/** a user's active activity status */
+		type ActiveStatus = "idle" | "dnd" | "online";
+
+
 		type Create =
 			Pick<Guild, "name">
 			& Partial<NonNullable<Pick<Guild, "region" | "icon" | "verification_level" | "default_message_notifications" | "explicit_content_filter" | "roles" | "channels" | "afk_channel_id" | "afk_timeout" | "system_channel_id">>>;
@@ -609,11 +607,15 @@ declare namespace Discord {
 			days?: number;
 		}
 
-		interface BeginPrune {
+		interface BeginPruneParams {
 			/** number of days to prune (1 or more) */
 			days: number;
 			/** whether 'pruned' is returned, discouraged for large guilds */
 			compute_prune_count: boolean;
+		}
+
+		interface BeginPrune {
+			pruned: number | null;
 		}
 
 		type EmbedModify = Partial<Embed>;
@@ -710,15 +712,6 @@ declare namespace Discord {
 	}
 
 	namespace integration {
-		/** an integration account */
-		interface Account {
-			/** id of the account */
-			id: string;
-			/** name of the account */
-			name: string;
-		}
-
-
 		/** an integration */
 		interface Integration {
 			/** integration id */
@@ -748,26 +741,21 @@ declare namespace Discord {
 		}
 
 
+		/** an integration account */
+		interface Account {
+			/** id of the account */
+			id: string;
+			/** name of the account */
+			name: string;
+		}
+
+
 		type Create = Pick<Integration, "id" | "type">;
 
 		type Modify = Partial<Pick<Integration, "expire_behavior" | "expire_grace_period" | "enable_emoticons">>;
 	}
 
 	namespace invite {
-		/** extra information about an invite */
-		interface MetadataInvite extends Invite {
-			/** number of times this invite has been used */
-			uses: number;
-			/** max number of times this invite can be used */
-			max_uses: number;
-			/** duration (in seconds) after which the invite expires */
-			max_age: number;
-			/** whether this invite only grants temporary membership */
-			temporary: boolean;
-			/** when this invite was created */
-			created_at: ISO8601;
-		}
-
 		/** a guild channel invite */
 		interface Invite {
 			/** the invite code (unique ID) */
@@ -786,6 +774,20 @@ declare namespace Discord {
 			approximate_presence_count?: number;
 			/** approximate count of total members */
 			approximate_member_count?: number;
+		}
+
+		/** extra information about an invite */
+		interface MetadataInvite extends Invite {
+			/** number of times this invite has been used */
+			uses: number;
+			/** max number of times this invite can be used */
+			max_uses: number;
+			/** duration (in seconds) after which the invite expires */
+			max_age: number;
+			/** whether this invite only grants temporary membership */
+			temporary: boolean;
+			/** when this invite was created */
+			created_at: ISO8601;
 		}
 
 
@@ -809,49 +811,6 @@ declare namespace Discord {
 	}
 
 	namespace message {
-		/** a message activity */
-		interface Activity {
-			/** type of message activity */
-			type: 1 | 2 | 3 | 5;
-			/** party_id from a Rich Presence event */
-			party_id?: string;
-		}
-
-		/** a message application */
-		interface Application {
-			/** id of the application */
-			id: Snowflake;
-			/** id of the embed's image asset */
-			cover_image?: string;
-			/** application's description */
-			description: string;
-			/** id of the application's icon */
-			icon: string | null;
-			/** name of the application */
-			name: string;
-		}
-
-		/** allowed mentions allows for more granular control over mentions without various hacks to the message content. this will always validate against message content to avoid phantom pings (e.g. to ping everyone, you must still have `@everyone` in the message content), and check against user/bot permissions */
-		interface AllowedMentions {
-			/** An array of allowed mention types to parse from the content. */
-			parse: ("roles" | "users" | "everyone")[];
-			/** Array of role_ids to mention (Max size of 100) */
-			roles: Snowflake[];
-			/** Array of user_ids to mention (Max size of 100) */
-			users: Snowflake[];
-		}
-
-		/** a message reference */
-		interface Reference {
-			/** id of the originating message */
-			message_id?: Snowflake;
-			/** id of the originating message's channel */
-			channel_id: Snowflake;
-			/** id of the originating message's guild */
-			guild_id?: Snowflake;
-		}
-
-
 		/** a message */
 		interface Message {
 			/** id of the message */
@@ -911,6 +870,49 @@ declare namespace Discord {
 			message_reference?: Reference;
 			/** message flags `OR`d together, describes extra features of the message */
 			flags?: number;
+		}
+
+
+		/** a message activity */
+		interface Activity {
+			/** type of message activity */
+			type: 1 | 2 | 3 | 5;
+			/** party_id from a Rich Presence event */
+			party_id?: string;
+		}
+
+		/** a message application */
+		interface Application {
+			/** id of the application */
+			id: Snowflake;
+			/** id of the embed's image asset */
+			cover_image?: string;
+			/** application's description */
+			description: string;
+			/** id of the application's icon */
+			icon: string | null;
+			/** name of the application */
+			name: string;
+		}
+
+		/** allowed mentions allows for more granular control over mentions without various hacks to the message content. this will always validate against message content to avoid phantom pings (e.g. to ping everyone, you must still have `@everyone` in the message content), and check against user/bot permissions */
+		interface AllowedMentions {
+			/** An array of allowed mention types to parse from the content. */
+			parse: ("roles" | "users" | "everyone")[];
+			/** Array of role_ids to mention (Max size of 100) */
+			roles: Snowflake[];
+			/** Array of user_ids to mention (Max size of 100) */
+			users: Snowflake[];
+		}
+
+		/** a message reference */
+		interface Reference {
+			/** id of the originating message */
+			message_id?: Snowflake;
+			/** id of the originating message's channel */
+			channel_id: Snowflake;
+			/** id of the originating message's guild */
+			guild_id?: Snowflake;
 		}
 
 
@@ -1034,29 +1036,6 @@ declare namespace Discord {
 	}
 
 	namespace user {
-		/** the connection object that the user has attached */
-		interface Connection {
-			/** id of the connection account */
-			id: string;
-			/** the username of the connection account */
-			name: string;
-			/** the service of the connection (twitch, youtube) */
-			type: string;
-			/** whether the connection is revoked */
-			revoked: boolean;
-			/** an array of partial server integrations */
-			integrations: Partial<integration.Integration>[];
-			/** whether the connection is verified */
-			verified: boolean;
-			/** whether friend sync is enabled for this connection */
-			friend_sync: boolean;
-			/** whether activities related to this connection will be shown in presence updates */
-			show_activity: boolean;
-			/** visibility of this connection */
-			visibility: 0 | 1;
-		}
-
-
 		/** a user */
 		interface User {
 			/** the user's id */
@@ -1086,6 +1065,29 @@ declare namespace Discord {
 		}
 
 
+		/** the connection object that the user has attached */
+		interface Connection {
+			/** id of the connection account */
+			id: string;
+			/** the username of the connection account */
+			name: string;
+			/** the service of the connection (twitch, youtube) */
+			type: string;
+			/** whether the connection is revoked */
+			revoked: boolean;
+			/** an array of partial server integrations */
+			integrations: Partial<integration.Integration>[];
+			/** whether the connection is verified */
+			verified: boolean;
+			/** whether friend sync is enabled for this connection */
+			friend_sync: boolean;
+			/** whether activities related to this connection will be shown in presence updates */
+			show_activity: boolean;
+			/** visibility of this connection */
+			visibility: 0 | 1;
+		}
+
+
 		type Modify = Partial<NonNullable<Pick<User, "username" | "avatar">>>;
 
 		interface GetGuilds {
@@ -1099,23 +1101,6 @@ declare namespace Discord {
 	}
 
 	namespace voice {
-		/** a voice region */
-		interface Region {
-			/** unique ID for the region */
-			id: string;
-			/** name of the region */
-			name: string;
-			/** true if this is a vip-only server */
-			vip: boolean;
-			/** true for a single server that is closest to the current user's client */
-			optimal: boolean;
-			/** whether this is a deprecated voice region (avoid switching to these) */
-			deprecated: boolean;
-			/** whether this is a custom voice region (used for events/etc) */
-			custom: boolean;
-		}
-
-
 		/** a voice state. used to represent a user's voice connection status */
 		interface State {
 			/** the guild id this voice state is for */
@@ -1140,6 +1125,22 @@ declare namespace Discord {
 			self_stream?: boolean;
 			/** whether this user is muted by the current user */
 			suppress: boolean;
+		}
+
+		/** a voice region */
+		interface Region {
+			/** unique ID for the region */
+			id: string;
+			/** name of the region */
+			name: string;
+			/** true if this is a vip-only server */
+			vip: boolean;
+			/** true for a single server that is closest to the current user's client */
+			optimal: boolean;
+			/** whether this is a deprecated voice region (avoid switching to these) */
+			deprecated: boolean;
+			/** whether this is a custom voice region (used for events/etc) */
+			custom: boolean;
 		}
 
 
@@ -1194,5 +1195,25 @@ declare namespace Discord {
 
 
 		type UpdateEvent = NonNullable<Pick<Webhook, "guild_id" | "channel_id">>
+	}
+
+	namespace gateway {
+		interface Payload {
+			op: number;
+			d: unknown;
+			s: number | null;
+			t: "READY" | "RESUMED" | "RECONNECT" | "INVALID_SESSION" | "CHANNEL_CREATE" | "CHANNEL_UPDATE" | "CHANNEL_DELETE" | "CHANNEL_PINS_UPDATE" | "GUILD_CREATE" | "GUILD_UPDATE" | "GUILD_DELETE" | "GUILD_BAN_ADD" | "GUILD_BAN_REMOVE" | "GUILD_EMOJIS_UPDATE" | "GUILD_INTEGRATIONS_UPDATE" | "GUILD_MEMBER_ADD" | "GUILD_MEMBER_REMOVE" | "GUILD_MEMBER_UPDATE" | "GUILD_MEMBERS_CHUNK" | "GUILD_ROLE_CREATE" | "GUILD_ROLE_UPDATE" | "GUILD_ROLE_DELETE" | "INVITE_CREATE" | "INVITE_DELETE" | "MESSAGE_CREATE" | "MESSAGE_UPDATE" | "MESSAGE_DELETE" | "MESSAGE_DELETE_BULK" | "MESSAGE_REACTION_ADD" | "MESSAGE_REACTION_REMOVE" | "MESSAGE_REACTION_REMOVE_ALL" | "MESSAGE_REACTION_REMOVE_EMOJI" | "PRESENCE_UPDATE" | "TYPING_START" | "USER_UPDATE" | "VOICE_STATE_UPDATE" | "VOICE_SERVER_UPDATE" | "WEBHOOKS_UPDATE" | null;
+		}
+
+		interface Gateway {
+			url: string;
+		}
+
+		interface GatewayBot extends Gateway {
+			shards: number;
+			session_start_limit: {
+				total: number; remaining: number; reset_after: number;
+			}
+		}
 	}
 }

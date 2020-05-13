@@ -20,7 +20,7 @@ export class RestClient {
 
 	private async request(endpoint: string, method: ("GET" | "POST" | "PUT" | "PATCH" | "DELETE"), data?: any): Promise<unknown> {
 		const headers = new Headers({
-			"User-Agent": "DiscordBot (https://github.com/DenordTS/denord, master)"
+			"User-Agent": "DiscordBot (https://github.com/DenordTS/denord, master)",
 		});
 
 		if (this.token) {
@@ -50,7 +50,7 @@ export class RestClient {
 		const res = await fetch("https://discordapp.com/api/v6/" + endpoint, {
 			method,
 			headers,
-			body
+			body,
 		});
 
 
@@ -325,10 +325,8 @@ export class RestClient {
 		await this.request(`guilds/${guildId}/prune${stringify(params)}`, "GET");
 	}
 
-	async beginGuildPrune(guildId: Discord.Snowflake, params: Discord.guild.BeginPrune) {
-		return await this.request(`guilds/${guildId}/prune${stringify(params)}`, "POST") as {
-			pruned: number | null;
-		};
+	async beginGuildPrune(guildId: Discord.Snowflake, params: Discord.guild.BeginPruneParams) {
+		return await this.request(`guilds/${guildId}/prune${stringify(params)}`, "POST") as Discord.guild.BeginPrune;
 	}
 
 	async getGuildVoiceRegions(guildId: Discord.Snowflake) {
@@ -491,19 +489,11 @@ export class RestClient {
 
 	//region Gateway
 	async getGateway() {
-		return await this.request("gateway", "GET") as { url: string };
+		return await this.request("gateway", "GET") as Discord.gateway.Gateway;
 	}
 
 	async getGatewayBot() {
-		return await this.request("gateway/bot", "GET") as {
-			url: string;
-			shards: number;
-			session_start_limit: {
-				total: number;
-				remaining: number;
-				reset_after: number;
-			}
-		};
+		return await this.request("gateway/bot", "GET") as Discord.gateway.GatewayBot;
 	}
 
 	//endregion

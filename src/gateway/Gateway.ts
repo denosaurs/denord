@@ -3,7 +3,7 @@
 import {
 	connectWebSocket,
 	isWebSocketCloseEvent,
-	WebSocket
+	WebSocket,
 } from "https://deno.land/std@0.50.0/ws/mod.ts";
 import EventEmitter from "https://deno.land/std@0.50.0/node/events.ts";
 
@@ -62,20 +62,20 @@ export interface events {
 	WEBHOOKS_UPDATE: Discord.webhook.UpdateEvent;
 }
 
-
-interface GatewayPayload {
-	op: number;
-	d: unknown;
-	s: number | null;
-	t: string | null;
+interface allEvents extends events {
+	raw: {
+		name: keyof events;
+		data: events[keyof events];
+	};
 }
 
+
 export interface Gateway {
-	emit<T extends keyof events>(eventName: T, args: events[T]): boolean;
+	emit<T extends keyof allEvents>(eventName: T, args: allEvents[T]): boolean;
 
-	on<T extends keyof events>(eventName: T, listener: (args: events[T]) => void): this;
+	on<T extends keyof allEvents>(eventName: T, listener: (args: allEvents[T]) => void): this;
 
-	off<T extends keyof events>(eventName: T, listener: (args: events[T]) => void): this;
+	off<T extends keyof allEvents>(eventName: T, listener: (args: allEvents[T]) => void): this;
 }
 
 //TODO cache & sharding, and send opcode 3 & 8
@@ -134,8 +134,8 @@ export class Gateway extends EventEmitter {
 				d: {
 					token: this.token,
 					session_id: this.sessionId,
-					seq: this.seq
-				}
+					seq: this.seq,
+				},
 			});
 		}
 	}
@@ -143,7 +143,7 @@ export class Gateway extends EventEmitter {
 	private async connect() {
 		this.socket = await connectWebSocket("wss://gateway.discord.gg/?v=6&encoding=json");
 
-		let firstPayload = JSON.parse((await this.socket[Symbol.asyncIterator]().next()).value) as GatewayPayload;
+		let firstPayload = JSON.parse((await this.socket[Symbol.asyncIterator]().next()).value) as Discord.gateway.Payload;
 		if (firstPayload.op === 10) {
 			this.heartbeat = (firstPayload.d as { heartbeat_interval: number }).heartbeat_interval;
 			this.send({
@@ -154,9 +154,9 @@ export class Gateway extends EventEmitter {
 					properties: {
 						"$os": Deno.build.os,
 						"$browser": "denord-core",
-						"$device": "denord-core"
-					}
-				}
+						"$device": "denord-core",
+					},
+				},
 			});
 		} else {
 			throw new Error("Expected HELLO, received " + firstPayload.op);
@@ -169,7 +169,7 @@ export class Gateway extends EventEmitter {
 	private async listener() {
 		for await (const msg of this.socket) {
 			if (typeof msg === "string") {
-				const payload = JSON.parse(msg) as GatewayPayload;
+				const payload = JSON.parse(msg) as Discord.gateway.Payload;
 				switch (payload.op) {
 					case 0:
 						await this.event(payload);
@@ -221,7 +221,7 @@ export class Gateway extends EventEmitter {
 		}
 	}
 
-	private async event(payload: GatewayPayload) {
+	private async event(payload: Discord.gateway.Payload) {
 		this.seq = payload.s!;
 
 		switch (payload.t!) {
@@ -313,7 +313,6 @@ export class Gateway extends EventEmitter {
 
 			//region Message
 			case "MESSAGE_CREATE":
-				console.log("test");
 				this.emit("MESSAGE_CREATE", payload.d as Discord.message.Message);
 				break;
 			case "MESSAGE_UPDATE":
@@ -362,6 +361,22 @@ export class Gateway extends EventEmitter {
 
 			case "WEBHOOKS_UPDATE":
 				this.emit("WEBHOOKS_UPDATE", payload.d as Discord.webhook.UpdateEvent);
+				break;
+
+			default:
+				throw new Error("Unexpected event:\n" + payload.t);
+		}
+
+		switch (payload.t!) {
+			case "RESUMED":
+			case "RECONNECT":
+			case "INVALID_SESSION":
+				break;
+			default:
+				this.emit("raw", {
+					name: payload.t! as keyof events,
+					data: payload.d as events[keyof events],
+				});
 				break;
 		}
 	}

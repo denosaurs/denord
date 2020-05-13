@@ -1,3 +1,2 @@
-export * as gateway from "./src/gateway/mod.ts";
-export * as rest from "./src/rest/mod.ts";
-export * as structures from "./src/structures/mod.ts";
+export {gateway} from "./src/gateway/Gateway.ts";
+export {rest} from "./src/rest/RestClient.ts";
