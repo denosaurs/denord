@@ -78,7 +78,7 @@ export interface Gateway {
 	off<T extends keyof allEvents>(eventName: T, listener: (args: allEvents[T]) => void): this;
 }
 
-//TODO cache & sharding, and send opcode 3 & 8
+//TODO sharding and send opcode 3 & 8
 export class Gateway extends EventEmitter {
 	readonly token: string;
 	readonly intents: number | undefined;
@@ -104,7 +104,10 @@ export class Gateway extends EventEmitter {
 	}
 
 	private beat() {
-		this.send({op: 1, d: this.heartbeat});
+		this.send({
+			op: 1,
+			d: this.heartbeat,
+		});
 	}
 
 	private startBeating() {
