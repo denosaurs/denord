@@ -631,16 +631,16 @@ declare namespace Discord {
         NonNullable<
           Pick<
             Guild,
-              | "region"
-              | "icon"
-              | "verification_level"
-              | "default_message_notifications"
-              | "explicit_content_filter"
-              | "roles"
-              | "channels"
-              | "afk_channel_id"
-              | "afk_timeout"
-              | "system_channel_id"
+            | "region"
+            | "icon"
+            | "verification_level"
+            | "default_message_notifications"
+            | "explicit_content_filter"
+            | "roles"
+            | "channels"
+            | "afk_channel_id"
+            | "afk_timeout"
+            | "system_channel_id"
           >
         >
       >;
@@ -651,12 +651,12 @@ declare namespace Discord {
         NonNullable<
           Pick<
             Guild,
-              | "owner_id"
-              | "splash"
-              | "banner"
-              | "rules_channel_id"
-              | "public_updates_channel_id"
-              | "preferred_locale"
+            | "owner_id"
+            | "splash"
+            | "banner"
+            | "rules_channel_id"
+            | "public_updates_channel_id"
+            | "preferred_locale"
           >
         >
       >;
@@ -862,14 +862,13 @@ declare namespace Discord {
       created_at: ISO8601;
     }
 
-    interface Create
-      extends
-        Partial<
-          Pick<
-            MetadataInvite,
-            "max_age" | "max_uses" | "temporary" | "target_user_type"
-          >
-        > {
+    interface Create extends
+      Partial<
+        Pick<
+          MetadataInvite,
+          "max_age" | "max_uses" | "temporary" | "target_user_type"
+        >
+      > {
       /** if true, don't try to reuse a similar invite (useful for creating many unique one time use invites) (default: false) */
       unique?: boolean;
       /** the target user id for this invite */
@@ -881,15 +880,15 @@ declare namespace Discord {
     interface CreateEvent extends
       Pick<
         MetadataInvite,
-          | "code"
-          | "created_at"
-          | "inviter"
-          | "max_age"
-          | "max_uses"
-          | "target_user"
-          | "target_user_type"
-          | "temporary"
-          | "uses"
+        | "code"
+        | "created_at"
+        | "inviter"
+        | "max_age"
+        | "max_uses"
+        | "target_user"
+        | "target_user_type"
+        | "temporary"
+        | "uses"
       > {
       channel_id: Snowflake;
       guild_id: Snowflake;
