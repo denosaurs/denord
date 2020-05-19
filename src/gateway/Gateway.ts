@@ -4,8 +4,8 @@ import {
   connectWebSocket,
   isWebSocketCloseEvent,
   WebSocket,
-} from "https://deno.land/std@0.50.0/ws/mod.ts";
-import EventEmitter from "https://deno.land/std@0.50.0/node/events.ts";
+} from "https://deno.land/std@0.51.0/ws/mod.ts";
+import EventEmitter from "https://deno.land/std@0.51.0/node/events.ts";
 
 type Events = Discord.gateway.Events;
 
@@ -99,8 +99,7 @@ export class Gateway extends EventEmitter {
     );
 
     let firstPayload = JSON.parse(
-      (await this.socket[Symbol.asyncIterator]()
-        .next()).value,
+      (await this.socket[Symbol.asyncIterator]().next()).value,
     ) as Discord.gateway.Payload;
     if (firstPayload.op === 10) {
       this.heartbeat = firstPayload.d.heartbeat_interval;
