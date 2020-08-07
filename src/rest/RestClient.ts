@@ -1,6 +1,5 @@
-// @deno-types="../discord.d.ts"
-
-import { stringifyQueryParams as stringify } from "../utils/mod.ts";
+import { Discord } from "../discord.d.ts";
+import { stringifyQueryParams as stringify, URLs } from "../utils.ts";
 import { DiscordJSONError, HTTPError } from "./Error.ts";
 
 /**
@@ -21,7 +20,7 @@ export class RestClient {
     data?: any,
   ): Promise<unknown> {
     const headers = new Headers({
-      "User-Agent": "DiscordBot (https://github.com/DenordTS/denord, master)",
+      "User-Agent": "DiscordBot (https://github.com/DenordTS/denord, 0.0.1)",
     });
 
     if (this.token) {
@@ -47,7 +46,7 @@ export class RestClient {
       }
     }
 
-    const res = await fetch("https://discordapp.com/api/v6/" + endpoint, {
+    const res = await fetch(URLs.REST + endpoint, {
       method,
       headers,
       body,

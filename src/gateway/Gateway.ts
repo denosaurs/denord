@@ -1,19 +1,19 @@
-// @deno-types="../discord.d.ts"
-
+import { Discord } from "../discord.d.ts";
 import {
   connectWebSocket,
+  EventEmitter,
   isWebSocketCloseEvent,
   WebSocket,
-} from "https://deno.land/std@0.51.0/ws/mod.ts";
-import EventEmitter from "https://deno.land/std@0.51.0/node/events.ts";
+} from "../../deps.ts";
 
 type Events = Discord.gateway.Events;
 
+type UnionOfTransformedEvents<T extends keyof Events> = T extends keyof Events
+  ? { name: T; data: Events[T] }
+  : never;
+
 interface rawEvents extends Events {
-  raw: {
-    name: keyof Events;
-    data: Events[keyof Events];
-  };
+  raw: UnionOfTransformedEvents<keyof Events>;
 }
 
 export interface Gateway {
@@ -110,8 +110,8 @@ export class Gateway extends EventEmitter {
           intents: this.intents,
           properties: {
             "$os": Deno.build.os,
-            "$browser": "denord-core",
-            "$device": "denord-core",
+            "$browser": "Denord",
+            "$device": "Denord",
           },
         },
       });
@@ -149,7 +149,6 @@ export class Gateway extends EventEmitter {
             break;
           default:
             throw new Error("unexpected op: " + payload);
-            break;
         }
       } else if (isWebSocketCloseEvent(msg)) {
         switch (msg.code) {
