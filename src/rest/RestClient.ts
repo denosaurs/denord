@@ -1,4 +1,4 @@
-import { Discord } from "../discord.d.ts";
+import type * as Discord from "../discord.ts";
 import { stringifyQueryParams as stringify, URLs } from "../utils.ts";
 import { DiscordJSONError, HTTPError } from "./Error.ts";
 

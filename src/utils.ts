@@ -25,4 +25,4 @@ export function imageURLFormatter(
 export const URLs = {
   CDN: "https://cdn.discordapp.com/",
   REST: "https://discordapp.com/api/v6/",
-}
+};

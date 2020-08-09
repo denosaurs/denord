@@ -1,4 +1,4 @@
-import { Discord } from "../discord.d.ts";
+import type { gateway as DGateway } from "../discord.ts";
 import {
   connectWebSocket,
   EventEmitter,
@@ -6,22 +6,29 @@ import {
   WebSocket,
 } from "../../deps.ts";
 
-type Events = Discord.gateway.Events;
+type Events = DGateway.Events;
 
-type UnionOfTransformedEvents<T extends keyof Events> = T extends keyof Events
-  ? { name: T; data: Events[T] }
+type BundledEvent<K extends keyof Events> = {
+  name: K;
+  data: Events[K];
+};
+type BundledEvents<T extends keyof Events> = T extends keyof Events
+  ? BundledEvent<T>
   : never;
 
 interface rawEvents extends Events {
-  raw: UnionOfTransformedEvents<keyof Events>;
+  raw: BundledEvents<keyof Events>;
 }
 
 export interface Gateway {
-  emit<T extends keyof rawEvents>(eventName: T, args: rawEvents[T]): boolean;
+  emit<K extends keyof rawEvents, T extends rawEvents[K]>(
+    eventName: K,
+    args: T,
+  ): boolean;
 
-  on<T extends keyof rawEvents>(
-    eventName: T,
-    listener: (args: rawEvents[T]) => void,
+  on<K extends keyof rawEvents, T extends rawEvents[K]>(
+    eventName: K,
+    listener: (args: T) => void,
   ): this;
 
   off<T extends keyof rawEvents>(
@@ -30,7 +37,7 @@ export interface Gateway {
   ): this;
 }
 
-//TODO sharding and send opcode 3 & 8
+//TODO: sharding and send opcode 3 & 8
 export class Gateway extends EventEmitter {
   token!: string;
   intents: number | undefined;
@@ -100,7 +107,7 @@ export class Gateway extends EventEmitter {
 
     let firstPayload = JSON.parse(
       (await this.socket[Symbol.asyncIterator]().next()).value,
-    ) as Discord.gateway.Payload;
+    ) as DGateway.Payload;
     if (firstPayload.op === 10) {
       this.heartbeat = firstPayload.d.heartbeat_interval;
       this.send({
@@ -126,7 +133,7 @@ export class Gateway extends EventEmitter {
   private async listener() {
     for await (const msg of this.socket) {
       if (typeof msg === "string") {
-        const payload = JSON.parse(msg) as Discord.gateway.Payload;
+        const payload = JSON.parse(msg) as DGateway.Payload;
         switch (payload.op) {
           case 0:
             await this.event(payload);
@@ -187,15 +194,18 @@ export class Gateway extends EventEmitter {
   }
 
   private async event(
-    payload: Discord.gateway.SpecificEventPayload<keyof Events>,
+    payload: DGateway.SpecificEventPayload<keyof Events>,
   ) {
     this.seq = payload.s;
 
     switch (payload.t) {
-      case "RESUMED":
-        break;
       case "RECONNECT":
         this.reconnect();
+      case "RESUMED":
+        this.emit("raw", {
+          name: payload.t,
+          data: payload.d,
+        } as BundledEvents<keyof Events>); //TODO: don't cast
         break;
 
       case "READY":
@@ -238,7 +248,7 @@ export class Gateway extends EventEmitter {
         this.emit("raw", {
           name: payload.t,
           data: payload.d,
-        });
+        } as BundledEvents<keyof Events>); //TODO: don't cast
         break;
 
       default:
