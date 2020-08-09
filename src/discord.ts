@@ -412,27 +412,39 @@ export namespace guild {
 
   export type Create =
     & Pick<Guild, "name">
-      & Partial<NonNullable<Pick<Guild,
-    | "region"
-    | "icon"
-    | "verification_level"
-    | "default_message_notifications"
-    | "explicit_content_filter"
-    | "roles"
-    | "channels"
-    | "afk_channel_id"
-    | "afk_timeout"
-    | "system_channel_id">>>;
+    & Partial<
+      NonNullable<
+        Pick<
+          Guild,
+          | "region"
+          | "icon"
+          | "verification_level"
+          | "default_message_notifications"
+          | "explicit_content_filter"
+          | "roles"
+          | "channels"
+          | "afk_channel_id"
+          | "afk_timeout"
+          | "system_channel_id"
+        >
+      >
+    >;
 
   export type Modify =
     & Partial<Create>
-      & Partial<NonNullable<Pick<Guild,
-    | "owner_id"
-    | "splash"
-    | "banner"
-    | "rules_channel_id"
-    | "public_updates_channel_id"
-    | "preferred_locale">>>;
+    & Partial<
+      NonNullable<
+        Pick<
+          Guild,
+          | "owner_id"
+          | "splash"
+          | "banner"
+          | "rules_channel_id"
+          | "public_updates_channel_id"
+          | "preferred_locale"
+        >
+      >
+    >;
 
   export type BanDeleteMessageDays = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
@@ -486,7 +498,8 @@ export namespace guild {
   }
 
   export interface MemberUpdateEvent
-    extends Pick<guildMember.GuildMember, "roles" | "user" | "premium_since">,
+    extends
+      Pick<guildMember.GuildMember, "roles" | "user" | "premium_since">,
       Partial<Pick<guildMember.GuildMember, "nick">> {
     guild_id: Snowflake;
   }
@@ -518,7 +531,9 @@ export namespace guildMember {
     after?: Snowflake;
   }
 
-  export type MinimalGuildMember = Partial<Pick<GuildMember, "nick" | "roles" | "mute" | "deaf">>;
+  export type MinimalGuildMember = Partial<
+    Pick<GuildMember, "nick" | "roles" | "mute" | "deaf">
+  >;
 
   export interface Add extends MinimalGuildMember {
     access_token: string;
@@ -556,7 +571,12 @@ export namespace integration {
 
   export type Create = Pick<Integration, "id" | "type">;
 
-  export type Modify = Partial<Pick<Integration, "expire_behavior" | "expire_grace_period" | "enable_emoticons">>;
+  export type Modify = Partial<
+    Pick<
+      Integration,
+      "expire_behavior" | "expire_grace_period" | "enable_emoticons"
+    >
+  >;
 }
 
 export namespace invite {
@@ -579,30 +599,40 @@ export namespace invite {
     created_at: ISO8601;
   }
 
-  export interface Create extends Partial<Pick<MetadataInvite, "max_age" | "max_uses" | "temporary" | "target_user_type">> {
+  export interface Create
+    extends
+      Partial<
+        Pick<
+          MetadataInvite,
+          "max_age" | "max_uses" | "temporary" | "target_user_type"
+        >
+      > {
     unique?: boolean;
     target_user?: Snowflake;
   }
 
   export type VanityURL = Pick<MetadataInvite, "code" | "uses">;
 
-  export interface CreateEvent extends Pick<MetadataInvite,
-    | "code"
-    | "created_at"
-    | "inviter"
-    | "max_age"
-    | "max_uses"
-    | "target_user"
-    | "target_user_type"
-    | "temporary"
-    | "uses"> {
+  export interface CreateEvent extends
+    Pick<
+      MetadataInvite,
+      | "code"
+      | "created_at"
+      | "inviter"
+      | "max_age"
+      | "max_uses"
+      | "target_user"
+      | "target_user_type"
+      | "temporary"
+      | "uses"
+    > {
     channel_id: Snowflake;
     guild_id: Snowflake;
   }
 
   export type DeleteEvent =
     & Pick<CreateEvent, "channel_id" | "code">
-      & Partial<Pick<CreateEvent, "guild_id">>;
+    & Partial<Pick<CreateEvent, "guild_id">>;
 }
 
 export namespace message {
@@ -685,7 +715,9 @@ export namespace message {
     allowed_mentions?: AllowedMentions;
   }
 
-  export type Edit = Partial<Pick<Message, "content" | "flags"> & Pick<Create, "embed">>;
+  export type Edit = Partial<
+    Pick<Message, "content" | "flags"> & Pick<Create, "embed">
+  >;
 
   export type DeleteEvent = Pick<Message, "id" | "channel_id" | "guild_id">;
 
@@ -700,8 +732,10 @@ export namespace message {
 
   export type ReactionRemoveEvent = Omit<ReactionAddEvent, "member">;
 
-  export type ReactionRemoveAllEvent = Omit<ReactionRemoveEvent,
-    "emoji" | "user_id">;
+  export type ReactionRemoveAllEvent = Omit<
+    ReactionRemoveEvent,
+    "emoji" | "user_id"
+  >;
 
   export type ReactionRemoveEmojiEvent = Omit<ReactionRemoveEvent, "user_id">;
 }
@@ -746,8 +780,10 @@ export namespace role {
     mentionable: boolean;
   }
 
-  export type Create = Pick<Role,
-    "name" | "permissions" | "color" | "hoist" | "mentionable">;
+  export type Create = Pick<
+    Role,
+    "name" | "permissions" | "color" | "hoist" | "mentionable"
+  >;
 
   export type ModifyPosition = Pick<Role, "id" | "position">;
 
@@ -846,9 +882,11 @@ export namespace webhook {
 
   export type Create =
     & NonNullable<Pick<Webhook, "name">>
-      & Required<Pick<Webhook, "name">>;
+    & Required<Pick<Webhook, "name">>;
 
-  export type Modify = Partial<NonNullable<Pick<Webhook, "name" | "avatar" | "channel_id">>>;
+  export type Modify = Partial<
+    NonNullable<Pick<Webhook, "name" | "avatar" | "channel_id">>
+  >;
 
   export interface ExecuteParams {
     wait?: boolean;
@@ -860,7 +898,9 @@ export namespace webhook {
     embeds?: embed.Embed[];
   }
 
-  export type UpdateEvent = NonNullable<Pick<Webhook, "guild_id" | "channel_id">>;
+  export type UpdateEvent = NonNullable<
+    Pick<Webhook, "guild_id" | "channel_id">
+  >;
 }
 
 export namespace gateway {
@@ -884,8 +924,8 @@ export namespace gateway {
     t: T;
   }
 
-  export type SpecificEventPayload<T extends keyof Events> = T extends keyof Events
-    ? EventPayload<T>
+  export type SpecificEventPayload<T extends keyof Events> = T extends
+    keyof Events ? EventPayload<T>
     : never;
 
   export interface OpPayload<T extends keyof Ops> {
