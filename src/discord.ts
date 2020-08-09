@@ -599,14 +599,13 @@ export namespace invite {
     created_at: ISO8601;
   }
 
-  export interface Create
-    extends
-      Partial<
-        Pick<
-          MetadataInvite,
-          "max_age" | "max_uses" | "temporary" | "target_user_type"
-        >
-      > {
+  export interface Create extends
+    Partial<
+      Pick<
+        MetadataInvite,
+        "max_age" | "max_uses" | "temporary" | "target_user_type"
+      >
+    > {
     unique?: boolean;
     target_user?: Snowflake;
   }
