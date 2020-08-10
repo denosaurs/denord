@@ -1,44 +1,12 @@
 import type { gateway as DGateway } from "../discord.ts";
 import {
   connectWebSocket,
-  EventEmitter,
   isWebSocketCloseEvent,
   WebSocket,
 } from "../../deps.ts";
 
-type Events = DGateway.Events;
-
-type BundledEvent<K extends keyof Events> = {
-  name: K;
-  data: Events[K];
-};
-type BundledEvents<T extends keyof Events> = T extends keyof Events
-  ? BundledEvent<T>
-  : never;
-
-interface rawEvents extends Events {
-  raw: BundledEvents<keyof Events>;
-}
-
-export interface Gateway {
-  emit<K extends keyof rawEvents, T extends rawEvents[K]>(
-    eventName: K,
-    args: T,
-  ): boolean;
-
-  on<K extends keyof rawEvents, T extends rawEvents[K]>(
-    eventName: K,
-    listener: (args: T) => void,
-  ): this;
-
-  off<T extends keyof rawEvents>(
-    eventName: T,
-    listener: (args: rawEvents[T]) => void,
-  ): this;
-}
-
-//TODO: sharding and send opcode 3 & 8
-export class Gateway extends EventEmitter {
+//TODO: send opcode 3 & 8
+class Shard {
   token!: string;
   intents: number | undefined;
   socket!: WebSocket;
@@ -47,10 +15,12 @@ export class Gateway extends EventEmitter {
   seq: number | null = null;
   ACKed: boolean = false;
   beatInterval!: number;
+  shardN: number;
+  maxShards: number;
 
-  constructor(intents?: number) {
-    super();
-
+  constructor(shardN: number, maxShards: number, intents?: number) {
+    this.shardN = shardN;
+    this.maxShards = maxShards;
     this.intents = intents;
   }
 
@@ -115,6 +85,7 @@ export class Gateway extends EventEmitter {
         d: {
           token: this.token,
           intents: this.intents,
+          shard: [this.shardN, this.maxShards],
           properties: {
             "$os": Deno.build.os,
             "$browser": "Denord",
@@ -123,7 +94,10 @@ export class Gateway extends EventEmitter {
         },
       });
     } else {
-      throw new Error("Expected HELLO, received " + firstPayload.op);
+      throw new Error(
+        // @ts-ignore
+        `${self.name}: Expected HELLO, received ${firstPayload.op}`,
+      );
     }
 
     this.listener();
@@ -136,7 +110,21 @@ export class Gateway extends EventEmitter {
         const payload = JSON.parse(msg) as DGateway.Payload;
         switch (payload.op) {
           case 0:
-            await this.event(payload);
+            this.seq = payload.s;
+
+            switch (payload.t) {
+              case "RECONNECT":
+                this.reconnect();
+                break;
+              case "READY":
+                this.sessionId = payload.d.session_id;
+                break;
+            }
+
+            postMessage({
+              name: "event",
+              data: payload,
+            });
             break;
           case 1:
             this.beat();
@@ -149,16 +137,22 @@ export class Gateway extends EventEmitter {
               this.reconnect();
             } else {
               clearInterval(this.beatInterval);
+              this.connect(this.token);
             }
             break;
           case 11:
             this.ACKed = true;
             break;
           default:
-            throw new Error("unexpected op: " + payload);
+            // @ts-ignore
+            throw new Error(`${self.name}: unexpected op: ${payload}`);
         }
       } else if (isWebSocketCloseEvent(msg)) {
         switch (msg.code) {
+          case 1000:
+            clearInterval(this.beatInterval);
+            postMessage({ name: "close" });
+            break;
           case 4000:
             this.reconnect();
             break;
@@ -175,10 +169,10 @@ export class Gateway extends EventEmitter {
           case 4012:
             throw new Error(`Please file an issue.\nOpcode: ${msg.code}`);
           case 4013:
-            throw new Error("You provided invalid intents!");
+            throw new Error(`You provided invalid intents`);
           case 4014:
             throw new Error(
-              "You provided an intent that you are not allowed to use!",
+              "You provided an intent that you are not allowed to use",
             );
           //TODO
           case 4010:
@@ -187,72 +181,29 @@ export class Gateway extends EventEmitter {
             break;
 
           default:
-            throw new Error(`Unexpected opcode ${msg.code}`);
+            // @ts-ignore
+            throw new Error(`${self.name}: Unexpected opcode ${msg.code}`);
         }
       }
     }
   }
-
-  private async event(
-    payload: DGateway.SpecificEventPayload<keyof Events>,
-  ) {
-    this.seq = payload.s;
-
-    switch (payload.t) {
-      case "RECONNECT":
-        this.reconnect();
-      case "RESUMED":
-        this.emit("raw", {
-          name: payload.t,
-          data: payload.d,
-        } as BundledEvents<keyof Events>); //TODO: don't cast
-        break;
-
-      case "READY":
-        this.sessionId = payload.d.session_id;
-      case "CHANNEL_CREATE":
-      case "CHANNEL_UPDATE":
-      case "CHANNEL_DELETE":
-      case "CHANNEL_PINS_UPDATE":
-      case "GUILD_CREATE":
-      case "GUILD_UPDATE":
-      case "GUILD_DELETE":
-      case "GUILD_BAN_ADD":
-      case "GUILD_BAN_REMOVE":
-      case "GUILD_EMOJIS_UPDATE":
-      case "GUILD_INTEGRATIONS_UPDATE":
-      case "GUILD_MEMBER_ADD":
-      case "GUILD_MEMBER_REMOVE":
-      case "GUILD_MEMBER_UPDATE":
-      case "GUILD_MEMBERS_CHUNK":
-      case "GUILD_ROLE_CREATE":
-      case "GUILD_ROLE_UPDATE":
-      case "GUILD_ROLE_DELETE":
-      case "INVITE_CREATE":
-      case "INVITE_DELETE":
-      case "MESSAGE_CREATE":
-      case "MESSAGE_UPDATE":
-      case "MESSAGE_DELETE":
-      case "MESSAGE_DELETE_BULK":
-      case "MESSAGE_REACTION_ADD":
-      case "MESSAGE_REACTION_REMOVE":
-      case "MESSAGE_REACTION_REMOVE_ALL":
-      case "MESSAGE_REACTION_REMOVE_EMOJI":
-      case "PRESENCE_UPDATE":
-      case "TYPING_START":
-      case "USER_UPDATE":
-      case "VOICE_STATE_UPDATE":
-      case "VOICE_SERVER_UPDATE":
-      case "WEBHOOKS_UPDATE":
-        this.emit(payload.t, payload.d);
-        this.emit("raw", {
-          name: payload.t,
-          data: payload.d,
-        } as BundledEvents<keyof Events>); //TODO: don't cast
-        break;
-
-      default:
-        throw new Error("Unexpected event: " + payload);
-    }
-  }
 }
+
+let shard: Shard;
+
+// @ts-ignore
+onmessage = (msg: MessageEvent) => {
+  let event = msg.data as { name: string; data: any };
+  switch (event.name) {
+    case "init":
+      shard = new Shard(
+        event.data.shardN,
+        event.data.maxShards,
+        event.data.intents,
+      );
+      break;
+    case "connect":
+      shard.connect(event.data);
+      break;
+  }
+};
