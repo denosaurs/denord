@@ -1,7 +1,7 @@
-import type { gateway as DGateway } from "../discord.ts";
+import type { gateway } from "../discord.ts";
 import { EventEmitter } from "../../deps.ts";
 
-type Events = DGateway.Events;
+type Events = gateway.Events;
 
 type BundledEvent<K extends keyof Events> = {
   name: K;
@@ -31,9 +31,9 @@ export interface ShardManager {
     listener: (args: T) => void,
   ): this;
 
-  off<T extends keyof rawEvents>(
-    eventName: T,
-    listener: (args: rawEvents[T]) => void,
+  off<K extends keyof rawEvents, T extends rawEvents[K]>(
+    eventName: K,
+    listener: (args: T) => void,
   ): this;
 }
 
@@ -58,7 +58,7 @@ export class ShardManager extends EventEmitter {
 
         switch (event.name) {
           case "event":
-            let payload = event.data as DGateway.SpecificEventPayload<
+            let payload = event.data as gateway.SpecificEventPayload<
               keyof Events
             >;
 
@@ -118,7 +118,7 @@ export class ShardManager extends EventEmitter {
       };
 
       worker.postMessage({
-        name: "init",
+        name: "INIT",
         data: {
           shardN: i,
           maxShards: shardAmount,
@@ -133,9 +133,23 @@ export class ShardManager extends EventEmitter {
   connect(token: string) {
     for (const worker of this.#workers) {
       worker.postMessage({
-        name: "connect",
+        name: "CONNECT",
         data: token,
       });
     }
+  }
+
+  guildRequestMember(shard: number, data: gateway.GuildRequestMembers) {
+    this.#workers[shard].postMessage({
+      name: "GUILD_REQUEST_MEMBER",
+      data,
+    });
+  }
+
+  statusUpdate(shard: number, data: gateway.StatusUpdate) {
+    this.#workers[shard].postMessage({
+      name: "STATUS_UPDATE",
+      data,
+    });
   }
 }

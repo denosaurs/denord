@@ -1,11 +1,10 @@
-import type { gateway as DGateway } from "../discord.ts";
+import type { gateway } from "../discord.ts";
 import {
   connectWebSocket,
   isWebSocketCloseEvent,
   WebSocket,
 } from "../../deps.ts";
 
-//TODO: send opcode 3 & 8
 class Shard {
   token!: string;
   intents: number | undefined;
@@ -49,65 +48,10 @@ class Shard {
     }, this.heartbeat);
   }
 
-  private reconnect(resume = true) {
-    if (!this.socket.isClosed) {
-      this.socket.close();
-    }
-
-    clearInterval(this.beatInterval);
-    this.connect(this.token);
-    if (this.seq && resume) {
-      this.send({
-        op: 6,
-        d: {
-          token: this.token,
-          session_id: this.sessionId,
-          seq: this.seq,
-        },
-      });
-    }
-  }
-
-  async connect(token: string) {
-    this.token = token;
-
-    this.socket = await connectWebSocket(
-      "wss://gateway.discord.gg/?v=6&encoding=json",
-    );
-
-    let firstPayload = JSON.parse(
-      (await this.socket[Symbol.asyncIterator]().next()).value,
-    ) as DGateway.Payload;
-    if (firstPayload.op === 10) {
-      this.heartbeat = firstPayload.d.heartbeat_interval;
-      this.send({
-        op: 2,
-        d: {
-          token: this.token,
-          intents: this.intents,
-          shard: [this.shardN, this.maxShards],
-          properties: {
-            "$os": Deno.build.os,
-            "$browser": "Denord",
-            "$device": "Denord",
-          },
-        },
-      });
-    } else {
-      throw new Error(
-        // @ts-ignore
-        `${self.name}: Expected HELLO, received ${firstPayload.op}`,
-      );
-    }
-
-    this.listener();
-    this.startBeating();
-  }
-
   private async listener() {
     for await (const msg of this.socket) {
       if (typeof msg === "string") {
-        const payload = JSON.parse(msg) as DGateway.Payload;
+        const payload = JSON.parse(msg) as gateway.Payload;
         switch (payload.op) {
           case 0:
             this.seq = payload.s;
@@ -166,6 +110,7 @@ class Shard {
           case 4005:
           case 4007:
           case 4008:
+          case 4010:
           case 4012:
             throw new Error(`Please file an issue.\nOpcode: ${msg.code}`);
           case 4013:
@@ -174,11 +119,10 @@ class Shard {
             throw new Error(
               "You provided an intent that you are not allowed to use",
             );
-          //TODO
-          case 4010:
-            break;
           case 4011:
-            break;
+            throw new Error(
+              "You are not using enough shards",
+            );
 
           default:
             // @ts-ignore
@@ -186,6 +130,75 @@ class Shard {
         }
       }
     }
+  }
+
+  private reconnect(resume = true) {
+    if (!this.socket.isClosed) {
+      this.socket.close();
+    }
+
+    clearInterval(this.beatInterval);
+    this.connect(this.token);
+    if (this.seq && resume) {
+      this.send({
+        op: 6,
+        d: {
+          token: this.token,
+          session_id: this.sessionId,
+          seq: this.seq,
+        },
+      });
+    }
+  }
+
+  async connect(token: string) {
+    this.token = token;
+
+    this.socket = await connectWebSocket(
+      "wss://gateway.discord.gg/?v=6&encoding=json",
+    );
+
+    let firstPayload = JSON.parse(
+      (await this.socket[Symbol.asyncIterator]().next()).value,
+    ) as gateway.Payload;
+    if (firstPayload.op === 10) {
+      this.heartbeat = firstPayload.d.heartbeat_interval;
+      this.send({
+        op: 2,
+        d: {
+          token: this.token,
+          intents: this.intents,
+          shard: [this.shardN, this.maxShards],
+          properties: {
+            "$os": Deno.build.os,
+            "$browser": "Denord",
+            "$device": "Denord",
+          },
+        },
+      });
+    } else {
+      throw new Error(
+        // @ts-ignore
+        `${self.name}: Expected HELLO, received ${firstPayload.op}`,
+      );
+    }
+
+    this.listener();
+    this.startBeating();
+  }
+
+  guildRequestMember(data: gateway.GuildRequestMembers) {
+    this.send({
+      "op": 8,
+      "d": data,
+    });
+  }
+
+  statusUpdate(data: gateway.StatusUpdate) {
+    this.send({
+      "op": 3,
+      "d": data,
+    });
   }
 }
 
@@ -195,15 +208,21 @@ let shard: Shard;
 onmessage = (msg: MessageEvent) => {
   let event = msg.data as { name: string; data: any };
   switch (event.name) {
-    case "init":
+    case "INIT":
       shard = new Shard(
         event.data.shardN,
         event.data.maxShards,
         event.data.intents,
       );
       break;
-    case "connect":
+    case "CONNECT":
       shard.connect(event.data);
+      break;
+    case "GUILD_REQUEST_MEMBER":
+      shard.guildRequestMember(event.data);
+      break;
+    case "STATUS_UPDATE":
+      shard.statusUpdate(event.data);
       break;
   }
 };

@@ -1007,4 +1007,20 @@ export namespace gateway {
     session_id: string;
     shard?: [number, number];
   }
+
+  export interface GuildRequestMembers {
+    guild_id: Snowflake | Snowflake[];
+    query?: string;
+    limit: number;
+    presences?: boolean;
+    user_ids?: Snowflake | Snowflake[];
+    nonce?: string;
+  }
+
+  export interface StatusUpdate {
+    since: number | null;
+    game: activity.Activity | null;
+    status: string;
+    afk: boolean;
+  }
 }
