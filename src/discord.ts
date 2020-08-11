@@ -59,17 +59,76 @@ export namespace auditLog {
   export interface AuditLog {
     webhooks: webhook.Webhook[];
     users: user.User[];
-    audit_log_entries: AuditLogEntry[];
+    audit_log_entries: Entry[];
     integrations: Partial<integration.Integration>[];
   }
 
-  export interface AuditLogChange {
-    new_value?: any;
-    old_value?: any;
-    key: string; //TODO: maybe write all possible keys?
+  export interface ChangeKey {
+    name: string;
+    icon_hash: string;
+    splash_hash: string;
+    owner_id: Snowflake;
+    region: string;
+    afk_channel_id: Snowflake;
+    afk_timeout: number;
+    mfa_level: number;
+    verification_level: number;
+    explicit_content_filter: number;
+    default_message_notifications: number;
+    vanity_url_code: string;
+    $add: Partial<role.Role>[];
+    $remove: Partial<role.Role>[];
+    prune_delete_days: number;
+    widget_enabled: boolean;
+    widget_channel_id: Snowflake;
+    system_channel_id: Snowflake;
+    position: number;
+    topic: string;
+    bitrate: number;
+    permission_overwrites: channel.Overwrite[];
+    nsfw: boolean;
+    application_id: Snowflake;
+    rate_limit_per_user: number;
+    permissions: number;
+    permissions_new: string;
+    color: number;
+    hoist: boolean;
+    mentionable: boolean;
+    allow: number;
+    allow_new: string;
+    deny: number;
+    deny_new: string;
+    code: string;
+    channel_id: Snowflake;
+    inviter_id: Snowflake;
+    max_uses: number;
+    uses: number;
+    max_age: number;
+    temporary: boolean;
+    deaf: boolean;
+    mute: boolean;
+    nick: string;
+    avatar_hash: string;
+    id: Snowflake;
+    type: number | string;
+    enable_emoticons: boolean;
+    expire_behavior: number;
+    expire_grace_period: number;
   }
 
-  export interface AuditEntryInfo {
+  export interface UnspecificChange<T extends keyof ChangeKey> {
+    new_value?: ChangeKey[T];
+    old_value?: ChangeKey[T];
+    key: T;
+  }
+
+  type SpecificChange<T extends keyof ChangeKey> = T extends keyof ChangeKey
+    ? UnspecificChange<T>
+    : never;
+
+  export type Change = SpecificChange<keyof ChangeKey>;
+
+  export interface EntryInfo {
     delete_member_days: string;
     members_removed: string;
     channel_id: Snowflake;
@@ -80,9 +139,9 @@ export namespace auditLog {
     role_name: string;
   }
 
-  export interface AuditLogEntry {
+  export interface Entry {
     target_id: string | null;
-    changes?: AuditLogChange[];
+    changes?: Change[];
     user_id: Snowflake;
     id: Snowflake;
     action_type:
@@ -121,7 +180,7 @@ export namespace auditLog {
       | 80
       | 81
       | 82;
-    options?: AuditEntryInfo;
+    options?: EntryInfo;
     reason?: string;
   }
 }
@@ -916,7 +975,7 @@ export namespace gateway {
     };
   }
 
-  export interface EventPayload<T extends keyof Events> {
+  interface EventPayload<T extends keyof Events> {
     op: 0;
     d: Events[T];
     s: number;
@@ -927,14 +986,14 @@ export namespace gateway {
     keyof Events ? EventPayload<T>
     : never;
 
-  export interface OpPayload<T extends keyof Ops> {
+  interface OpPayload<T extends keyof Ops> {
     op: T;
     d: Ops[T];
     s: null;
     t: null;
   }
 
-  export type SpecificOpPayload<T extends keyof Ops> = T extends keyof Ops
+  type SpecificOpPayload<T extends keyof Ops> = T extends keyof Ops
     ? OpPayload<T>
     : never;
 
