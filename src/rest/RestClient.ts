@@ -3,14 +3,17 @@ import { stringifyQueryParams as stringify, URLs } from "../utils/utils.ts";
 import { DiscordJSONError, HTTPError } from "./Error.ts";
 
 /**
- * a client to make HTTP requests to Discord
- * NOTE: there are no explanations what each of the methods do as they are identical to Discord's endpoints.
+ * A client to make HTTP requests to Discord
+ * NOTE: There are no explanations what each of the methods do as they are identical to Discord's endpoints.
  * Only endpoint not included is "Get Guild Widget Image"
  * */
 export class RestClient {
-  /** the token to make requests with */
+  /** The token to make requests with */
   token: string;
 
+  /**
+   * @param token - The token to make requests with
+   */
   constructor(token?: string) {
     this.token = token ?? "";
   }
@@ -21,7 +24,7 @@ export class RestClient {
     data?: any,
   ): Promise<unknown> {
     const headers = new Headers({
-      "User-Agent": "DiscordBot (https://github.com/DenordTS/denord, 0.0.1)",
+      "User-Agent": "DiscordBot (https://github.com/denosaurs/denord, 0.0.1)",
     });
 
     if (this.token) {

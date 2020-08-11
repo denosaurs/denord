@@ -15,19 +15,23 @@ interface rawEvents extends Events {
   raw: BundledEvents<keyof Events>;
 }
 
+/**
+ * A shard manager that manages all shards that are used to conect to the discord gateway
+ */
 export class ShardManager extends EventEmitter<rawEvents> {
-  readonly shardsAmount: number;
   #workers: Worker[] = [];
 
+  /**
+   * @param shardAmount - The amount of shards to use
+   * @param intents - The intents to use when connecting
+   */
   constructor(shardAmount: number, intents?: number) {
     super();
-
-    this.shardsAmount = shardAmount;
 
     for (let i = 0; i < shardAmount; i++) {
       let worker = new Worker(new URL("Shard.ts", import.meta.url).href, {
         type: "module",
-        name: i.toString(),
+        name: `${i}/${shardAmount}`,
         deno: true,
       });
 
@@ -108,6 +112,11 @@ export class ShardManager extends EventEmitter<rawEvents> {
     }
   }
 
+  /**
+   * Connects all the shards to the gateway
+   *
+   * @param token - The token to connect with
+   */
   connect(token: string) { //TODO: 5 second interval between each connection
     for (const worker of this.#workers) {
       worker.postMessage({
@@ -117,6 +126,10 @@ export class ShardManager extends EventEmitter<rawEvents> {
     }
   }
 
+  /**
+   * @param shard - The number of the shard to make the request with
+   * @param data - The data to make the request with
+   */
   guildRequestMember(shard: number, data: gateway.GuildRequestMembers) {
     this.#workers[shard].postMessage({
       name: "GUILD_REQUEST_MEMBER",
@@ -124,6 +137,10 @@ export class ShardManager extends EventEmitter<rawEvents> {
     });
   }
 
+  /**
+   * @param shard - The number of the shard to make the request with
+   * @param data - The data to make the request with
+   */
   statusUpdate(shard: number, data: gateway.StatusUpdate) {
     this.#workers[shard].postMessage({
       name: "STATUS_UPDATE",
