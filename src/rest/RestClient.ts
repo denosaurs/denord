@@ -1,10 +1,11 @@
 import type * as Discord from "../discord.ts";
-import { stringifyQueryParams as stringify, URLs } from "../utils.ts";
+import { stringifyQueryParams as stringify, URLs } from "../utils/utils.ts";
 import { DiscordJSONError, HTTPError } from "./Error.ts";
 
 /**
  * a client to make HTTP requests to Discord
  * NOTE: there are no explanations what each of the methods do as they are identical to Discord's endpoints
+ *
  * */
 export class RestClient {
   /** the token to make requests with */

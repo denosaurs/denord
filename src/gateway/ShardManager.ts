@@ -1,5 +1,5 @@
 import type { gateway } from "../discord.ts";
-import { EventEmitter } from "../../deps.ts";
+import EventEmitter from "../utils/EventEmitter.ts";
 
 type Events = gateway.Events;
 
@@ -15,29 +15,7 @@ interface rawEvents extends Events {
   raw: BundledEvents<keyof Events>;
 }
 
-export interface ShardManager {
-  emit<K extends keyof rawEvents, T extends rawEvents[K]>(
-    eventName: K,
-    args: T,
-  ): boolean;
-
-  once<K extends keyof rawEvents, T extends rawEvents[K]>(
-    eventName: K,
-    listener: (args: T) => void,
-  ): this;
-
-  on<K extends keyof rawEvents, T extends rawEvents[K]>(
-    eventName: K,
-    listener: (args: T) => void,
-  ): this;
-
-  off<K extends keyof rawEvents, T extends rawEvents[K]>(
-    eventName: K,
-    listener: (args: T) => void,
-  ): this;
-}
-
-export class ShardManager extends EventEmitter {
+export class ShardManager extends EventEmitter<rawEvents> {
   readonly shardsAmount: number;
   #workers: Worker[] = [];
 
@@ -130,7 +108,7 @@ export class ShardManager extends EventEmitter {
     }
   }
 
-  connect(token: string) {
+  connect(token: string) { //TODO: 5 second interval between each connection
     for (const worker of this.#workers) {
       worker.postMessage({
         name: "CONNECT",

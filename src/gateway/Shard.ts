@@ -4,6 +4,7 @@ import {
   isWebSocketCloseEvent,
   WebSocket,
 } from "../../deps.ts";
+import { URLs } from "../utils/utils.ts";
 
 class Shard {
   token!: string;
@@ -154,9 +155,7 @@ class Shard {
   async connect(token: string) {
     this.token = token;
 
-    this.socket = await connectWebSocket(
-      "wss://gateway.discord.gg/?v=6&encoding=json",
-    );
+    this.socket = await connectWebSocket(URLs.Gateway);
 
     let firstPayload = JSON.parse(
       (await this.socket[Symbol.asyncIterator]().next()).value,

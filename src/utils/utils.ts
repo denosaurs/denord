@@ -25,4 +25,5 @@ export function imageURLFormatter(
 export const URLs = {
   CDN: "https://cdn.discordapp.com/",
   REST: "https://discordapp.com/api/v6/",
+  Gateway: "wss://gateway.discord.gg/?v=6&encoding=json",
 };
