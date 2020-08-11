@@ -67,7 +67,7 @@ class Shard {
             }
 
             postMessage({
-              name: "event",
+              name: "EVENT",
               data: payload,
             });
             break;
@@ -96,7 +96,7 @@ class Shard {
         switch (msg.code) {
           case 1000:
             clearInterval(this.beatInterval);
-            postMessage({ name: "close" });
+            postMessage({ name: "CLOSE" });
             break;
           case 4000:
             this.reconnect();
@@ -204,7 +204,7 @@ class Shard {
 let shard: Shard;
 
 // @ts-ignore
-onmessage = (msg: MessageEvent) => {
+onmessage = async (msg: MessageEvent) => {
   let event = msg.data as { name: string; data: any };
   switch (event.name) {
     case "INIT":
@@ -215,7 +215,13 @@ onmessage = (msg: MessageEvent) => {
       );
       break;
     case "CONNECT":
-      shard.connect(event.data);
+      await shard.connect(event.data);
+      setTimeout(() => {
+        postMessage({
+          name: "CONNECT_NEXT",
+          data: event.data,
+        });
+      }, 5000);
       break;
     case "GUILD_REQUEST_MEMBER":
       shard.guildRequestMember(event.data);

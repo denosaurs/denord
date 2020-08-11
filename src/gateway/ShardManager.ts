@@ -29,9 +29,10 @@ export class ShardManager extends EventEmitter<rawEvents> {
     super();
 
     for (let i = 0; i < shardAmount; i++) {
+      const name = `${i}/${shardAmount}`;
       let worker = new Worker(new URL("Shard.ts", import.meta.url).href, {
         type: "module",
-        name: `${i}/${shardAmount}`,
+        name,
         deno: true,
       });
 
@@ -39,7 +40,7 @@ export class ShardManager extends EventEmitter<rawEvents> {
         let event = msg.data as { name: string; data: any };
 
         switch (event.name) {
-          case "event":
+          case "EVENT":
             let payload = event.data as gateway.SpecificEventPayload<
               keyof Events
             >;
@@ -93,8 +94,16 @@ export class ShardManager extends EventEmitter<rawEvents> {
                 throw new Error("Unexpected event: " + payload);
             }
             break;
-          case "close":
-            console.log(`Shard ${i} closed`);
+          case "CLOSE":
+            console.log(`Shard ${name} closed`);
+            break;
+          case "CONNECT_NEXT":
+            if (i + 1 < shardAmount) {
+              this.#workers[i + 1].postMessage({
+                name: "CONNECT",
+                data: event.data,
+              });
+            }
             break;
         }
       };
@@ -117,13 +126,11 @@ export class ShardManager extends EventEmitter<rawEvents> {
    *
    * @param token - The token to connect with
    */
-  connect(token: string) { //TODO: 5 second interval between each connection
-    for (const worker of this.#workers) {
-      worker.postMessage({
-        name: "CONNECT",
-        data: token,
-      });
-    }
+  connect(token: string) {
+    this.#workers[0].postMessage({
+      name: "CONNECT",
+      data: token,
+    });
   }
 
   /**
