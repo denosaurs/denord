@@ -264,7 +264,7 @@ export class RestClient {
   async editChannelPermissions(
     channelId: Discord.Snowflake,
     overwriteId: Discord.Snowflake,
-    data: Omit<Discord.channel.Overwrite, "id">,
+    data: Omit<Discord.channel.OverwriteSend, "id">,
   ): Promise<void> {
     await this.request(
       `channels/${channelId}/permissions/${overwriteId}`,
@@ -566,11 +566,12 @@ export class RestClient {
   async createGuildBan(
     guildId: Discord.Snowflake,
     userId: Discord.Snowflake,
-    params: Discord.guild.CreateBan,
+    data: Discord.guild.CreateBan,
   ): Promise<void> {
     await this.request(
-      `guilds/${guildId}/bans/${userId}${stringify(params)}`,
+      `guilds/${guildId}/bans/${userId}`,
       "PUT",
+      data
     );
   }
 
@@ -639,11 +640,12 @@ export class RestClient {
 
   async beginGuildPrune(
     guildId: Discord.Snowflake,
-    params: Discord.guild.BeginPruneParams,
+    data: Discord.guild.BeginPruneParams,
   ): Promise<Discord.guild.BeginPrune> {
     return this.request(
-      `guilds/${guildId}/prune${stringify(params)}`,
+      `guilds/${guildId}/prune`,
       "POST",
+      data
     ) as Promise<Discord.guild.BeginPrune>;
   }
 
@@ -713,24 +715,24 @@ export class RestClient {
     );
   }
 
-  async getGuildEmbed(
+  async getGuildWidget(
     guildId: Discord.Snowflake,
-  ): Promise<Discord.guild.Embed> {
+  ): Promise<Discord.guild.Widget> {
     return this.request(
-      `guilds/${guildId}/embed`,
+      `guilds/${guildId}/widget`,
       "GET",
-    ) as Promise<Discord.guild.Embed>;
+    ) as Promise<Discord.guild.Widget>;
   }
 
-  async modifyGuildEmbed(
+  async modifyGuildWidget(
     guildId: Discord.Snowflake,
-    data: Discord.guild.EmbedModify,
-  ): Promise<Discord.guild.Embed> {
+    data: Discord.guild.WidgetModify,
+  ): Promise<Discord.guild.Widget> {
     return this.request(
-      `guilds/${guildId}/embed`,
+      `guilds/${guildId}/widget`,
       "PATCH",
       data,
-    ) as Promise<Discord.guild.Embed>;
+    ) as Promise<Discord.guild.Widget>;
   }
 
   async getGuildVanityURL(

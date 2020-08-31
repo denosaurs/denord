@@ -85,7 +85,7 @@ export namespace auditLog {
     position: number;
     topic: string;
     bitrate: number;
-    permission_overwrites: channel.Overwrite[];
+    permission_overwrites: channel.OverwriteReceive[];
     nsfw: boolean;
     application_id: Snowflake;
     rate_limit_per_user: number;
@@ -191,7 +191,7 @@ export namespace channel {
     type: Type;
     guild_id?: Snowflake;
     position?: number;
-    permission_overwrites?: Overwrite[];
+    permission_overwrites?: OverwriteReceive[];
     name?: string;
     topic?: string | null;
     nsfw?: boolean;
@@ -209,11 +209,20 @@ export namespace channel {
 
   export type Type = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
-  export interface Overwrite {
+  export interface OverwriteReceive {
     id: Snowflake;
     type: "role" | "member";
     allow: number;
+    allow_new: string;
     deny: number;
+    deny_new: string;
+  }
+
+  export interface OverwriteSend {
+    id: Snowflake;
+    type: "role" | "member";
+    allow: number | string;
+    deny: number | string;
   }
 
   export interface Mention {
@@ -253,7 +262,7 @@ export namespace channel {
     user_limit?: number;
     rate_limit_per_user?: number;
     position?: number;
-    permission_overwrites?: Overwrite[];
+    permission_overwrites?: OverwriteSend[];
     parent_id?: Snowflake;
     nsfw?: boolean;
   }
@@ -385,11 +394,10 @@ export namespace guild {
     owner?: boolean;
     owner_id: Snowflake;
     permissions?: number;
+    permissions_new?: string;
     region: string;
     afk_channel_id: Snowflake | null;
     afk_timeout: number;
-    embed_enabled?: boolean;
-    embed_channel_id?: Snowflake | null;
     verification_level: 0 | 1 | 2 | 3 | 4;
     default_message_notifications: 0 | 1;
     explicit_content_filter: 0 | 1 | 2;
@@ -420,6 +428,7 @@ export namespace guild {
     premium_subscription_count?: number;
     preferred_locale: string;
     public_updates_channel_id: Snowflake | null;
+    max_video_channel_users?: number;
     approximate_member_count?: number;
     approximate_presence_count?: number;
   }
@@ -439,7 +448,7 @@ export namespace guild {
     | "BANNER"
     | "PUBLIC_DISABLED";
 
-  export interface Embed {
+  export interface Widget {
     enabled: boolean;
     channel_id: Snowflake | null;
   }
@@ -508,24 +517,26 @@ export namespace guild {
   export type BanDeleteMessageDays = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
   export interface CreateBan {
-    "delete-message-days"?: BanDeleteMessageDays;
+    delete_message_days?: BanDeleteMessageDays;
     reason?: string;
   }
 
   export interface PruneCount {
     days?: number;
+    include_roles?: string;
   }
 
   export interface BeginPruneParams {
     days: number;
     compute_prune_count: boolean;
+    include_roles?: Snowflake[];
   }
 
   export interface BeginPrune {
     pruned: number | null;
   }
 
-  export type EmbedModify = Partial<Embed>;
+  export type WidgetModify = Partial<Widget>;
 
   export interface WidgetEmbedStyle {
     style?: "shield" | "banner1" | "banner2" | "banner3" | "banner4";
@@ -558,7 +569,7 @@ export namespace guild {
 
   export interface MemberUpdateEvent
     extends
-      Pick<guildMember.GuildMember, "roles" | "user" | "premium_since">,
+      Pick<guildMember.GuildMember, "roles" | "user" | "premium_since" | "joined_at">,
       Partial<Pick<guildMember.GuildMember, "nick">> {
     guild_id: Snowflake;
   }
@@ -773,9 +784,7 @@ export namespace message {
     allowed_mentions?: AllowedMentions;
   }
 
-  export type Edit = Partial<
-    Pick<Message, "content" | "flags"> & Pick<Create, "embed">
-  >;
+  export type Edit = Partial<Pick<Message, "content" | "flags"> & Pick<Create, "embed">>;
 
   export type DeleteEvent = Pick<Message, "id" | "channel_id" | "guild_id">;
 
@@ -834,14 +843,14 @@ export namespace role {
     hoist: boolean;
     position: number;
     permissions: number;
+    permissions_new: string;
     managed: boolean;
     mentionable: boolean;
   }
 
-  export type Create = Pick<
-    Role,
-    "name" | "permissions" | "color" | "hoist" | "mentionable"
-  >;
+  export interface Create extends Pick<Role, "name" | "color" | "hoist" | "mentionable"> {
+    permissions: number | string;
+  }
 
   export type ModifyPosition = Pick<Role, "id" | "position">;
 
@@ -872,6 +881,7 @@ export namespace user {
     email?: string | null;
     flags?: number;
     premium_type?: 1 | 2;
+    public_flags?: number;
   }
 
   export interface Connection {
@@ -907,6 +917,7 @@ export namespace voice {
     self_deaf: boolean;
     self_mute: boolean;
     self_stream?: boolean;
+    self_video: boolean;
     suppress: boolean;
   }
 
