@@ -569,7 +569,10 @@ export namespace guild {
 
   export interface MemberUpdateEvent
     extends
-      Pick<guildMember.GuildMember, "roles" | "user" | "premium_since" | "joined_at">,
+      Pick<
+        guildMember.GuildMember,
+        "roles" | "user" | "premium_since" | "joined_at"
+      >,
       Partial<Pick<guildMember.GuildMember, "nick">> {
     guild_id: Snowflake;
   }
@@ -784,7 +787,9 @@ export namespace message {
     allowed_mentions?: AllowedMentions;
   }
 
-  export type Edit = Partial<Pick<Message, "content" | "flags"> & Pick<Create, "embed">>;
+  export type Edit = Partial<
+    Pick<Message, "content" | "flags"> & Pick<Create, "embed">
+  >;
 
   export type DeleteEvent = Pick<Message, "id" | "channel_id" | "guild_id">;
 
@@ -848,7 +853,8 @@ export namespace role {
     mentionable: boolean;
   }
 
-  export interface Create extends Pick<Role, "name" | "color" | "hoist" | "mentionable"> {
+  export interface Create
+    extends Pick<Role, "name" | "color" | "hoist" | "mentionable"> {
     permissions: number | string;
   }
 

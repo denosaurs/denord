@@ -571,7 +571,7 @@ export class RestClient {
     await this.request(
       `guilds/${guildId}/bans/${userId}`,
       "PUT",
-      data
+      data,
     );
   }
 
@@ -645,7 +645,7 @@ export class RestClient {
     return this.request(
       `guilds/${guildId}/prune`,
       "POST",
-      data
+      data,
     ) as Promise<Discord.guild.BeginPrune>;
   }
 
