@@ -617,11 +617,10 @@ export namespace guildMember {
     after?: Snowflake;
   }
 
-  export interface Add
-    extends
-      Partial<
-        NonNullable<Pick<GuildMember, "nick" | "roles" | "mute" | "deaf">>
-      > {
+  export interface Add extends
+    Partial<
+      NonNullable<Pick<GuildMember, "nick" | "roles" | "mute" | "deaf">>
+    > {
     access_token: string;
   }
 
