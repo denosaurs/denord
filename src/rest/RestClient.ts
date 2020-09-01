@@ -201,13 +201,13 @@ export class RestClient {
     messageId: Discord.Snowflake,
     emoji: string,
     params: Discord.channel.GetReactions,
-  ): Promise<Discord.user.User[]> {
+  ): Promise<Discord.user.PublicUser[]> {
     return this.request(
       `channels/${channelId}/messages/${messageId}/reactions/${emoji}${
         stringify(params)
       }`,
       "GET",
-    ) as Promise<Discord.user.User[]>;
+    ) as Promise<Discord.user.PublicUser[]>;
   }
 
   async deleteAllReactions(
@@ -764,19 +764,19 @@ export class RestClient {
   //endregion
 
   //region User
-  async getCurrentUser(): Promise<Discord.user.User> {
-    return this.request("users/@me", "GET") as Promise<Discord.user.User>;
+  async getCurrentUser(): Promise<Discord.user.PrivateUser> {
+    return this.request("users/@me", "GET") as Promise<Discord.user.PrivateUser>;
   }
 
-  async getUser(userId: Discord.Snowflake): Promise<Discord.user.User> {
-    return this.request(`users/${userId}`, "GET") as Promise<Discord.user.User>;
+  async getUser(userId: Discord.Snowflake): Promise<Discord.user.PublicUser> {
+    return this.request(`users/${userId}`, "GET") as Promise<Discord.user.PublicUser>;
   }
 
   async modifyCurrentUser(
     data: Discord.user.Modify,
-  ): Promise<Discord.user.User> {
+  ): Promise<Discord.user.PrivateUser> {
     return this.request("users/@me", "PATCH", data) as Promise<
-      Discord.user.User
+      Discord.user.PrivateUser
     >;
   }
 
