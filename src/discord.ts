@@ -448,6 +448,20 @@ export namespace guild {
     | "BANNER"
     | "PUBLIC_DISABLED";
 
+  export type Preview = Pick<
+    Guild,
+    | "id"
+    | "name"
+    | "icon"
+    | "splash"
+    | "discovery_splash"
+    | "emojis"
+    | "features"
+    | "approximate_member_count"
+    | "approximate_presence_count"
+    | "description"
+  >;
+
   export interface Widget {
     enabled: boolean;
     channel_id: Snowflake | null;
@@ -567,13 +581,12 @@ export namespace guild {
     user: user.PublicUser;
   }
 
-  export interface MemberUpdateEvent
-    extends
-      Pick<
-        guildMember.GuildMember,
-        "roles" | "user" | "premium_since" | "joined_at"
-      >,
-      Partial<Pick<guildMember.GuildMember, "nick">> {
+  export interface MemberUpdateEvent extends
+    Pick<
+      guildMember.GuildMember,
+      "roles" | "user" | "premium_since" | "joined_at"
+    >,
+    Partial<Pick<guildMember.GuildMember, "nick">> {
     guild_id: Snowflake;
   }
 
@@ -605,7 +618,7 @@ export namespace guildMember {
   }
 
   export type MinimalGuildMember = Partial<
-    Pick<GuildMember, "nick" | "roles" | "mute" | "deaf">
+    NonNullable<Pick<GuildMember, "nick" | "roles" | "mute" | "deaf">>
   >;
 
   export interface Add extends MinimalGuildMember {
@@ -714,14 +727,17 @@ export namespace message {
     guild_id?: Snowflake;
     author:
       | user.PublicUser
-      | (Pick<user.PublicUser, "username" | "avatar"> & { webhook_id: Snowflake });
+      | (Pick<user.PublicUser, "username" | "avatar"> & {
+        webhook_id: Snowflake;
+      });
     member?: Partial<guildMember.GuildMember>;
     content: string;
     timestamp: ISO8601;
     edited_timestamp: ISO8601 | null;
     tts: boolean;
     mention_everyone: boolean;
-    mentions: (user.PublicUser & { member: Partial<guildMember.GuildMember> })[];
+    mentions:
+      (user.PublicUser & { member: Partial<guildMember.GuildMember> })[];
     mention_roles: Snowflake[];
     mention_channels?: channel.Mention[];
     attachments: attachment.Attachment[];
@@ -886,11 +902,12 @@ export namespace user {
   }
 
   export interface PrivateUser extends PublicUser {
-    mfa_enabled?: boolean;
-    locale?: string;
-    verified?: boolean;
-    email?: string | null;
+    mfa_enabled: boolean;
+    locale: string;
+    verified: boolean;
+    email: string | null;
     flags?: number;
+    phone?: string | null;
   }
 
   export interface Connection {
@@ -905,7 +922,9 @@ export namespace user {
     visibility: 0 | 1;
   }
 
-  export type Modify = Partial<NonNullable<Pick<PrivateUser, "username" | "avatar">>>;
+  export type Modify = Partial<
+    NonNullable<Pick<PrivateUser, "username" | "avatar">>
+  >;
 
   export interface GetGuilds {
     before?: Snowflake;

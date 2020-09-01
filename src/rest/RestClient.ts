@@ -10,12 +10,16 @@ import { DiscordJSONError, HTTPError } from "./Error.ts";
 export class RestClient {
   /** The token to make requests with */
   token: string;
+  /** Whether the token is a bot token or not */
+  bot: boolean;
 
   /**
    * @param token - The token to make requests with
+   * @param bot - Whether the token is a bot token or not
    */
-  constructor(token?: string) {
+  constructor(token?: string, bot?: boolean) {
     this.token = token ?? "";
+    this.bot = bot ?? true;
   }
 
   private async request(
@@ -28,7 +32,7 @@ export class RestClient {
     });
 
     if (this.token) {
-      headers.append("Authorization", "Bot " + this.token);
+      headers.append("Authorization", (this.bot ? "Bot " : "") + this.token);
     }
 
     let body;
@@ -415,6 +419,15 @@ export class RestClient {
     ) as Promise<Discord.guild.Guild>;
   }
 
+  async getGuildPreview(
+    guildId: Discord.Snowflake,
+  ): Promise<Discord.guild.Preview> {
+    return this.request(
+      `guilds/${guildId}/preview`,
+      "GET",
+    ) as Promise<Discord.guild.Preview>;
+  }
+
   async modifyGuild(
     guildId: Discord.Snowflake,
     data: Discord.guild.Modify,
@@ -765,11 +778,15 @@ export class RestClient {
 
   //region User
   async getCurrentUser(): Promise<Discord.user.PrivateUser> {
-    return this.request("users/@me", "GET") as Promise<Discord.user.PrivateUser>;
+    return this.request("users/@me", "GET") as Promise<
+      Discord.user.PrivateUser
+    >;
   }
 
   async getUser(userId: Discord.Snowflake): Promise<Discord.user.PublicUser> {
-    return this.request(`users/${userId}`, "GET") as Promise<Discord.user.PublicUser>;
+    return this.request(`users/${userId}`, "GET") as Promise<
+      Discord.user.PublicUser
+    >;
   }
 
   async modifyCurrentUser(

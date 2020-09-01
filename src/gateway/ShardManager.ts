@@ -126,7 +126,7 @@ export class ShardManager extends EventEmitter<rawEvents> {
    *
    * @param token - The token to connect with
    */
-  connect(token: string) {
+  connect(token: string) { //TODO: make async to resolve when all shards are connected
     this.#workers[0].postMessage({
       name: "CONNECT",
       data: token,
