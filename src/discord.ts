@@ -617,20 +617,23 @@ export namespace guildMember {
     after?: Snowflake;
   }
 
-  export type MinimalGuildMember = Partial<
-    NonNullable<Pick<GuildMember, "nick" | "roles" | "mute" | "deaf">>
-  >;
-
-  export interface Add extends MinimalGuildMember {
+  export interface Add
+    extends
+      Partial<
+        NonNullable<Pick<GuildMember, "nick" | "roles" | "mute" | "deaf">>
+      > {
     access_token: string;
   }
 
-  export interface Modify extends MinimalGuildMember {
-    channel_id?: Snowflake | null;
+  export interface ModifyCurrentNick {
+    nick?: string | null;
   }
 
-  export interface ModifyCurrentNick {
-    nick: string;
+  export interface Modify extends ModifyCurrentNick {
+    roles?: Snowflake[] | null;
+    deaf?: boolean | null;
+    mute?: boolean | null;
+    channel_id?: Snowflake | null;
   }
 }
 
