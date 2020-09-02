@@ -96,9 +96,10 @@ export class RestClient {
   //region Audit Log
   async getGuildAuditLog(
     guildId: Discord.Snowflake,
+    params: Discord.auditLog.Params,
   ): Promise<Discord.auditLog.AuditLog> {
     return this.request(
-      `guilds/${guildId}/audit-logs`,
+      `guilds/${guildId}/audit-logs${stringify(params)}`,
       "GET",
     ) as Promise<Discord.auditLog.AuditLog>;
   }
@@ -465,13 +466,13 @@ export class RestClient {
 
   async modifyGuildChannelPositions(
     guildId: Discord.Snowflake,
-    data: Discord.channel.GuildPosition,
-  ): Promise<Discord.channel.Channel[]> {
-    return this.request(
+    data: Discord.channel.GuildPosition[],
+  ): Promise<void> {
+    await this.request(
       `guilds/${guildId}/channels`,
       "PATCH",
       data,
-    ) as Promise<Discord.channel.Channel[]>;
+    );
   }
 
   async getGuildMember(
@@ -617,7 +618,7 @@ export class RestClient {
 
   async modifyGuildRolePositions(
     guildId: Discord.Snowflake,
-    data: Discord.role.ModifyPosition,
+    data: Discord.role.ModifyPosition[],
   ): Promise<Discord.role.Role[]> {
     return this.request(
       `guilds/${guildId}/roles`,
@@ -628,10 +629,11 @@ export class RestClient {
 
   async modifyGuildRole(
     guildId: Discord.Snowflake,
+    roleId: Discord.Snowflake,
     data: Discord.role.Modify,
   ): Promise<Discord.role.Role> {
     return this.request(
-      `guilds/${guildId}/roles`,
+      `guilds/${guildId}/roles/${roleId}`,
       "PATCH",
       data,
     ) as Promise<Discord.role.Role>;
@@ -647,19 +649,22 @@ export class RestClient {
   async getGuildPruneCount(
     guildId: Discord.Snowflake,
     params: Discord.guild.PruneCount,
-  ): Promise<void> {
-    await this.request(`guilds/${guildId}/prune${stringify(params)}`, "GET");
+  ): Promise<Discord.guild.Prune> {
+    return this.request(
+      `guilds/${guildId}/prune${stringify(params)}`,
+      "GET",
+    ) as Promise<Discord.guild.Prune>;
   }
 
   async beginGuildPrune(
     guildId: Discord.Snowflake,
-    data: Discord.guild.BeginPruneParams,
-  ): Promise<Discord.guild.BeginPrune> {
+    data: Discord.guild.BeginPruneData,
+  ): Promise<Discord.guild.Prune> {
     return this.request(
       `guilds/${guildId}/prune`,
       "POST",
       data,
-    ) as Promise<Discord.guild.BeginPrune>;
+    ) as Promise<Discord.guild.Prune>;
   }
 
   async getGuildVoiceRegions(

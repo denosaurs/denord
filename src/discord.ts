@@ -183,6 +183,13 @@ export namespace auditLog {
     options?: EntryInfo;
     reason?: string;
   }
+
+  export interface Params {
+    user_id: Snowflake;
+    action_type: number;
+    before: Snowflake;
+    limit: number;
+  }
 }
 
 export namespace channel {
@@ -271,7 +278,7 @@ export namespace channel {
 
   export interface GuildPosition {
     id: Snowflake;
-    position: number;
+    position: number | null;
   }
 
   export interface CreateDM {
@@ -381,7 +388,10 @@ export namespace emoji {
     image: string;
   }
 
-  export type Modify = Pick<Create, "name" | "roles">;
+  export interface Modify {
+    name?: string;
+    roles?: Snowflake[] | null;
+  }
 }
 
 export namespace guild {
@@ -398,9 +408,9 @@ export namespace guild {
     region: string;
     afk_channel_id: Snowflake | null;
     afk_timeout: number;
-    verification_level: 0 | 1 | 2 | 3 | 4;
-    default_message_notifications: 0 | 1;
-    explicit_content_filter: 0 | 1 | 2;
+    verification_level: VerificationLevel;
+    default_message_notifications: DefaultMessageNotifications;
+    explicit_content_filter: ExplicitContentFilter;
     roles: role.Role[];
     emojis: emoji.Emoji[];
     features: Features[];
@@ -432,6 +442,10 @@ export namespace guild {
     approximate_member_count?: number;
     approximate_presence_count?: number;
   }
+
+  export type VerificationLevel = 0 | 1 | 2 | 3 | 4;
+  export type ExplicitContentFilter = 0 | 1 | 2;
+  export type DefaultMessageNotifications = 0 | 1;
 
   export type Features =
     | "INVITE_SPLASH"
@@ -492,41 +506,42 @@ export namespace guild {
 
   export type ActiveStatus = "idle" | "dnd" | "online";
 
-  export type Create =
-    & Pick<Guild, "name">
-    & Partial<
-      NonNullable<
-        Pick<
-          Guild,
-          | "region"
-          | "icon"
-          | "verification_level"
-          | "default_message_notifications"
-          | "explicit_content_filter"
-          | "roles"
-          | "channels"
-          | "afk_channel_id"
-          | "afk_timeout"
-          | "system_channel_id"
-        >
-      >
-    >;
+  export interface Create {
+    name: string;
+    region?: string;
+    icon?: string;
+    verification_level?: VerificationLevel;
+    default_message_notifications?: DefaultMessageNotifications;
+    explicit_content_filter?: ExplicitContentFilter;
+    roles?: role.Role[];
+    channels?: Partial<channel.Channel>[];
+    afk_channel_id?: Snowflake;
+    afk_timeout?: number;
+    system_channel_id?: Snowflake;
+  }
 
-  export type Modify =
-    & Partial<Create>
-    & Partial<
-      NonNullable<
-        Pick<
-          Guild,
-          | "owner_id"
-          | "splash"
-          | "banner"
-          | "rules_channel_id"
-          | "public_updates_channel_id"
-          | "preferred_locale"
-        >
+  export interface Modify extends
+    Partial<
+      Pick<
+        Guild,
+        | "name"
+        | "afk_channel_id"
+        | "afk_timeout"
+        | "icon"
+        | "owner_id"
+        | "splash"
+        | "banner"
+        | "system_channel_id"
+        | "rules_channel_id"
+        | "public_updates_channel_id"
       >
-    >;
+    > {
+    region?: string | null;
+    verification_level?: VerificationLevel | null;
+    default_message_notifications?: DefaultMessageNotifications | null;
+    explicit_content_filter?: ExplicitContentFilter | null;
+    preferred_locale?: string | null;
+  }
 
   export type BanDeleteMessageDays = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
@@ -540,13 +555,13 @@ export namespace guild {
     include_roles?: string;
   }
 
-  export interface BeginPruneParams {
-    days: number;
-    compute_prune_count: boolean;
+  export interface BeginPruneData {
+    days?: number;
+    compute_prune_count?: boolean;
     include_roles?: Snowflake[];
   }
 
-  export interface BeginPrune {
+  export interface Prune {
     pruned: number | null;
   }
 
@@ -645,7 +660,7 @@ export namespace integration {
     syncing: boolean;
     role_id: Snowflake;
     enable_emoticons?: boolean;
-    expire_behavior: 1 | 2;
+    expire_behavior: 0 | 1;
     expire_grace_period: number;
     user: user.PublicUser;
     account: Account;
@@ -872,13 +887,13 @@ export namespace role {
   }
 
   export interface Create
-    extends Pick<Role, "name" | "color" | "hoist" | "mentionable"> {
-    permissions: number | string;
+    extends Partial<Pick<Role, "name" | "color" | "hoist" | "mentionable">> {
+    permissions?: number | string;
   }
 
   export type ModifyPosition = Pick<Role, "id" | "position">;
 
-  export type Modify = Partial<Create>;
+  export type Modify = Create;
 
   export interface UpdateEvent {
     guild_id: Snowflake;
