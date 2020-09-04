@@ -43,18 +43,6 @@ export namespace activity {
   }
 }
 
-export namespace attachment {
-  export interface Attachment {
-    id: Snowflake;
-    filename: string;
-    size: number;
-    url: string;
-    proxy_url: string;
-    height: number | null;
-    width: number | null;
-  }
-}
-
 export namespace auditLog {
   export interface AuditLog {
     webhooks: webhook.Webhook[];
@@ -193,28 +181,84 @@ export namespace auditLog {
 }
 
 export namespace channel {
-  export interface Channel {
+  export interface BaseChannel {
     id: Snowflake;
     type: Type;
-    guild_id?: Snowflake;
-    position?: number;
-    permission_overwrites?: OverwriteReceive[];
-    name?: string;
-    topic?: string | null;
-    nsfw?: boolean;
-    last_message_id?: Snowflake | null;
-    bitrate?: number;
-    user_limit?: number;
-    rate_limit_per_user?: number;
-    recipients?: user.PublicUser[];
-    icon?: string | null;
-    owner_id?: Snowflake;
-    application_id?: Snowflake;
-    parent_id?: Snowflake | null;
-    last_pin_timestamp?: ISO8601;
   }
 
   export type Type = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+  export interface DMChannel extends BaseChannel {
+    type: 1;
+    last_message_id: Snowflake | null;
+    recipients: [user.PublicUser];
+    last_pin_timestamp?: ISO8601;
+  }
+
+  export interface GroupDMChannel extends BaseChannel {
+    type: 3;
+    last_message_id: Snowflake | null;
+    recipients: user.PublicUser[];
+    last_pin_timestamp?: ISO8601;
+    application_id?: Snowflake;
+    name: string | null;
+    icon: string | null;
+    owner_id: Snowflake;
+  }
+
+  export interface GuildChannel extends BaseChannel {
+    type: Exclude<Type, 1 | 3>;
+    name: string;
+    position: number;
+    parent_id: Snowflake | null;
+    guild_id: Snowflake;
+    permission_overwrites: OverwriteReceive[];
+    nsfw: boolean;
+  }
+
+  export interface TextBasedGuildChannel extends GuildChannel {
+    type: Extract<Type, 0 | 5>;
+    last_pin_timestamp?: ISO8601;
+    last_message_id: Snowflake | null;
+    topic: string | null;
+  }
+
+  export interface TextChannel extends TextBasedGuildChannel {
+    type: 0;
+    rate_limit_per_user: number;
+  }
+
+  export interface VoiceChannel extends GuildChannel {
+    type: 2;
+    bitrate: number;
+    user_limit: number;
+    nsfw: false;
+  }
+
+  export interface CategoryChannel extends GuildChannel {
+    type: 4;
+    parent_id: null;
+    nsfw: false;
+  }
+
+  export interface NewsChannel extends TextBasedGuildChannel {
+    type: 5;
+  }
+
+  export interface StoreChannel extends GuildChannel {
+    type: 6;
+  }
+
+  export type GuildChannels =
+    | TextChannel
+    | VoiceChannel
+    | CategoryChannel
+    | NewsChannel
+    | StoreChannel;
+
+  export type DMChannels = DMChannel | GroupDMChannel;
+
+  export type Channel = GuildChannels | DMChannels;
 
   export interface OverwriteReceive {
     id: Snowflake;
@@ -258,12 +302,12 @@ export namespace channel {
 
   export interface GroupDMAddRecipient {
     access_token: string;
-    nick: string;
+    nick?: string;
   }
 
   export interface CreateGuildChannel {
     name: string;
-    type?: Type;
+    type?: Exclude<Type, 1 | 3>;
     topic?: string;
     bitrate?: number;
     user_limit?: number;
@@ -274,7 +318,18 @@ export namespace channel {
     nsfw?: boolean;
   }
 
-  export type Modify = Partial<Omit<CreateGuildChannel, "type">>;
+  export interface Modify {
+    name?: string;
+    type?: 0 | 5;
+    position?: number | null;
+    topic?: string | null;
+    nsfw?: boolean | null;
+    rate_limit_per_user?: number | null;
+    bitrate?: number | null;
+    user_limit?: number | null;
+    permission_overwrites?: OverwriteSend[] | null;
+    parent_id?: Snowflake | null;
+  }
 
   export interface GuildPosition {
     id: Snowflake;
@@ -384,8 +439,10 @@ export namespace emoji {
     animated?: boolean;
   }
 
-  export interface Create extends NonNullable<Pick<Emoji, "name" | "roles">> {
+  export interface Create {
+    name: string;
     image: string;
+    roles: Snowflake[];
   }
 
   export interface Modify {
@@ -395,16 +452,16 @@ export namespace emoji {
 }
 
 export namespace guild {
-  export interface Guild {
+  interface BaseGuild {
     id: Snowflake;
     name: string;
     icon: string | null;
     splash: string | null;
     discovery_splash: string | null;
-    owner?: boolean;
+    owner?: boolean; // Only on Get Current User Guilds
     owner_id: Snowflake;
-    permissions?: number;
-    permissions_new?: string;
+    permissions?: number; // Only on Get Current User Guilds
+    permissions_new?: string; // Only on Get Current User Guilds
     region: string;
     afk_channel_id: Snowflake | null;
     afk_timeout: number;
@@ -416,21 +473,13 @@ export namespace guild {
     features: Features[];
     mfa_level: 0 | 1;
     application_id: Snowflake | null;
-    widget_enabled?: boolean;
-    widget_channel_id?: Snowflake | null;
+    widget_enabled?: boolean; // Only on fetch & UPDATE
+    widget_channel_id?: Snowflake | null; // Only on fetch & UPDATE
     system_channel_id: Snowflake | null;
     system_channel_flags: number;
     rules_channel_id: Snowflake | null;
-    joined_at?: ISO8601;
-    large?: boolean;
-    unavailable?: boolean;
-    member_count?: number;
-    voice_states?: Partial<Omit<voice.State, "guild_id">>[];
-    members?: guildMember.GuildMember[];
-    channels?: channel.Channel[];
-    presences?: Partial<PresenceUpdateEvent>[];
-    max_presences?: number | null;
-    max_members?: number;
+    max_presences?: number | null; // Only on fetch & UPDATE
+    max_members?: number; // Only on fetch & UPDATE
     vanity_url_code: string | null;
     description: string | null;
     banner: string | null;
@@ -439,8 +488,22 @@ export namespace guild {
     preferred_locale: string;
     public_updates_channel_id: Snowflake | null;
     max_video_channel_users?: number;
+  }
+
+  export interface RESTGuild extends BaseGuild {
     approximate_member_count?: number;
     approximate_presence_count?: number;
+  }
+
+  export interface GatewayGuild extends BaseGuild {
+    joined_at: ISO8601;
+    large: boolean;
+    unavailable: boolean;
+    member_count: number;
+    voice_states: Partial<Omit<voice.State, "guild_id">>[];
+    members: guildMember.GuildMember[];
+    channels: channel.GuildChannels[];
+    presences: Partial<PresenceUpdateEvent>[];
   }
 
   export type VerificationLevel = 0 | 1 | 2 | 3 | 4;
@@ -462,19 +525,21 @@ export namespace guild {
     | "BANNER"
     | "PUBLIC_DISABLED";
 
-  export type Preview = Pick<
-    Guild,
-    | "id"
-    | "name"
-    | "icon"
-    | "splash"
-    | "discovery_splash"
-    | "emojis"
-    | "features"
-    | "approximate_member_count"
-    | "approximate_presence_count"
-    | "description"
-  >;
+  export interface Preview extends
+    Pick<
+      BaseGuild,
+      | "id"
+      | "name"
+      | "icon"
+      | "splash"
+      | "discovery_splash"
+      | "emojis"
+      | "features"
+      | "description"
+    > {
+    approximate_member_count: number;
+    approximate_presence_count: number;
+  }
 
   export interface Widget {
     enabled: boolean;
@@ -514,7 +579,7 @@ export namespace guild {
     default_message_notifications?: DefaultMessageNotifications;
     explicit_content_filter?: ExplicitContentFilter;
     roles?: role.Role[];
-    channels?: Partial<channel.Channel>[];
+    channels?: Partial<channel.GuildChannels>[];
     afk_channel_id?: Snowflake;
     afk_timeout?: number;
     system_channel_id?: Snowflake;
@@ -523,7 +588,7 @@ export namespace guild {
   export interface Modify extends
     Partial<
       Pick<
-        Guild,
+        BaseGuild,
         | "name"
         | "afk_channel_id"
         | "afk_timeout"
@@ -555,23 +620,19 @@ export namespace guild {
     include_roles?: string;
   }
 
-  export interface BeginPruneData {
+  export interface BeginPrune {
     days?: number;
     compute_prune_count?: boolean;
     include_roles?: Snowflake[];
   }
 
-  export interface Prune {
+  export interface PruneData {
     pruned: number | null;
   }
 
   export type WidgetModify = Partial<Widget>;
 
-  export interface WidgetEmbedStyle {
-    style?: "shield" | "banner1" | "banner2" | "banner3" | "banner4";
-  }
-
-  export type UnavailableGuild = Pick<Guild, "id" | "unavailable">;
+  export type UnavailableGuild = Pick<GatewayGuild, "id" | "unavailable">;
 
   export interface BanEvent {
     guild_id: Snowflake;
@@ -614,6 +675,10 @@ export namespace guild {
     presences?: PresenceUpdateEvent[];
     nonce?: string;
   }
+
+  export interface Params {
+    with_counts?: boolean;
+  }
 }
 
 export namespace guildMember {
@@ -632,11 +697,12 @@ export namespace guildMember {
     after?: Snowflake;
   }
 
-  export interface Add extends
-    Partial<
-      NonNullable<Pick<GuildMember, "nick" | "roles" | "mute" | "deaf">>
-    > {
+  export interface Add {
     access_token: string;
+    nick?: string;
+    roles?: Snowflake[];
+    mute?: boolean;
+    deaf?: boolean;
   }
 
   export interface ModifyCurrentNick {
@@ -685,8 +751,8 @@ export namespace integration {
 export namespace invite {
   export interface Invite {
     code: string;
-    guild?: Partial<guild.Guild>;
-    channel: Partial<channel.Channel>;
+    guild?: Partial<guild.RESTGuild>;
+    channel: Partial<channel.GuildChannels>;
     inviter?: user.PublicUser;
     target_user?: Partial<user.PublicUser>;
     target_user_type?: 1;
@@ -742,11 +808,7 @@ export namespace message {
     id: Snowflake;
     channel_id: Snowflake;
     guild_id?: Snowflake;
-    author:
-      | user.PublicUser
-      | (Pick<user.PublicUser, "username" | "avatar"> & {
-        webhook_id: Snowflake;
-      });
+    author: user.PublicUser;
     member?: Partial<guildMember.GuildMember>;
     content: string;
     timestamp: ISO8601;
@@ -757,9 +819,9 @@ export namespace message {
       (user.PublicUser & { member: Partial<guildMember.GuildMember> })[];
     mention_roles: Snowflake[];
     mention_channels?: channel.Mention[];
-    attachments: attachment.Attachment[];
+    attachments: Attachment[];
     embeds: embed.Embed[];
-    reactions?: reaction.Reaction[];
+    reactions?: Reaction[];
     nonce?: number | string;
     pinned: boolean;
     webhook_id?: Snowflake;
@@ -787,6 +849,22 @@ export namespace message {
     | 14
     | 15;
 
+  export interface Attachment {
+    id: Snowflake;
+    filename: string;
+    size: number;
+    url: string;
+    proxy_url: string;
+    height: number | null;
+    width: number | null;
+  }
+
+  export interface Reaction {
+    count: number;
+    me: boolean;
+    emoji: Pick<emoji.Emoji, "id" | "name">;
+  }
+
   export interface Activity {
     type: 1 | 2 | 3 | 5;
     party_id?: string;
@@ -812,17 +890,21 @@ export namespace message {
     guild_id?: Snowflake;
   }
 
-  export interface Create
-    extends Partial<Pick<Message, "content" | "nonce" | "tts">> {
+  export interface Create {
+    content?: string;
+    nonce?: number | string;
+    tts?: boolean;
     file?: File;
     embed?: embed.Embed;
     payload_json?: string;
     allowed_mentions?: AllowedMentions;
   }
 
-  export type Edit = Partial<
-    Pick<Message, "content" | "flags"> & Pick<Create, "embed">
-  >;
+  export interface Edit {
+    content?: string;
+    embed?: embed.Embed;
+    flags?: number;
+  }
 
   export type DeleteEvent = Pick<Message, "id" | "channel_id" | "guild_id">;
 
@@ -832,7 +914,7 @@ export namespace message {
     message_id: Snowflake;
     guild_id?: Snowflake;
     member?: guildMember.GuildMember;
-    emoji: Partial<emoji.Emoji>;
+    emoji: Partial<emoji.Emoji>; //TODO
   }
 
   export type ReactionRemoveEvent = Omit<ReactionAddEvent, "member">;
@@ -843,14 +925,6 @@ export namespace message {
   >;
 
   export type ReactionRemoveEmojiEvent = Omit<ReactionRemoveEvent, "user_id">;
-}
-
-export namespace reaction {
-  export interface Reaction {
-    count: number;
-    me: boolean;
-    emoji: Pick<emoji.Emoji, "id" | "name">;
-  }
 }
 
 export namespace richPresence {
@@ -939,9 +1013,10 @@ export namespace user {
     visibility: 0 | 1;
   }
 
-  export type Modify = Partial<
-    NonNullable<Pick<PrivateUser, "username" | "avatar">>
-  >;
+  export interface Modify {
+    username?: string;
+    avatar?: string | null;
+  }
 
   export interface GetGuilds {
     before?: Snowflake;
@@ -989,18 +1064,19 @@ export namespace webhook {
     guild_id?: Snowflake;
     channel_id: Snowflake;
     user?: user.PublicUser;
-    name?: string | null;
-    avatar?: string | null;
+    name: string | null;
+    avatar: string | null;
     token?: string;
   }
 
-  export type Create =
-    & NonNullable<Pick<Webhook, "name">>
-    & Required<Pick<Webhook, "name">>;
+  export interface Create {
+    name: string;
+    avatar: string | null;
+  }
 
-  export type Modify = Partial<
-    NonNullable<Pick<Webhook, "name" | "avatar" | "channel_id">>
-  >;
+  export interface Modify extends Partial<Create> {
+    channel_id?: Snowflake;
+  }
 
   export interface ExecuteParams {
     wait?: boolean;
@@ -1012,9 +1088,10 @@ export namespace webhook {
     embeds?: embed.Embed[];
   }
 
-  export type UpdateEvent = NonNullable<
-    Pick<Webhook, "guild_id" | "channel_id">
-  >;
+  export interface UpdateEvent {
+    guild_id: Snowflake;
+    channel_id: Snowflake;
+  }
 }
 
 export namespace gateway {
@@ -1059,7 +1136,18 @@ export namespace gateway {
 
   export interface Ops {
     1: number;
+    2: { // Voice
+      ssrc: number;
+      ip: string;
+      port: number;
+      modes: string[];
+      heartbeat_interval: number;
+    };
+    6: number; // Voice
     7: undefined;
+    8: { // Voice
+      heartbeat_interval: number;
+    };
     9: boolean;
     10: {
       heartbeat_interval: number;
@@ -1077,8 +1165,8 @@ export namespace gateway {
     CHANNEL_DELETE: channel.Channel;
     CHANNEL_PINS_UPDATE: channel.PinsUpdateEvent;
 
-    GUILD_CREATE: guild.Guild;
-    GUILD_UPDATE: guild.Guild;
+    GUILD_CREATE: guild.GatewayGuild;
+    GUILD_UPDATE: guild.GatewayGuild;
     GUILD_DELETE: guild.UnavailableGuild;
     GUILD_BAN_ADD: guild.BanEvent;
     GUILD_BAN_REMOVE: guild.BanEvent;

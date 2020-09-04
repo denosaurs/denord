@@ -19,7 +19,8 @@ interface rawEvents extends Events {
  * A shard manager that manages all shards that are used to conect to the discord gateway
  */
 export class ShardManager extends EventEmitter<rawEvents> {
-  #workers: Worker[] = [];
+  #shards: Worker[] = [];
+  shardAmount: number;
 
   /**
    * @param shardAmount - The amount of shards to use
@@ -27,6 +28,8 @@ export class ShardManager extends EventEmitter<rawEvents> {
    */
   constructor(shardAmount: number, intents?: number) {
     super();
+
+    this.shardAmount = shardAmount;
 
     for (let i = 0; i < shardAmount; i++) {
       const name = `${i}/${shardAmount}`;
@@ -99,7 +102,7 @@ export class ShardManager extends EventEmitter<rawEvents> {
             break;
           case "CONNECT_NEXT":
             if (i + 1 < shardAmount) {
-              this.#workers[i + 1].postMessage({
+              this.#shards[i + 1].postMessage({
                 name: "CONNECT",
                 data: event.data,
               });
@@ -117,7 +120,7 @@ export class ShardManager extends EventEmitter<rawEvents> {
         },
       });
 
-      this.#workers.push(worker);
+      this.#shards.push(worker);
     }
   }
 
@@ -127,7 +130,7 @@ export class ShardManager extends EventEmitter<rawEvents> {
    * @param token - The token to connect with
    */
   connect(token: string) { //TODO: make async to resolve when all shards are connected
-    this.#workers[0].postMessage({
+    this.#shards[0].postMessage({
       name: "CONNECT",
       data: token,
     });
@@ -138,7 +141,7 @@ export class ShardManager extends EventEmitter<rawEvents> {
    * @param data - The data to make the request with
    */
   guildRequestMember(shard: number, data: gateway.GuildRequestMembers) {
-    this.#workers[shard].postMessage({
+    this.#shards[shard].postMessage({
       name: "GUILD_REQUEST_MEMBER",
       data,
     });
@@ -149,7 +152,7 @@ export class ShardManager extends EventEmitter<rawEvents> {
    * @param data - The data to make the request with
    */
   statusUpdate(shard: number, data: gateway.StatusUpdate) {
-    this.#workers[shard].postMessage({
+    this.#shards[shard].postMessage({
       name: "STATUS_UPDATE",
       data,
     });
