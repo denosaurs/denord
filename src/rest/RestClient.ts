@@ -49,7 +49,7 @@ export class RestClient {
       }
 
       if (reason) {
-        headers.append("X-Audit-Log-Reason", reason);
+        headers.append("X-Audit-Log-Reason", encodeURIComponent(reason));
       }
 
       let body;
