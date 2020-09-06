@@ -34,7 +34,7 @@ export class RestClient {
       method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
       data?: any;
       params?: any;
-    }
+    },
   ): Promise<unknown> {
     const task = async (): Promise<unknown> => {
       const headers = new Headers({
@@ -83,8 +83,8 @@ export class RestClient {
           limit: parseInt(res.headers.get("x-ratelimit-limit")!),
           remaining: parseInt(res.headers.get("x-ratelimit-remaining")!),
           reset: parseFloat(res.headers.get("x-ratelimit-reset")!) * 1e3,
-          resetAfter:
-            parseFloat(res.headers.get("x-ratelimit-reset-after")!) * 1e3,
+          resetAfter: parseFloat(res.headers.get("x-ratelimit-reset-after")!) *
+            1e3,
         };
         this.buckets[endpoint].ratelimit.reset = ratelimit.reset;
         this.buckets[endpoint].ratelimit.remaining = ratelimit.remaining;
@@ -108,7 +108,7 @@ export class RestClient {
         case 403:
           throw new HTTPError(
             res.status,
-            "You don't have permission to do this"
+            "You don't have permission to do this",
           );
 
         case 429:
@@ -117,7 +117,7 @@ export class RestClient {
         case 502:
           throw new HTTPError(
             res.status,
-            "Gateway unavailable. Wait and retry"
+            "Gateway unavailable. Wait and retry",
           );
 
         case 500:
@@ -144,7 +144,7 @@ export class RestClient {
   //region Audit Log
   async getGuildAuditLog(
     guildId: Discord.Snowflake,
-    params: Discord.auditLog.Params
+    params: Discord.auditLog.Params,
   ): Promise<Discord.auditLog.AuditLog> {
     return this.request(`guilds/${guildId}/audit-logs`, {
       method: "GET",
@@ -156,7 +156,7 @@ export class RestClient {
 
   //region Channel
   async getChannel(
-    channelId: Discord.Snowflake
+    channelId: Discord.Snowflake,
   ): Promise<Discord.channel.Channel> {
     return this.request(`channels/${channelId}`, {
       method: "GET",
@@ -165,7 +165,7 @@ export class RestClient {
 
   async modifyChannel(
     channelId: Discord.Snowflake,
-    data: Discord.channel.Modify
+    data: Discord.channel.Modify,
   ): Promise<Discord.channel.GuildChannels> {
     return this.request(`channels/${channelId}`, {
       method: "PATCH",
@@ -174,7 +174,7 @@ export class RestClient {
   }
 
   async deleteChannel(
-    channelId: Discord.Snowflake
+    channelId: Discord.Snowflake,
   ): Promise<Discord.channel.Channel> {
     return this.request(`channels/${channelId}`, {
       method: "DELETE",
@@ -183,7 +183,7 @@ export class RestClient {
 
   async getChannelMessages(
     channelId: Discord.Snowflake,
-    params: Discord.channel.GetMessages
+    params: Discord.channel.GetMessages,
   ): Promise<Discord.message.Message[]> {
     return this.request(`channels/${channelId}/messages`, {
       method: "GET",
@@ -193,7 +193,7 @@ export class RestClient {
 
   async getChannelMessage(
     channelId: Discord.Snowflake,
-    messageId: Discord.Snowflake
+    messageId: Discord.Snowflake,
   ): Promise<Discord.message.Message> {
     return this.request(`channels/${channelId}/messages/${messageId}`, {
       method: "GET",
@@ -202,7 +202,7 @@ export class RestClient {
 
   async createMessage(
     channelId: Discord.Snowflake,
-    data: Discord.message.Create
+    data: Discord.message.Create,
   ): Promise<Discord.message.Message> {
     return this.request(`channels/${channelId}/messages`, {
       method: "POST",
@@ -213,26 +213,26 @@ export class RestClient {
   async createReaction(
     channelId: Discord.Snowflake,
     messageId: Discord.Snowflake,
-    emoji: string
+    emoji: string,
   ): Promise<void> {
     await this.request(
       `channels/${channelId}/messages/${messageId}/reactions/${emoji}/@me`,
       {
         method: "PUT",
-      }
+      },
     );
   }
 
   async deleteOwnReaction(
     channelId: Discord.Snowflake,
     messageId: Discord.Snowflake,
-    emoji: string
+    emoji: string,
   ): Promise<void> {
     await this.request(
       `channels/${channelId}/messages/${messageId}/reactions/${emoji}/@me`,
       {
         method: "DELETE",
-      }
+      },
     );
   }
 
@@ -240,13 +240,13 @@ export class RestClient {
     channelId: Discord.Snowflake,
     messageId: Discord.Snowflake,
     emoji: string,
-    userId: Discord.Snowflake
+    userId: Discord.Snowflake,
   ): Promise<void> {
     await this.request(
       `channels/${channelId}/messages/${messageId}/${emoji}/reactions/${userId}`,
       {
         method: "DELETE",
-      }
+      },
     );
   }
 
@@ -254,46 +254,46 @@ export class RestClient {
     channelId: Discord.Snowflake,
     messageId: Discord.Snowflake,
     emoji: string,
-    params: Discord.channel.GetReactions
+    params: Discord.channel.GetReactions,
   ): Promise<Discord.user.PublicUser[]> {
     return this.request(
       `channels/${channelId}/messages/${messageId}/reactions/${emoji}`,
       {
         method: "GET",
         params,
-      }
+      },
     ) as Promise<Discord.user.PublicUser[]>;
   }
 
   async deleteAllReactions(
     channelId: Discord.Snowflake,
-    messageId: Discord.Snowflake
+    messageId: Discord.Snowflake,
   ): Promise<void> {
     await this.request(
       `channels/${channelId}/messages/${messageId}/reactions`,
       {
         method: "DELETE",
-      }
+      },
     );
   }
 
   async deleteAllReactionsForEmoji(
     channelId: Discord.Snowflake,
     messageId: Discord.Snowflake,
-    emoji: string
+    emoji: string,
   ): Promise<void> {
     await this.request(
       `channels/${channelId}/messages/${messageId}/reactions/${emoji}`,
       {
         method: "DELETE",
-      }
+      },
     );
   }
 
   async editMessage(
     channelId: Discord.Snowflake,
     messageId: Discord.Snowflake,
-    data: Discord.message.Edit
+    data: Discord.message.Edit,
   ): Promise<Discord.message.Message> {
     return this.request(`channels/${channelId}/messages/${messageId}`, {
       method: "PATCH",
@@ -303,7 +303,7 @@ export class RestClient {
 
   async deleteMessage(
     channelId: Discord.Snowflake,
-    messageId: Discord.Snowflake
+    messageId: Discord.Snowflake,
   ): Promise<void> {
     await this.request(`channels/${channelId}/messages/${messageId}`, {
       method: "DELETE",
@@ -312,7 +312,7 @@ export class RestClient {
 
   async bulkDeleteMessages(
     channelId: Discord.Snowflake,
-    data: Discord.channel.BulkDelete
+    data: Discord.channel.BulkDelete,
   ): Promise<void> {
     await this.request(`channels/${channelId}/messages/bulk-delete`, {
       method: "POST",
@@ -323,7 +323,7 @@ export class RestClient {
   async editChannelPermissions(
     channelId: Discord.Snowflake,
     overwriteId: Discord.Snowflake,
-    data: Omit<Discord.channel.OverwriteSend, "id">
+    data: Omit<Discord.channel.OverwriteSend, "id">,
   ): Promise<void> {
     await this.request(`channels/${channelId}/permissions/${overwriteId}`, {
       method: "PUT",
@@ -332,7 +332,7 @@ export class RestClient {
   }
 
   async getChannelInvites(
-    channelId: Discord.Snowflake
+    channelId: Discord.Snowflake,
   ): Promise<Discord.invite.Invite[]> {
     return this.request(`channels/${channelId}/invites`, {
       method: "GET",
@@ -341,7 +341,7 @@ export class RestClient {
 
   async createChannelInvite(
     channelId: Discord.Snowflake,
-    data: Discord.invite.Create
+    data: Discord.invite.Create,
   ): Promise<Discord.invite.Invite> {
     return this.request(`channels/${channelId}/invites`, {
       method: "POST",
@@ -351,7 +351,7 @@ export class RestClient {
 
   async deleteChannelPermission(
     channelId: Discord.Snowflake,
-    overwriteId: Discord.Snowflake
+    overwriteId: Discord.Snowflake,
   ): Promise<void> {
     await this.request(`channels/${channelId}/permissions/${overwriteId}`, {
       method: "DELETE",
@@ -365,7 +365,7 @@ export class RestClient {
   }
 
   async getPinnedMessages(
-    channelId: Discord.Snowflake
+    channelId: Discord.Snowflake,
   ): Promise<Discord.message.Message[]> {
     return this.request(`channels/${channelId}/pins`, {
       method: "GET",
@@ -374,7 +374,7 @@ export class RestClient {
 
   async addPinnedChannelMessage(
     channelId: Discord.Snowflake,
-    messageId: Discord.Snowflake
+    messageId: Discord.Snowflake,
   ): Promise<void> {
     await this.request(`channels/${channelId}/pins/${messageId}`, {
       method: "PUT",
@@ -383,7 +383,7 @@ export class RestClient {
 
   async deletePinnedChannelMessage(
     channelId: Discord.Snowflake,
-    messageId: Discord.Snowflake
+    messageId: Discord.Snowflake,
   ): Promise<void> {
     await this.request(`channels/${channelId}/pins/${messageId}`, {
       method: "DELETE",
@@ -393,7 +393,7 @@ export class RestClient {
   async groupDMAddRecipient(
     channelId: Discord.Snowflake,
     userId: Discord.Snowflake,
-    data: Discord.channel.GroupDMAddRecipient
+    data: Discord.channel.GroupDMAddRecipient,
   ): Promise<void> {
     await this.request(`channels/${channelId}/recipients/${userId}`, {
       method: "PUT",
@@ -403,7 +403,7 @@ export class RestClient {
 
   async groupDMRemoveRecipient(
     channelId: Discord.Snowflake,
-    userId: Discord.Snowflake
+    userId: Discord.Snowflake,
   ): Promise<void> {
     await this.request(`channels/${channelId}/recipients/${userId}`, {
       method: "DELETE",
@@ -414,7 +414,7 @@ export class RestClient {
 
   //region Emoji
   async listGuildEmojis(
-    guildId: Discord.Snowflake
+    guildId: Discord.Snowflake,
   ): Promise<Discord.emoji.Emoji[]> {
     return this.request(`guilds/${guildId}/emojis`, {
       method: "GET",
@@ -423,7 +423,7 @@ export class RestClient {
 
   async getGuildEmoji(
     guildId: Discord.Snowflake,
-    emojiId: Discord.Snowflake
+    emojiId: Discord.Snowflake,
   ): Promise<Discord.emoji.Emoji> {
     return this.request(`guilds/${guildId}/emojis/${emojiId}`, {
       method: "GET",
@@ -432,7 +432,7 @@ export class RestClient {
 
   async createGuildEmoji(
     guildId: Discord.Snowflake,
-    data: Discord.emoji.Create
+    data: Discord.emoji.Create,
   ): Promise<Discord.emoji.Emoji> {
     return this.request(`guilds/${guildId}/emojis`, {
       method: "POST",
@@ -443,7 +443,7 @@ export class RestClient {
   async modifyGuildEmoji(
     guildId: Discord.Snowflake,
     emojiId: Discord.Snowflake,
-    data: Discord.emoji.Modify
+    data: Discord.emoji.Modify,
   ): Promise<Discord.emoji.Emoji> {
     return this.request(`guilds/${guildId}/emojis/${emojiId}`, {
       method: "PATCH",
@@ -453,7 +453,7 @@ export class RestClient {
 
   async deleteGuildEmoji(
     guildId: Discord.Snowflake,
-    emojiId: Discord.Snowflake
+    emojiId: Discord.Snowflake,
   ): Promise<void> {
     await this.request(`guilds/${guildId}/emojis/${emojiId}`, {
       method: "DELETE",
@@ -464,7 +464,7 @@ export class RestClient {
 
   //region Guild
   async createGuild(
-    data: Discord.guild.Create
+    data: Discord.guild.Create,
   ): Promise<Discord.guild.RESTGuild> {
     return this.request("guilds", {
       method: "POST",
@@ -474,7 +474,7 @@ export class RestClient {
 
   async getGuild(
     guildId: Discord.Snowflake,
-    params: Discord.guild.Params
+    params: Discord.guild.Params,
   ): Promise<Discord.guild.RESTGuild> {
     return this.request(`guilds/${guildId}`, {
       method: "GET",
@@ -483,7 +483,7 @@ export class RestClient {
   }
 
   async getGuildPreview(
-    guildId: Discord.Snowflake
+    guildId: Discord.Snowflake,
   ): Promise<Discord.guild.Preview> {
     return this.request(`guilds/${guildId}/preview`, {
       method: "GET",
@@ -492,7 +492,7 @@ export class RestClient {
 
   async modifyGuild(
     guildId: Discord.Snowflake,
-    data: Discord.guild.Modify
+    data: Discord.guild.Modify,
   ): Promise<Discord.guild.RESTGuild> {
     return this.request(`guilds/${guildId}`, {
       method: "PATCH",
@@ -507,7 +507,7 @@ export class RestClient {
   }
 
   async getGuildChannels(
-    guildId: Discord.Snowflake
+    guildId: Discord.Snowflake,
   ): Promise<Discord.channel.GuildChannels[]> {
     return this.request(`guilds/${guildId}/channels`, {
       method: "GET",
@@ -516,7 +516,7 @@ export class RestClient {
 
   async createGuildChannel(
     guildId: Discord.Snowflake,
-    data: Discord.channel.CreateGuildChannel
+    data: Discord.channel.CreateGuildChannel,
   ): Promise<Discord.channel.GuildChannels> {
     return this.request(`guilds/${guildId}/channels`, {
       method: "POST",
@@ -526,7 +526,7 @@ export class RestClient {
 
   async modifyGuildChannelPositions(
     guildId: Discord.Snowflake,
-    data: Discord.channel.GuildPosition[]
+    data: Discord.channel.GuildPosition[],
   ): Promise<void> {
     await this.request(`guilds/${guildId}/channels`, {
       method: "PATCH",
@@ -536,7 +536,7 @@ export class RestClient {
 
   async getGuildMember(
     guildId: Discord.Snowflake,
-    userId: Discord.Snowflake
+    userId: Discord.Snowflake,
   ): Promise<Discord.guildMember.GuildMember> {
     return this.request(`guilds/${guildId}/members/${userId}`, {
       method: "GET",
@@ -545,7 +545,7 @@ export class RestClient {
 
   async listGuildMembers(
     guildId: Discord.Snowflake,
-    params: Discord.guildMember.List
+    params: Discord.guildMember.List,
   ): Promise<Discord.guildMember.GuildMember[]> {
     return this.request(`guilds/${guildId}/members`, {
       method: "GET",
@@ -556,7 +556,7 @@ export class RestClient {
   async addGuildMember(
     guildId: Discord.Snowflake,
     userId: Discord.Snowflake,
-    data: Discord.guildMember.Add
+    data: Discord.guildMember.Add,
   ): Promise<Discord.guildMember.GuildMember> {
     return this.request(`guilds/${guildId}/members/${userId}`, {
       method: "PUT",
@@ -567,7 +567,7 @@ export class RestClient {
   async modifyGuildMember(
     guildId: Discord.Snowflake,
     userId: Discord.Snowflake,
-    data: Discord.guildMember.Modify
+    data: Discord.guildMember.Modify,
   ): Promise<Discord.guildMember.GuildMember> {
     return this.request(`guilds/${guildId}/members/${userId}`, {
       method: "PATCH",
@@ -578,7 +578,7 @@ export class RestClient {
   async modifyCurrentUserNick(
     guildId: Discord.Snowflake,
     userId: Discord.Snowflake,
-    data: Discord.guildMember.ModifyCurrentNick
+    data: Discord.guildMember.ModifyCurrentNick,
   ): Promise<Discord.guildMember.GuildMember> {
     return this.request(`guilds/${guildId}/members/@me/nick`, {
       method: "PATCH",
@@ -589,7 +589,7 @@ export class RestClient {
   async addGuildMemberRole(
     guildId: Discord.Snowflake,
     userId: Discord.Snowflake,
-    roleId: Discord.Snowflake
+    roleId: Discord.Snowflake,
   ): Promise<void> {
     await this.request(`guilds/${guildId}/members/${userId}/roles/${roleId}`, {
       method: "PUT",
@@ -599,7 +599,7 @@ export class RestClient {
   async removeGuildMemberRole(
     guildId: Discord.Snowflake,
     userId: Discord.Snowflake,
-    roleId: Discord.Snowflake
+    roleId: Discord.Snowflake,
   ): Promise<void> {
     await this.request(`guilds/${guildId}/members/${userId}/roles/${roleId}`, {
       method: "DELETE",
@@ -608,7 +608,7 @@ export class RestClient {
 
   async removeGuildMember(
     guildId: Discord.Snowflake,
-    userId: Discord.Snowflake
+    userId: Discord.Snowflake,
   ): Promise<void> {
     await this.request(`guilds/${guildId}/members/${userId}`, {
       method: "DELETE",
@@ -623,7 +623,7 @@ export class RestClient {
 
   async getGuildBan(
     guildId: Discord.Snowflake,
-    userId: Discord.Snowflake
+    userId: Discord.Snowflake,
   ): Promise<Discord.guild.Ban> {
     return this.request(`guilds/${guildId}/bans/${userId}`, {
       method: "GET",
@@ -633,7 +633,7 @@ export class RestClient {
   async createGuildBan(
     guildId: Discord.Snowflake,
     userId: Discord.Snowflake,
-    data: Discord.guild.CreateBan
+    data: Discord.guild.CreateBan,
   ): Promise<void> {
     await this.request(`guilds/${guildId}/bans/${userId}`, {
       method: "PUT",
@@ -643,7 +643,7 @@ export class RestClient {
 
   async removeGuildBan(
     guildId: Discord.Snowflake,
-    userId: Discord.Snowflake
+    userId: Discord.Snowflake,
   ): Promise<void> {
     await this.request(`guilds/${guildId}/bans/${userId}`, {
       method: "DELETE",
@@ -651,7 +651,7 @@ export class RestClient {
   }
 
   async getGuildRoles(
-    guildId: Discord.Snowflake
+    guildId: Discord.Snowflake,
   ): Promise<Discord.role.Role[]> {
     return this.request(`guilds/${guildId}/roles`, {
       method: "GET",
@@ -660,7 +660,7 @@ export class RestClient {
 
   async createGuildRole(
     guildId: Discord.Snowflake,
-    data: Discord.role.Create
+    data: Discord.role.Create,
   ): Promise<Discord.role.Role> {
     return this.request(`guilds/${guildId}/roles`, {
       method: "POST",
@@ -670,7 +670,7 @@ export class RestClient {
 
   async modifyGuildRolePositions(
     guildId: Discord.Snowflake,
-    data: Discord.role.ModifyPosition[]
+    data: Discord.role.ModifyPosition[],
   ): Promise<Discord.role.Role[]> {
     return this.request(`guilds/${guildId}/roles`, {
       method: "PATCH",
@@ -681,7 +681,7 @@ export class RestClient {
   async modifyGuildRole(
     guildId: Discord.Snowflake,
     roleId: Discord.Snowflake,
-    data: Discord.role.Modify
+    data: Discord.role.Modify,
   ): Promise<Discord.role.Role> {
     return this.request(`guilds/${guildId}/roles/${roleId}`, {
       method: "PATCH",
@@ -691,7 +691,7 @@ export class RestClient {
 
   async deleteGuildRole(
     guildId: Discord.Snowflake,
-    roleId: Discord.Snowflake
+    roleId: Discord.Snowflake,
   ): Promise<void> {
     await this.request(`guilds/${guildId}/roles/${roleId}`, {
       method: "DELETE",
@@ -700,7 +700,7 @@ export class RestClient {
 
   async getGuildPruneCount(
     guildId: Discord.Snowflake,
-    params: Discord.guild.PruneCount
+    params: Discord.guild.PruneCount,
   ): Promise<Discord.guild.PruneData> {
     return this.request(`guilds/${guildId}/prune`, {
       method: "GET",
@@ -710,7 +710,7 @@ export class RestClient {
 
   async beginGuildPrune(
     guildId: Discord.Snowflake,
-    data: Discord.guild.BeginPrune
+    data: Discord.guild.BeginPrune,
   ): Promise<Discord.guild.PruneData> {
     return this.request(`guilds/${guildId}/prune`, {
       method: "POST",
@@ -719,7 +719,7 @@ export class RestClient {
   }
 
   async getGuildVoiceRegions(
-    guildId: Discord.Snowflake
+    guildId: Discord.Snowflake,
   ): Promise<Discord.voice.Region[]> {
     return this.request(`guilds/${guildId}/regions`, {
       method: "GET",
@@ -727,7 +727,7 @@ export class RestClient {
   }
 
   async getGuildInvites(
-    guildId: Discord.Snowflake
+    guildId: Discord.Snowflake,
   ): Promise<Discord.invite.MetadataInvite[]> {
     return this.request(`guilds/${guildId}/invites`, {
       method: "GET",
@@ -735,7 +735,7 @@ export class RestClient {
   }
 
   async getGuildIntegrations(
-    guildId: Discord.Snowflake
+    guildId: Discord.Snowflake,
   ): Promise<Discord.integration.Integration[]> {
     return this.request(`guilds/${guildId}/integrations`, {
       method: "GET",
@@ -744,7 +744,7 @@ export class RestClient {
 
   async createGuildIntegration(
     guildId: Discord.Snowflake,
-    data: Discord.integration.Create
+    data: Discord.integration.Create,
   ): Promise<void> {
     await this.request(`guilds/${guildId}/integrations`, {
       method: "POST",
@@ -755,7 +755,7 @@ export class RestClient {
   async modifyGuildIntegration(
     guildId: Discord.Snowflake,
     integrationId: Discord.Snowflake,
-    data: Discord.integration.Modify
+    data: Discord.integration.Modify,
   ): Promise<void> {
     await this.request(`guilds/${guildId}/integrations/${integrationId}`, {
       method: "PATCH",
@@ -765,7 +765,7 @@ export class RestClient {
 
   async deleteGuildIntegration(
     guildId: Discord.Snowflake,
-    integrationId: Discord.Snowflake
+    integrationId: Discord.Snowflake,
   ): Promise<void> {
     await this.request(`guilds/${guildId}/integrations/${integrationId}`, {
       method: "DELETE",
@@ -774,7 +774,7 @@ export class RestClient {
 
   async syncGuildIntegration(
     guildId: Discord.Snowflake,
-    integrationId: Discord.Snowflake
+    integrationId: Discord.Snowflake,
   ): Promise<void> {
     await this.request(`guilds/${guildId}/integrations/${integrationId}/sync`, {
       method: "POST",
@@ -782,7 +782,7 @@ export class RestClient {
   }
 
   async getGuildWidget(
-    guildId: Discord.Snowflake
+    guildId: Discord.Snowflake,
   ): Promise<Discord.guild.Widget> {
     return this.request(`guilds/${guildId}/widget`, {
       method: "GET",
@@ -791,7 +791,7 @@ export class RestClient {
 
   async modifyGuildWidget(
     guildId: Discord.Snowflake,
-    data: Discord.guild.WidgetModify
+    data: Discord.guild.WidgetModify,
   ): Promise<Discord.guild.Widget> {
     return this.request(`guilds/${guildId}/widget`, {
       method: "PATCH",
@@ -800,7 +800,7 @@ export class RestClient {
   }
 
   async getGuildVanityURL(
-    guildId: Discord.Snowflake
+    guildId: Discord.Snowflake,
   ): Promise<Discord.invite.VanityURL> {
     return this.request(`guilds/${guildId}/vanity-url`, {
       method: "GET",
@@ -838,7 +838,7 @@ export class RestClient {
   }
 
   async modifyCurrentUser(
-    data: Discord.user.Modify
+    data: Discord.user.Modify,
   ): Promise<Discord.user.PrivateUser> {
     return this.request("users/@me", {
       method: "PATCH",
@@ -847,7 +847,7 @@ export class RestClient {
   }
 
   async getCurrentUserGuilds(
-    params: Discord.user.GetGuilds
+    params: Discord.user.GetGuilds,
   ): Promise<Discord.guild.RESTGuild[]> {
     return this.request(`users/@me/guilds`, {
       method: "GET",
@@ -868,7 +868,7 @@ export class RestClient {
   }
 
   async createDM(
-    data: Discord.channel.CreateDM
+    data: Discord.channel.CreateDM,
   ): Promise<Discord.channel.DMChannel> {
     return this.request("users/@me/channels", {
       method: "POST",
@@ -877,7 +877,7 @@ export class RestClient {
   }
 
   async createGroupDM(
-    data: Discord.channel.CreateGroupDM
+    data: Discord.channel.CreateGroupDM,
   ): Promise<Discord.channel.GroupDMChannel> {
     return this.request("users/@me/channels", {
       method: "POST",
@@ -905,7 +905,7 @@ export class RestClient {
   //region Webhook
   async createWebhook(
     channelId: Discord.Snowflake,
-    data: Discord.webhook.Create
+    data: Discord.webhook.Create,
   ): Promise<Discord.webhook.Webhook> {
     return this.request(`channels/${channelId}/webhooks`, {
       method: "POST",
@@ -914,7 +914,7 @@ export class RestClient {
   }
 
   async getChannelWebhooks(
-    channelId: Discord.Snowflake
+    channelId: Discord.Snowflake,
   ): Promise<Discord.webhook.Webhook[]> {
     return this.request(`channels/${channelId}/webhooks`, {
       method: "GET",
@@ -922,7 +922,7 @@ export class RestClient {
   }
 
   async getGuildWebhooks(
-    guildId: Discord.Snowflake
+    guildId: Discord.Snowflake,
   ): Promise<Discord.webhook.Webhook[]> {
     return this.request(`guilds/${guildId}/webhooks`, {
       method: "GET",
@@ -930,7 +930,7 @@ export class RestClient {
   }
 
   async getWebhook(
-    webhookId: Discord.Snowflake
+    webhookId: Discord.Snowflake,
   ): Promise<Discord.webhook.Webhook> {
     return this.request(`webhooks/${webhookId}`, {
       method: "GET",
@@ -939,7 +939,7 @@ export class RestClient {
 
   async getWebhookWithToken(
     webhookId: Discord.Snowflake,
-    webhookToken: string
+    webhookToken: string,
   ): Promise<Discord.webhook.Webhook> {
     return this.request(`webhooks/${webhookId}/${webhookToken}`, {
       method: "GET",
@@ -948,7 +948,7 @@ export class RestClient {
 
   async modifyWebhook(
     webhookId: Discord.Snowflake,
-    data: Discord.webhook.Modify
+    data: Discord.webhook.Modify,
   ): Promise<Discord.webhook.Webhook> {
     return this.request(`webhooks/${webhookId}`, {
       method: "PATCH",
@@ -959,7 +959,7 @@ export class RestClient {
   async modifyWebhookWithToken(
     webhookId: Discord.Snowflake,
     webhookToken: string,
-    data: Discord.webhook.Modify
+    data: Discord.webhook.Modify,
   ): Promise<Discord.webhook.Webhook> {
     return this.request(`webhooks/${webhookId}/${webhookToken}`, {
       method: "PATCH",
@@ -975,7 +975,7 @@ export class RestClient {
 
   async deleteWebhookWithToken(
     webhookId: Discord.Snowflake,
-    webhookToken: string
+    webhookToken: string,
   ): Promise<void> {
     await this.request(`webhooks/${webhookId}/${webhookToken}`, {
       method: "DELETE",
@@ -986,7 +986,7 @@ export class RestClient {
     webhookId: Discord.Snowflake,
     webhookToken: string,
     data: Discord.webhook.ExecuteBody,
-    params: Discord.webhook.ExecuteParams
+    params: Discord.webhook.ExecuteParams,
   ): Promise<void> {
     await this.request(`webhooks/${webhookId}/${webhookToken}`, {
       method: "POST",
@@ -999,7 +999,7 @@ export class RestClient {
     webhookId: Discord.Snowflake,
     webhookToken: string,
     data: any,
-    params: Discord.webhook.ExecuteParams
+    params: Discord.webhook.ExecuteParams,
   ): Promise<void> {
     await this.request(`webhooks/${webhookId}/${webhookToken}/slack$`, {
       method: "POST",
@@ -1012,7 +1012,7 @@ export class RestClient {
     webhookId: Discord.Snowflake,
     webhookToken: string,
     data: any,
-    params: Discord.webhook.ExecuteParams
+    params: Discord.webhook.ExecuteParams,
   ): Promise<void> {
     await this.request(`webhooks/${webhookId}/${webhookToken}/github`, {
       method: "POST",

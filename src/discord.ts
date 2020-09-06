@@ -815,8 +815,9 @@ export namespace message {
     edited_timestamp: ISO8601 | null;
     tts: boolean;
     mention_everyone: boolean;
-    mentions:
-      (user.PublicUser & { member: Partial<guildMember.GuildMember> })[];
+    mentions: (user.PublicUser & {
+      member: Partial<guildMember.GuildMember>;
+    })[];
     mention_roles: Snowflake[];
     mention_channels?: channel.Mention[];
     attachments: Attachment[];
@@ -1115,9 +1116,9 @@ export namespace gateway {
     t: T;
   }
 
-  export type SpecificEventPayload<T extends keyof Events> = T extends
-    keyof Events ? EventPayload<T>
-    : never;
+  export type SpecificEventPayload<
+    T extends keyof Events,
+  > = T extends keyof Events ? EventPayload<T> : never;
 
   interface OpPayload<T extends keyof Ops> {
     op: T;
@@ -1136,7 +1137,8 @@ export namespace gateway {
 
   export interface Ops {
     1: number;
-    2: { // Voice
+    2: {
+      // Voice
       ssrc: number;
       ip: string;
       port: number;
@@ -1145,7 +1147,8 @@ export namespace gateway {
     };
     6: number; // Voice
     7: undefined;
-    8: { // Voice
+    8: {
+      // Voice
       heartbeat_interval: number;
     };
     9: boolean;

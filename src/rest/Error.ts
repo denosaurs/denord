@@ -14,7 +14,7 @@ export class DiscordJSONError extends HTTPError {
   constructor(statusCode: number, json: { code: number; message: string }) {
     super(
       statusCode,
-      `\nHTTP Status Code: ${statusCode}\nJSON: ${JSON.stringify(json)}`
+      `\nHTTP Status Code: ${statusCode}\nJSON: ${JSON.stringify(json)}`,
     );
 
     this.jsonCode = json.code;

@@ -46,8 +46,8 @@ export default class EventEmitter<E> {
     if (eventName) {
       if (eventName in this.listeners) {
         if (listener) {
-          this.listeners[eventName] = this.listeners[eventName].filter((cb) =>
-            cb !== listener
+          this.listeners[eventName] = this.listeners[eventName].filter(
+            (cb) => cb !== listener,
           );
         } else {
           delete this.listeners[eventName];
@@ -63,10 +63,7 @@ export default class EventEmitter<E> {
    * eventName, in the order they were registered, passing the supplied
    * arguments to each.
    */
-  emit<K extends keyof E, T extends E[K]>(
-    eventName: K,
-    args: T,
-  ) {
+  emit<K extends keyof E, T extends E[K]>(eventName: K, args: T) {
     if (eventName in this.listeners) {
       for (const listener of this.listeners[eventName]) {
         listener(args);
