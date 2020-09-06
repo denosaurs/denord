@@ -4,7 +4,6 @@ import type { message, Snowflake } from "../discord.ts";
 import { User } from "./User.ts";
 import { GuildMember } from "./GuildMember.ts";
 import { decodeEmbed, Embed, encodeEmbed } from "./Embed.ts";
-import { inverseMap } from "../utils/utils.ts";
 
 const messageTypeMap = {
   0: "normal",
@@ -32,16 +31,14 @@ const activityTypeMap = {
 } as const;
 
 const flagsMap = {
-  [1 << 0]: "crossposted",
-  [1 << 1]: "isCrosspost",
-  [1 << 2]: "surpressEmbeds",
-  [1 << 3]: "sourceMessageDeleted",
-  [1 << 4]: "urgent",
+  "crossposted": 0x01,
+  "isCrosspost": 0x02,
+  "suppressEmbeds": 0x04,
+  "sourceMessageDeleted": 0x08,
+  "urgent": 0x10,
 } as const;
 
-const inverseFlagsMap = inverseMap(flagsMap);
-
-export class Message<T> extends SnowflakeBase {
+export class Message extends SnowflakeBase {
   channelId: Snowflake;
   guildId?: Snowflake;
   author: User;
@@ -54,7 +51,7 @@ export class Message<T> extends SnowflakeBase {
     everyone: boolean;
     users: User[];
     roles: Snowflake[];
-    channels: Snowflake[];
+    channels?: Snowflake[];
   };
   attachments: {
     id: Snowflake;
@@ -66,7 +63,7 @@ export class Message<T> extends SnowflakeBase {
     width: number | null;
   }[];
   embeds: Embed[];
-  reactions: message.Reaction[];
+  reactions: message.Reaction[]; // TODO
   pinned: boolean;
   type: typeof messageTypeMap[keyof typeof messageTypeMap];
   activity?: {
@@ -85,7 +82,7 @@ export class Message<T> extends SnowflakeBase {
     channelId: Snowflake;
     guildId?: Snowflake;
   };
-  flags: (typeof flagsMap[keyof typeof flagsMap])[];
+  flags = {} as Record<keyof typeof flagsMap, boolean>;
 
   constructor(client: Client, data: message.Message) {
     super(client, data);
@@ -93,7 +90,10 @@ export class Message<T> extends SnowflakeBase {
     this.channelId = data.channel_id;
     this.guildId = data.guild_id;
     this.author = new User(client, data.author);
-    this.member = data.member;
+    this.member = data.member && new GuildMember(client, {
+      ...data.member,
+      user: data.author,
+    }, data.guild_id!);
     this.content = data.content;
     // timestamp
     this.editedAt = data.edited_timestamp
@@ -104,7 +104,7 @@ export class Message<T> extends SnowflakeBase {
       everyone: data.mention_everyone,
       users: data.mentions.map((user) => new User(client, user)),
       roles: data.mention_roles,
-      channels: data.mention_channels?.map((mention) => mention.id) ?? [],
+      channels: data.mention_channels?.map((mention) => mention.id),
     };
     this.attachments = data.attachments.map(({ proxy_url, ...attachment }) => ({
       ...attachment,
@@ -116,37 +116,28 @@ export class Message<T> extends SnowflakeBase {
     this.pinned = data.pinned;
     this.byWebhook = !!data.webhook_id;
     this.type = messageTypeMap[data.type];
-    this.activity = data.activity
-      ? {
-        type: activityTypeMap[data.activity.type],
-        partyId: data.activity.party_id,
-      }
-      : undefined;
-    this.application = data.application
-      ? {
-        id: data.application.id,
-        coverImage: data.application.cover_image,
-        description: data.application.description,
-        icon: data.application.icon,
-        name: data.application.name,
-      }
-      : undefined;
-    this.reference = data.message_reference
-      ? {
-        messageId: data.message_reference.message_id,
-        channelId: data.message_reference.channel_id,
-        guildId: data.message_reference.guild_id,
-      }
-      : undefined;
-    const flags: (typeof flagsMap[keyof typeof flagsMap])[] = [];
-    if (data.flags) {
-      for (const [key, val] of Object.entries(flagsMap)) {
-        if ((data.flags & +key) === +key) {
-          flags.push(val);
-        }
-      }
+    this.activity = data.activity && {
+      type: activityTypeMap[data.activity.type],
+      partyId: data.activity.party_id,
+    };
+    this.application = data.application && {
+      id: data.application.id,
+      coverImage: data.application.cover_image,
+      description: data.application.description,
+      icon: data.application.icon,
+      name: data.application.name,
+    };
+    this.reference = data.message_reference && {
+      messageId: data.message_reference.message_id,
+      channelId: data.message_reference.channel_id,
+      guildId: data.message_reference.guild_id,
+    };
+
+    const flags = data.flags ?? 0;
+
+    for (const [key, val] of Object.entries(flagsMap)) {
+      this.flags[key as keyof typeof flagsMap] = ((flags & +val) === +val);
     }
-    this.flags = flags;
   }
 
   async delete() {
@@ -156,18 +147,30 @@ export class Message<T> extends SnowflakeBase {
   async edit(options: {
     content?: string;
     embed?: Embed;
-    flags?: (typeof flagsMap[keyof typeof flagsMap])[];
+    suppressEmbeds?: boolean;
   }) {
+    let flags = 0;
+
+    for (const [key, val] of Object.entries(this.flags)) {
+      if (val) {
+        flags |= flagsMap[key as keyof typeof flagsMap];
+      }
+    }
+
+    if (
+      options.suppressEmbeds !== undefined &&
+      options.suppressEmbeds !== this.flags.suppressEmbeds
+    ) {
+      flags ^= flagsMap["suppressEmbeds"];
+    }
+
     const message = await this.client.rest.editMessage(
       this.channelId,
       this.id,
       {
         content: options.content,
         embed: options.embed && encodeEmbed(options.embed),
-        flags: options.flags?.reduce(
-          (prev, curr) => prev | inverseFlagsMap[curr],
-          0,
-        ),
+        flags,
       },
     );
 

@@ -2,38 +2,38 @@ import { SnowflakeBase } from "./Base.ts";
 import { Client } from "../Client.ts";
 import type { role, Snowflake } from "../discord.ts";
 
-const permissionMap = {
-  [0x00000001]: "createInstantInvite",
-  [0x00000002]: "kickMembers",
-  [0x00000004]: "banMembers",
-  [0x00000008]: "administrator",
-  [0x00000010]: "manageChannels",
-  [0x00000020]: "manageGuild",
-  [0x00000040]: "addReactions",
-  [0x00000080]: "viewAuditLog",
-  [0x00000100]: "prioritySpeaker",
-  [0x00000200]: "stream",
-  [0x00000400]: "viewChannel",
-  [0x00000800]: "sendMessages",
-  [0x00001000]: "sendTTSMessages",
-  [0x00002000]: "manageMessages",
-  [0x00004000]: "embedLinks",
-  [0x00008000]: "attachFiles",
-  [0x00010000]: "readMessageHistory",
-  [0x00020000]: "mentionEveryone",
-  [0x00040000]: "useExternalEmojis",
-  [0x00080000]: "viewGuildInsights",
-  [0x00100000]: "connect",
-  [0x00200000]: "speak",
-  [0x00400000]: "muteMembers",
-  [0x00800000]: "deafenMembers",
-  [0x01000000]: "moveMembers",
-  [0x02000000]: "useVAD",
-  [0x04000000]: "changeNickname",
-  [0x08000000]: "manageNicknames",
-  [0x10000000]: "manageRoles",
-  [0x20000000]: "manageWebhooks",
-  [0x40000000]: "manageEmojis",
+export const permissionMap = {
+  "createInstantInvite": 0x00000001,
+  "kickMembers": 0x00000002,
+  "banMembers": 0x00000004,
+  "administrator": 0x00000008,
+  "manageChannels": 0x00000010,
+  "manageGuild": 0x00000020,
+  "addReactions": 0x00000040,
+  "viewAuditLog": 0x00000080,
+  "prioritySpeaker": 0x00000100,
+  "stream": 0x00000200,
+  "viewChannel": 0x00000400,
+  "sendMessages": 0x00000800,
+  "sendTTSMessages": 0x00001000,
+  "manageMessages": 0x00002000,
+  "embedLinks": 0x00004000,
+  "attachFiles": 0x00008000,
+  "readMessageHistory": 0x00010000,
+  "mentionEveryone": 0x00020000,
+  "useExternalEmojis": 0x00040000,
+  "viewGuildInsights": 0x00080000,
+  "connect": 0x00100000,
+  "speak": 0x00200000,
+  "muteMembers": 0x00400000,
+  "deafenMembers": 0x00800000,
+  "moveMembers": 0x01000000,
+  "useVAD": 0x02000000,
+  "changeNickname": 0x04000000,
+  "manageNicknames": 0x08000000,
+  "manageRoles": 0x10000000,
+  "manageWebhooks": 0x20000000,
+  "manageEmojis": 0x40000000,
 } as const;
 
 export class Role extends SnowflakeBase {
@@ -42,7 +42,7 @@ export class Role extends SnowflakeBase {
   hoist: boolean;
   managed: boolean;
   mentionable: boolean;
-  permissions: (typeof permissionMap[keyof typeof permissionMap])[];
+  permissions = {} as Record<keyof typeof permissionMap, boolean>;
   position: number;
   guildId: Snowflake;
 
@@ -57,16 +57,12 @@ export class Role extends SnowflakeBase {
     this.managed = data.managed;
     this.mentionable = data.mentionable;
 
-    const permissionsArray:
-      (typeof permissionMap[keyof typeof permissionMap])[] = [];
     const permissions = BigInt(data.permissions_new);
     for (const [key, val] of Object.entries(permissionMap)) {
-      const bKey = BigInt(key);
-      if ((permissions & bKey) == bKey) {
-        permissionsArray.push(val);
-      }
+      const bVal = BigInt(val);
+      this.permissions[key as keyof typeof permissionMap] =
+        ((permissions & bVal) == bVal);
     }
-    this.permissions = permissionsArray;
 
     this.position = data.position;
   }
@@ -79,7 +75,7 @@ export class Role extends SnowflakeBase {
     await this.client.rest.deleteGuildRole(this.guildId, this.id);
   }
 
-  async edit(options: role.Modify = {}) {
+  async edit(options: {}) {
     const role = await this.client.rest.modifyGuildRole(
       this.guildId,
       this.id,
