@@ -1,29 +1,33 @@
-type Task = () => Promise<unknown>;
-
-interface Latency {
-  value: number;
+/** Ratelimit options for TaskQueue */
+export interface RateLimit {
+  limit: number;
+  latency: number;
   offset: number;
 }
 
+/** Representation of a runnable task */
+export type Task = () => Promise<unknown>;
+
+/** Internal interface to keep track of promises */
 interface Runtime {
   task: Task;
   resolve: (value?: unknown) => void;
   reject: (reason?: any) => void;
 }
 
+/** Ratelimit tasks and execute them sequentially  */
 export class TaskQueue {
   remaining: number;
-  limit: number;
-  latency: Latency;
+  rate: RateLimit;
 
   queue: Runtime[];
   busy?: number;
 
   reset: number;
 
-  constructor(limit: number, latency: Latency) {
-    this.limit = this.remaining = limit;
-    this.latency = latency;
+  constructor(rate: RateLimit) {
+    this.rate = rate;
+    this.remaining = rate.limit;
     this.queue = [];
     this.busy = undefined;
     this.reset = 0;
@@ -41,10 +45,10 @@ export class TaskQueue {
       return;
     }
     const now = Date.now();
-    const offset = this.latency.value + (this.latency.offset || 0);
+    const offset = this.rate.latency + (this.rate.offset || 0);
     if (!this.reset || this.reset < now - offset) {
       this.reset = now;
-      this.remaining = this.limit;
+      this.remaining = this.rate.limit;
     }
     if (this.remaining <= 0) {
       this.busy = setTimeout(() => {
