@@ -1,17 +1,19 @@
 import type * as Discord from "../discord.ts";
 import { URLs } from "../utils/utils.ts";
 import { DiscordJSONError, HTTPError } from "./Error.ts";
+import { TaskQueue, RateLimit } from "./TaskQueue.ts";
 
 /**
  * A client to make HTTP requests to Discord
  * NOTE: There are no explanations what each of the methods do as they are identical to Discord's endpoints.
- * Only endpoint not included is "Get Guild Widget Image"
- * */
+ * Only endpoint not included is "Get Guild Widget Image" */
 export class RestClient {
   /** The token to make requests with */
   token: string;
   /** Whether the token is a bot token or not */
   bot: boolean;
+
+  buckets: { [key: string]: TaskQueue } = {};
 
   /**
    * @param token - The token to make requests with
@@ -24,84 +26,119 @@ export class RestClient {
 
   private async request( //TODO reason
     endpoint: string,
-    { method, data, params }: {
-      method: ("GET" | "POST" | "PUT" | "PATCH" | "DELETE");
+    {
+      method,
+      data,
+      params,
+    }: {
+      method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
       data?: any;
       params?: any;
     },
   ): Promise<unknown> {
-    const headers = new Headers({
-      "User-Agent": "DiscordBot (https://github.com/denosaurs/denord, 0.0.1)",
-    });
+    const task = async (): Promise<unknown> => {
+      const headers = new Headers({
+        "User-Agent": "DiscordBot (https://github.com/denosaurs/denord, 0.0.1)",
+        "X-RateLimit-Precision": "millisecond",
+      });
 
-    if (this.token) {
-      headers.append("Authorization", (this.bot ? "Bot " : "") + this.token);
-    }
-
-    let body;
-
-    if (data !== undefined) {
-      if (data.file) {
-        let { file, ...otherData } = data;
-
-        data = new FormData();
-        data.append("file", file, file.name);
-        data.append("payload_json", otherData);
-        body = data;
-      } else {
-        headers.set("Content-Type", "application/json");
-        body = JSON.stringify(data);
+      if (this.token) {
+        headers.append("Authorization", (this.bot ? "Bot " : "") + this.token);
       }
+
+      let body;
+
+      if (data !== undefined) {
+        if (data.file) {
+          let { file, ...otherData } = data;
+
+          data = new FormData();
+          data.append("file", file, file.name);
+          data.append("payload_json", otherData);
+          body = data;
+        } else {
+          headers.set("Content-Type", "application/json");
+          body = JSON.stringify(data);
+        }
+      }
+
+      let stringifiedParams;
+
+      if (params) {
+        stringifiedParams = "?" + new URLSearchParams(params).toString();
+      } else {
+        stringifiedParams = "";
+      }
+
+      const res = await fetch(URLs.REST + endpoint + stringifiedParams, {
+        method,
+        headers,
+        body,
+      });
+
+      const bucket = res.headers.get("x-ratelimit-bucket");
+      if (bucket) {
+        const ratelimit: RateLimit = {
+          bucket,
+          limit: parseInt(res.headers.get("x-ratelimit-limit")!),
+          remaining: parseInt(res.headers.get("x-ratelimit-remaining")!),
+          reset: parseFloat(res.headers.get("x-ratelimit-reset")!) * 1e3,
+          resetAfter: parseFloat(res.headers.get("x-ratelimit-reset-after")!) *
+            1e3,
+        };
+        this.buckets[endpoint].ratelimit.reset = ratelimit.reset;
+        this.buckets[endpoint].ratelimit.remaining = ratelimit.remaining;
+      }
+
+      switch (res.status) {
+        case 200:
+        case 201:
+          return res.json();
+
+        case 204:
+          return;
+
+        case 400:
+        case 404:
+          throw new DiscordJSONError(res.status, await res.json());
+
+        case 401:
+          throw new HTTPError(res.status, "You supplied an invalid token");
+
+        case 403:
+          throw new HTTPError(
+            res.status,
+            "You don't have permission to do this",
+          );
+
+        case 429:
+          throw new HTTPError(res.status, "You are getting rate-limited");
+
+        case 502:
+          throw new HTTPError(
+            res.status,
+            "Gateway unavailable. Wait and retry",
+          );
+
+        case 500:
+        case 503:
+        case 504:
+        case 507:
+        case 508:
+          throw new HTTPError(res.status, "Discord internal error");
+
+        default:
+          throw new HTTPError(res.status, "Unexpected response");
+      }
+    };
+    if (!this.buckets[endpoint]) {
+      this.buckets[endpoint] = new TaskQueue({
+        resetAfter: 500,
+        limit: 1,
+        remaining: 1,
+      });
     }
-
-    let stringifiedParams;
-
-    if (params) {
-      stringifiedParams = "?" + (new URLSearchParams(params)).toString();
-    } else {
-      stringifiedParams = "";
-    }
-
-    const res = await fetch(URLs.REST + endpoint + stringifiedParams, {
-      method,
-      headers,
-      body,
-    });
-
-    switch (res.status) {
-      case 200:
-      case 201:
-        return res.json();
-
-      case 204:
-        return;
-
-      case 400:
-      case 404:
-        throw new DiscordJSONError(res.status, await res.json());
-
-      case 401:
-        throw new HTTPError(res.status, "You supplied an invalid token");
-
-      case 403:
-        throw new HTTPError(res.status, "You don't have permission to do this");
-
-      case 429:
-        throw new HTTPError(res.status, "You are getting rate-limited");
-
-      case 502:
-        throw new HTTPError(res.status, "Gateway unavailable. Wait and retry");
-
-      case 500:
-      case 503:
-      case 504:
-      case 507:
-      case 508:
-        throw new HTTPError(res.status, "Discord internal error");
-
-      default:
-        throw new HTTPError(res.status, "Unexpected response");
-    }
+    return this.buckets[endpoint].push(task);
   }
 
   //region Audit Log
@@ -964,14 +1001,11 @@ export class RestClient {
     data: any,
     params: Discord.webhook.ExecuteParams,
   ): Promise<void> {
-    await this.request(
-      `webhooks/${webhookId}/${webhookToken}/slack$`,
-      {
-        method: "POST",
-        data,
-        params,
-      },
-    );
+    await this.request(`webhooks/${webhookId}/${webhookToken}/slack$`, {
+      method: "POST",
+      data,
+      params,
+    });
   }
 
   async executeGitHubCompatibleWebhook(

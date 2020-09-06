@@ -121,9 +121,7 @@ class Shard {
               "You provided an intent that you are not allowed to use",
             );
           case 4011:
-            throw new Error(
-              "You are not using enough shards",
-            );
+            throw new Error("You are not using enough shards");
 
           default:
             // @ts-ignore
@@ -169,9 +167,9 @@ class Shard {
           intents: this.intents,
           shard: [this.shardN, this.maxShards],
           properties: {
-            "$os": Deno.build.os,
-            "$browser": "Denord",
-            "$device": "Denord",
+            $os: Deno.build.os,
+            $browser: "Denord",
+            $device: "Denord",
           },
         },
       });
@@ -188,15 +186,15 @@ class Shard {
 
   guildRequestMember(data: gateway.GuildRequestMembers) {
     this.send({
-      "op": 8,
-      "d": data,
+      op: 8,
+      d: data,
     });
   }
 
   statusUpdate(data: gateway.StatusUpdate) {
     this.send({
-      "op": 3,
-      "d": data,
+      op: 3,
+      d: data,
     });
   }
 }
