@@ -75,7 +75,7 @@ export class TaskQueue {
   }
 
   async push(task: Task): Promise<unknown> {
-    const promise = new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       this.queue.push({
         task,
         resolve,
@@ -83,6 +83,5 @@ export class TaskQueue {
       });
       this.run(false);
     });
-    return promise;
   }
 }
