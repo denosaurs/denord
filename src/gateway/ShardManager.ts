@@ -20,6 +20,7 @@ interface rawEvents extends Events {
  */
 export class ShardManager extends EventEmitter<rawEvents> {
   #shards: Worker[] = [];
+  #connectPromises: Map<string, () => void> = new Map();
   shardAmount: number;
 
   /**
@@ -106,6 +107,10 @@ export class ShardManager extends EventEmitter<rawEvents> {
                 name: "CONNECT",
                 data: event.data,
               });
+            } else {
+              const resolve = this.#connectPromises.get(event.data.bits);
+              if (resolve) resolve();
+              this.#connectPromises.delete(event.data.bits);
             }
             break;
         }
@@ -129,11 +134,18 @@ export class ShardManager extends EventEmitter<rawEvents> {
    *
    * @param token - The token to connect with
    */
-  connect(token: string) {
-    //TODO: make async to resolve when all shards are connected
-    this.#shards[0].postMessage({
-      name: "CONNECT",
-      data: token,
+  async connect(token: string): Promise<void> {
+    return new Promise((resolve) => {
+      const rnd = crypto.getRandomValues(new Uint8Array(16));
+      const bits: string = [...rnd].map((bit): string => {
+        const s: string = bit.toString(16);
+        return bit < 0x10 ? "0" + s : s;
+      }).join("");
+      this.#connectPromises.set(bits, resolve);
+      this.#shards[0].postMessage({
+        name: "CONNECT",
+        data: { token, bits },
+      });
     });
   }
 
