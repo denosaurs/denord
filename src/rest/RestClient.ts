@@ -611,7 +611,6 @@ export class RestClient {
 
   async modifyCurrentUserNick(
     guildId: Discord.Snowflake,
-    userId: Discord.Snowflake,
     data: Discord.guildMember.ModifyCurrentNick,
     reason?: string,
   ): Promise<Discord.guildMember.GuildMember> {
