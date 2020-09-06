@@ -2,7 +2,10 @@ export type ImageFormat = "jpg" | "png" | "gif" | "webp";
 export type ImageSize = 16 | 32 | 64 | 128 | 256 | 512 | 1024 | 2048 | 4096;
 export function imageURLFormatter(
   endpoint: string,
-  { format, size }: {
+  {
+    format,
+    size,
+  }: {
     format?: ImageFormat;
     size?: ImageSize;
   } = {},
