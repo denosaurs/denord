@@ -1,6 +1,10 @@
 import { Client } from "../Client.ts";
 import type { channel } from "../discord.ts";
-import { GuildChannel } from "./GuildChannel.ts";
+import {
+  encodePermissionOverwrite,
+  GuildChannel,
+  PermissionOverwrite,
+} from "./GuildChannel.ts";
 
 export class CategoryChannel extends GuildChannel {
   constructor(client: Client, data: channel.CategoryChannel) {
@@ -10,12 +14,24 @@ export class CategoryChannel extends GuildChannel {
   async edit(options: {
     name?: string;
     position?: number | null;
-    permissionOverwrites?: channel.OverwriteSend[] | null;
+    permissionOverwrites?: PermissionOverwrite[] | null;
   }) {
+    const permissionOverwrites =
+      options.permissionOverwrites?.map(({ permissions, id, type }) => {
+        const { allow, deny } = encodePermissionOverwrite(permissions);
+
+        return {
+          id,
+          type,
+          allow,
+          deny,
+        };
+      }) ?? (options.permissionOverwrites as undefined | null);
+
     const channel = await this.client.rest.modifyChannel(this.id, {
       name: options.name,
       position: options.position,
-      permission_overwrites: options.permissionOverwrites,
+      permission_overwrites: permissionOverwrites,
     });
 
     return new CategoryChannel(this.client, channel as channel.CategoryChannel);

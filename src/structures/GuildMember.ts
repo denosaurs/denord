@@ -8,7 +8,7 @@ export class GuildMember extends Base {
   nickname: string | null;
   roles: Snowflake[];
   joinedAt: number;
-  boostingSince?: number | null;
+  boostingSince: number | null;
   deaf: boolean;
   mute: boolean;
   guildId: Snowflake;
@@ -22,11 +22,13 @@ export class GuildMember extends Base {
 
     this.guildId = guildId;
 
-    this.user = data.user;
+    this.user = new User(client, data.user);
     this.nickname = data.nick;
     this.roles = data.roles;
     this.joinedAt = Date.parse(data.joined_at);
-    this.boostingSince = Date.parse(data.premium_since);
+    this.boostingSince = data.premium_since
+      ? Date.parse(data.premium_since)
+      : null;
     this.deaf = data.deaf;
     this.mute = data.mute;
   }

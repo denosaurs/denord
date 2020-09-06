@@ -48,7 +48,10 @@ export namespace auditLog {
     webhooks: webhook.Webhook[];
     users: user.PublicUser[];
     audit_log_entries: Entry[];
-    integrations: Partial<integration.Integration>[];
+    integrations: Pick<
+      integration.Integration,
+      "id" | "name" | "type" | "account"
+    >[];
   }
 
   export interface ChangeKey {
@@ -116,61 +119,133 @@ export namespace auditLog {
 
   export type Change = SpecificChange<keyof ChangeKey>;
 
-  export interface EntryInfo {
-    delete_member_days: string;
-    members_removed: string;
-    channel_id: Snowflake;
-    message_id: Snowflake;
-    count: string;
-    id: Snowflake;
-    type: "member" | "role";
-    role_name: string;
-  }
+  type ActionType =
+    | 1
+    | 10
+    | 11
+    | 12
+    | 13
+    | 14
+    | 15
+    | 20
+    | 21
+    | 22
+    | 23
+    | 24
+    | 25
+    | 26
+    | 27
+    | 28
+    | 30
+    | 31
+    | 32
+    | 40
+    | 41
+    | 42
+    | 50
+    | 51
+    | 52
+    | 60
+    | 61
+    | 62
+    | 72
+    | 73
+    | 74
+    | 75
+    | 80
+    | 81
+    | 82;
 
-  export interface Entry {
+  interface BaseEntry {
     target_id: string | null;
     changes?: Change[];
     user_id: Snowflake;
     id: Snowflake;
-    action_type:
-      | 1
-      | 10
-      | 11
-      | 12
-      | 13
-      | 14
-      | 15
-      | 20
-      | 21
-      | 22
-      | 23
-      | 24
-      | 25
-      | 26
-      | 27
-      | 28
-      | 30
-      | 31
-      | 32
-      | 40
-      | 41
-      | 42
-      | 50
-      | 51
-      | 52
-      | 60
-      | 61
-      | 62
-      | 72
-      | 73
-      | 74
-      | 75
-      | 80
-      | 81
-      | 82;
-    options?: EntryInfo;
+    action_type: ActionType;
+    options: unknown;
     reason?: string;
   }
+
+  interface NonOptionsEntry extends BaseEntry {
+    action_type: Exclude<
+      ActionType,
+      13 | 14 | 15 | 21 | 26 | 27 | 72 | 73 | 74 | 75
+    >;
+    options: undefined;
+  }
+
+  interface ChannelOverwriteEntry extends BaseEntry {
+    action_type: 13 | 14 | 15;
+    options: ChannelOverwriteMember | ChannelOverwriteRole;
+  }
+
+  interface ChannelOverwriteMember {
+    id: Snowflake;
+    type: "member";
+    role_name: undefined;
+  }
+
+  interface ChannelOverwriteRole {
+    id: Snowflake;
+    type: "role";
+    role_name: string;
+  }
+
+  interface MemberPruneEntry extends BaseEntry {
+    action_type: 21;
+    options: {
+      delete_member_days: string;
+      members_removed: string;
+    };
+  }
+
+  interface MemberMoveEntry extends BaseEntry {
+    action_type: 26;
+    options: {
+      channel_id: Snowflake;
+      count: string;
+    };
+  }
+
+  interface MemberDisconnectEntry extends BaseEntry {
+    action_type: 27;
+    options: {
+      count: string;
+    };
+  }
+
+  interface MessageDeleteEntry extends BaseEntry {
+    action_type: 72;
+    options: {
+      channel_id: Snowflake;
+      count: string;
+    };
+  }
+
+  interface MessageBulkDeleteEntry extends BaseEntry {
+    action_type: 73;
+    options: {
+      count: string;
+    };
+  }
+
+  interface MessagePinEntry extends BaseEntry {
+    action_type: 74 | 75;
+    options: {
+      channel_id: Snowflake;
+      message_id: Snowflake;
+    };
+  }
+
+  export type Entry =
+    | MemberPruneEntry
+    | MemberMoveEntry
+    | MessagePinEntry
+    | MessageDeleteEntry
+    | MessageBulkDeleteEntry
+    | MemberDisconnectEntry
+    | ChannelOverwriteEntry
+    | NonOptionsEntry;
 
   export interface Params {
     user_id: Snowflake;
@@ -437,6 +512,7 @@ export namespace emoji {
     require_colons?: boolean;
     managed?: boolean;
     animated?: boolean;
+    available?: boolean;
   }
 
   export interface Create {
@@ -500,7 +576,7 @@ export namespace guild {
     large: boolean;
     unavailable: boolean;
     member_count: number;
-    voice_states: Partial<Omit<voice.State, "guild_id">>[];
+    voice_states: Omit<voice.State, "guild_id">[];
     members: guildMember.GuildMember[];
     channels: channel.GuildChannels[];
     presences: Partial<PresenceUpdateEvent>[];
@@ -683,11 +759,11 @@ export namespace guild {
 
 export namespace guildMember {
   export interface GuildMember {
-    user?: user.PublicUser;
+    user: user.PublicUser;
     nick: string | null;
     roles: Snowflake[];
     joined_at: ISO8601;
-    premium_since?: ISO8601 | null;
+    premium_since: ISO8601 | null;
     deaf: boolean;
     mute: boolean;
   }
@@ -809,15 +885,14 @@ export namespace message {
     channel_id: Snowflake;
     guild_id?: Snowflake;
     author: user.PublicUser;
-    member?: Partial<guildMember.GuildMember>;
+    member?: Omit<guildMember.GuildMember, "user">;
     content: string;
     timestamp: ISO8601;
     edited_timestamp: ISO8601 | null;
     tts: boolean;
     mention_everyone: boolean;
-    mentions: (user.PublicUser & {
-      member: Partial<guildMember.GuildMember>;
-    })[];
+    mentions:
+      (user.PublicUser & { member?: Omit<guildMember.GuildMember, "user"> })[];
     mention_roles: Snowflake[];
     mention_channels?: channel.Mention[];
     attachments: Attachment[];
@@ -915,7 +990,7 @@ export namespace message {
     message_id: Snowflake;
     guild_id?: Snowflake;
     member?: guildMember.GuildMember;
-    emoji: Partial<emoji.Emoji>; //TODO
+    emoji: Pick<emoji.Emoji, "id" | "name" | "animated">;
   }
 
   export type ReactionRemoveEvent = Omit<ReactionAddEvent, "member">;
@@ -989,7 +1064,6 @@ export namespace user {
     avatar: string | null;
     bot?: boolean;
     system?: boolean;
-    premium_type?: 0 | 1 | 2;
     public_flags?: number;
   }
 
@@ -1000,6 +1074,7 @@ export namespace user {
     email: string | null;
     flags?: number;
     phone?: string | null;
+    premium_type?: 0 | 1 | 2;
   }
 
   export interface Connection {
@@ -1014,10 +1089,7 @@ export namespace user {
     visibility: 0 | 1;
   }
 
-  export interface Modify {
-    username?: string;
-    avatar?: string | null;
-  }
+  export type Modify = Partial<Pick<PrivateUser, "username" | "avatar">>;
 
   export interface GetGuilds {
     before?: Snowflake;
@@ -1116,9 +1188,9 @@ export namespace gateway {
     t: T;
   }
 
-  export type SpecificEventPayload<
-    T extends keyof Events,
-  > = T extends keyof Events ? EventPayload<T> : never;
+  export type SpecificEventPayload<T extends keyof Events> = T extends
+    keyof Events ? EventPayload<T>
+    : never;
 
   interface OpPayload<T extends keyof Ops> {
     op: T;
@@ -1137,8 +1209,7 @@ export namespace gateway {
 
   export interface Ops {
     1: number;
-    2: {
-      // Voice
+    2: { // Voice
       ssrc: number;
       ip: string;
       port: number;
@@ -1147,8 +1218,7 @@ export namespace gateway {
     };
     6: number; // Voice
     7: undefined;
-    8: {
-      // Voice
+    8: { // Voice
       heartbeat_interval: number;
     };
     9: boolean;

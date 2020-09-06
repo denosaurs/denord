@@ -1,26 +1,34 @@
 import { SnowflakeBase } from "./Base.ts";
-import { Client } from "../Client.ts";
+import { Channel, Client } from "../Client.ts";
 import type {
   channel,
-  emoji,
   guild,
   guildMember,
   role,
   Snowflake,
 } from "../discord.ts";
-import { ImageFormat, ImageSize, imageURLFormatter } from "../utils/utils.ts";
+import {
+  encodePermissionOverwrite,
+  ImageFormat,
+  ImageSize,
+  imageURLFormatter,
+} from "../utils/utils.ts";
 import { Role } from "./Role.ts";
 import { GuildMember } from "./GuildMember.ts";
 import { inverseTypeMap as channelInverseTypeMap } from "./BaseChannel.ts";
+import type { DMChannel } from "./DMChannel.ts";
+import type { GroupDMChannel } from "./GroupDMChannel.ts";
+import type { PermissionOverwrite } from "./GuildChannel.ts";
+import { inverseActionType, parseAuditLog } from "./AuditLog.ts";
+import { Integration, parseIntegration } from "./Integration.ts";
+import { Emoji, parseEmoji } from "./Emoji.ts";
 
 export class Guild extends SnowflakeBase {
   name: string;
   icon: string | null;
   splash: string | null;
   discoverySplash: string | null;
-  amOwner: boolean;
   ownerId: Snowflake;
-  permissions: bigint;
   region: string;
   afkChannelId: Snowflake | null;
   afkTimeout: number;
@@ -64,8 +72,8 @@ export class Guild extends SnowflakeBase {
     this.roles = new Map<Snowflake, Role>(
       data.roles.map((role) => [role.id, new Role(client, role, data.id)]),
     );
-    this.emojis = new Map<Snowflake, emoji.Emoji>(
-      data.emojis.map((emoji) => [emoji.id!, emoji]),
+    this.emojis = new Map<Snowflake, Emoji>(
+      data.emojis.map((emoji) => [emoji.id!, parseEmoji(client, emoji)]),
     );
     this.features = data.features;
     this.requiresMFA = data.mfa_level;
@@ -157,10 +165,23 @@ export class Guild extends SnowflakeBase {
     userLimit?: number;
     rateLimitPerUser?: number;
     position?: number;
-    permissionOverwrites?: channel.OverwriteSend[];
+    permissionOverwrites?: PermissionOverwrite[];
     parentId?: Snowflake;
     nsfw?: boolean;
   }) {
+    const permissionOverwrites = options.permissionOverwrites?.map(
+      ({ permissions, id, type }) => {
+        const { allow, deny } = encodePermissionOverwrite(permissions);
+
+        return {
+          id,
+          type,
+          allow,
+          deny,
+        };
+      },
+    );
+
     const channel = await this.client.rest.createGuildChannel(this.id, {
       name,
       type: options.type ? channelInverseTypeMap[options.type] : undefined,
@@ -169,12 +190,15 @@ export class Guild extends SnowflakeBase {
       user_limit: options.userLimit,
       rate_limit_per_user: options.rateLimitPerUser,
       position: options.position,
-      permission_overwrites: options.permissionOverwrites,
+      permission_overwrites: permissionOverwrites,
       parent_id: options.parentId,
       nsfw: options.nsfw,
     });
 
-    return this.client.newChannelSwitch(channel);
+    return this.client.newChannelSwitch(channel) as Exclude<
+      Channel,
+      DMChannel | GroupDMChannel
+    >;
   }
 
   async editChannelsPositions(options: channel.GuildPosition[]) {
@@ -188,7 +212,7 @@ export class Guild extends SnowflakeBase {
       roles,
     });
 
-    return emoji; //TODO
+    return parseEmoji(this.client, emoji);
   }
 
   async modifyEmoji(emojiId: string, options: {
@@ -201,7 +225,7 @@ export class Guild extends SnowflakeBase {
       options,
     );
 
-    return emoji; //TODO
+    return parseEmoji(this.client, emoji);
   }
 
   async deleteEmoji(emojiId: string) {
@@ -220,16 +244,19 @@ export class Guild extends SnowflakeBase {
 
   async getAuditLog(options: {
     userId: Snowflake;
-    actionType: number;
+    actionType: keyof typeof inverseActionType;
     before: Snowflake;
     limit: number;
   }) {
-    return this.client.rest.getGuildAuditLog(this.id, { //TODO
-      user_id: options.userId,
-      action_type: options.actionType,
-      before: options.before,
-      limit: options.limit,
-    });
+    return parseAuditLog(
+      this.client,
+      await this.client.rest.getGuildAuditLog(this.id, {
+        user_id: options.userId,
+        action_type: inverseActionType[options.actionType],
+        before: options.before,
+        limit: options.limit,
+      }),
+    );
   }
 
   async prune(options: {
@@ -256,6 +283,14 @@ export class Guild extends SnowflakeBase {
     return prune.pruned;
   }
 
+  async getIntegrations() {
+    const integrations = await this.client.rest.getGuildIntegrations(this.id);
+
+    return integrations.map((integration) =>
+      parseIntegration(this.client, integration)
+    );
+  }
+
   async addIntegration(integrationId: Snowflake, type: string) {
     await this.client.rest.createGuildIntegration(this.id, {
       id: integrationId,
@@ -267,11 +302,13 @@ export class Guild extends SnowflakeBase {
     await this.client.rest.syncGuildIntegration(this.id, integrationId);
   }
 
-  async editIntegration(integrationId: Snowflake, options: {
-    expireBehavior?: 0 | 1;
-    expireGracePeriod?: number;
-    enableEmoticons?: boolean;
-  }) {
+  async editIntegration(
+    integrationId: Snowflake,
+    options: Pick<
+      Integration,
+      "expireBehavior" | "expireGracePeriod" | "enableEmoticons"
+    >,
+  ) {
     await this.client.rest.modifyGuildIntegration(this.id, integrationId, {
       expire_behavior: options.expireBehavior,
       expire_grace_period: options.expireGracePeriod,

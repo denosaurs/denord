@@ -1,15 +1,8 @@
 import EventEmitter from "./utils/EventEmitter.ts";
 import { ShardManager } from "./gateway/ShardManager.ts";
 import { RestClient } from "./rest/RestClient.ts";
-import type {
-  channel,
-  guild,
-  message,
-  role,
-  Snowflake,
-  user,
-} from "./discord.ts";
-import { User } from "./structures/User.ts";
+import type { channel, guild, message, role, Snowflake } from "./discord.ts";
+import { PrivateUser, User } from "./structures/User.ts";
 import { Guild } from "./structures/Guild.ts";
 import { GuildMember } from "./structures/GuildMember.ts";
 import { VoiceChannel } from "./structures/VoiceChannel.ts";
@@ -31,13 +24,33 @@ export type Channel =
   | NewsChannel
   | StoreChannel;
 
-export interface SendMessage {
-  content?: string;
+export interface BaseSendMessage {
   tts?: boolean;
-  file?: File;
-  embed?: Embed;
   allowedMentions?: message.AllowedMentions;
 }
+
+export interface SendMessageContent extends BaseSendMessage {
+  content: string;
+  file?: File;
+  embed?: Embed;
+}
+
+export interface SendMessageFile extends BaseSendMessage {
+  content?: string;
+  file: File;
+  embed?: Embed;
+}
+
+export interface SendMessageEmbed extends BaseSendMessage {
+  content?: string;
+  file?: File;
+  embed: Embed;
+}
+
+export type SendMessage =
+  | SendMessageContent
+  | SendMessageFile
+  | SendMessageEmbed;
 
 export interface Events {
   ready: undefined;
@@ -60,7 +73,7 @@ export class Client extends EventEmitter<Events> {
   guilds = new Map<Snowflake, Guild>();
   users = new Map<Snowflake, User>();
 
-  user?: ClientUser;
+  user?: PrivateUser;
 
   constructor(shardAmount: number = 1, intents?: number) {
     super();
@@ -71,7 +84,7 @@ export class Client extends EventEmitter<Events> {
       switch (e.name) {
         case "READY":
           this.emit("shardReady", shardCount);
-          this.user = new ClientUser(this, e.data.user);
+          this.user = new PrivateUser(this, e.data.user);
           if (++shardCount === shardAmount) {
             this.emit("ready", undefined);
           }
@@ -98,7 +111,7 @@ export class Client extends EventEmitter<Events> {
   }
 
   connect(token: string) {
-    this.rest = new RestClient(token);
+    this.rest.token = token;
     this.gateway.connect(token);
   }
 
@@ -141,7 +154,7 @@ export class Client extends EventEmitter<Events> {
       default_message_notifications:
         typeof options.defaultNotifyAllMessages === "boolean"
           ? +!options.defaultNotifyAllMessages as 0 | 1
-          : options.defaultNotifyAllMessages,
+          : undefined,
       explicit_content_filter: options.explicitContentFilter,
       roles: options.roles,
       channels: options.channels,
@@ -182,25 +195,5 @@ export class Client extends EventEmitter<Events> {
     const messages = await this.rest.getPinnedMessages(channelId);
 
     return messages.map((message) => new Message(this, message));
-  }
-}
-
-export class ClientUser extends User {
-  email: string | null;
-  flags: number;
-  locale: string;
-  mfaEnabled: boolean;
-  phone?: string | null;
-  verified: boolean;
-
-  constructor(client: Client, data: user.PrivateUser) {
-    super(client, data);
-
-    this.email = data.email;
-    this.flags = data.flags ?? 0;
-    this.locale = data.locale;
-    this.mfaEnabled = data.mfa_enabled;
-    this.phone = data.phone;
-    this.verified = data.verified;
   }
 }

@@ -10,7 +10,6 @@ export class User extends SnowflakeBase {
   avatar: string | null;
   bot: boolean;
   system: boolean;
-  premiumType: 0 | 1 | 2;
   publicFlags: number;
 
   constructor(client: Client, data: user.PublicUser) {
@@ -21,7 +20,6 @@ export class User extends SnowflakeBase {
     this.avatar = data.avatar;
     this.bot = !!data.bot;
     this.system = !!data.system;
-    this.premiumType = data.premium_type ?? 0;
     this.publicFlags = data.public_flags ?? 0;
   }
 
@@ -62,5 +60,33 @@ export class User extends SnowflakeBase {
         await this.client.rest.createDM({ recipient_id: this.id }),
       );
     }
+  }
+}
+
+export class PrivateUser extends User {
+  email: string | null;
+  flags: number;
+  locale: string;
+  mfaEnabled: boolean;
+  phone?: string | null;
+  verified: boolean;
+  premiumType: 0 | 1 | 2;
+
+  constructor(client: Client, data: user.PrivateUser) {
+    super(client, data);
+
+    this.email = data.email;
+    this.flags = data.flags ?? 0;
+    this.locale = data.locale;
+    this.mfaEnabled = data.mfa_enabled;
+    this.phone = data.phone;
+    this.verified = data.verified;
+    this.premiumType = data.premium_type ?? 0;
+  }
+
+  async edit(options: user.Modify) {
+    const user = await this.client.rest.modifyCurrentUser(options);
+
+    return new PrivateUser(this.client, user);
   }
 }

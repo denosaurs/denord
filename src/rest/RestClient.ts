@@ -24,7 +24,7 @@ export class RestClient {
     this.bot = bot ?? true;
   }
 
-  private async request(
+  private async request( //TODO reason
     endpoint: string,
     {
       method,
