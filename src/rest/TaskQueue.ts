@@ -1,8 +1,10 @@
 /** Ratelimit options for TaskQueue */
 export interface RateLimit {
+  bucket?: string;
   limit: number;
-  latency: number;
-  offset: number;
+  remaining: number;
+  reset?: number;
+  resetAfter: number;
 }
 
 /** Representation of a runnable task */
@@ -17,20 +19,15 @@ interface Runtime {
 
 /** Ratelimit tasks and execute them sequentially  */
 export class TaskQueue {
-  remaining: number;
-  rate: RateLimit;
+  ratelimit: RateLimit;
 
   queue: Runtime[];
   busy?: number;
 
-  reset: number;
-
   constructor(rate: RateLimit) {
-    this.rate = rate;
-    this.remaining = rate.limit;
+    this.ratelimit = rate;
     this.queue = [];
     this.busy = undefined;
-    this.reset = 0;
   }
 
   private run(override: boolean) {
@@ -39,25 +36,27 @@ export class TaskQueue {
         clearTimeout(this.busy);
         this.busy = undefined;
       }
+      console.log("Queue empty");
       return;
     }
     if (this.busy && !override) {
+      console.log("Busy");
       return;
     }
     const now = Date.now();
-    const offset = this.rate.latency + (this.rate.offset || 0);
-    if (!this.reset || this.reset < now - offset) {
-      this.reset = now;
-      this.remaining = this.rate.limit;
+    const delay = this.ratelimit.resetAfter;
+    if (!this.ratelimit.reset || this.ratelimit.reset < now - delay) {
+      this.ratelimit.reset = now - delay;
+      this.ratelimit.remaining = this.ratelimit.limit;
     }
-    if (this.remaining <= 0) {
+    if (this.ratelimit.remaining <= 0) {
       this.busy = setTimeout(() => {
         this.busy = undefined;
         this.run(true);
-      }, Math.max(0, (this.reset || 0) - now + offset) + 1);
+      }, Math.max(0, (this.ratelimit.reset || 0) - now + delay) + 1);
       return;
     }
-    --this.remaining;
+    --this.ratelimit.remaining;
 
     this.busy = 1;
     const runtime = this.queue.shift()!;
