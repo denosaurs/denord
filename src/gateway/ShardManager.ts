@@ -16,11 +16,11 @@ interface rawEvents extends Events {
 }
 
 /**
- * A shard manager that manages all shards that are used to conect to the discord gateway
+ * A shard manager that manages all shards that are used to connect to the discord gateway
  */
 export class ShardManager extends EventEmitter<rawEvents> {
   #shards: Worker[] = [];
-  #connectPromises: Map<string, () => void> = new Map();
+  #resolveConnect!: () => void;
   shardAmount: number;
 
   /**
@@ -44,10 +44,8 @@ export class ShardManager extends EventEmitter<rawEvents> {
         let event = msg.data as { name: string; data: any };
 
         switch (event.name) {
-          case "EVENT":
-            let payload = event.data as gateway.SpecificEventPayload<
-              keyof Events
-            >;
+          case "EVENT": {
+            const payload = event.data as gateway.SpecificEventPayload<keyof Events>;
 
             switch (payload.t) {
               case "READY":
@@ -98,6 +96,7 @@ export class ShardManager extends EventEmitter<rawEvents> {
                 throw new Error("Unexpected event: " + payload);
             }
             break;
+          }
           case "CLOSE":
             console.log(`Shard ${name} closed`);
             break;
@@ -108,9 +107,7 @@ export class ShardManager extends EventEmitter<rawEvents> {
                 data: event.data,
               });
             } else {
-              const resolve = this.#connectPromises.get(event.data.bits);
-              if (resolve) resolve();
-              this.#connectPromises.delete(event.data.bits);
+              this.#resolveConnect();
             }
             break;
         }
@@ -136,15 +133,10 @@ export class ShardManager extends EventEmitter<rawEvents> {
    */
   async connect(token: string): Promise<void> {
     return new Promise((resolve) => {
-      const rnd = crypto.getRandomValues(new Uint8Array(16));
-      const bits: string = [...rnd].map((bit): string => {
-        const s: string = bit.toString(16);
-        return bit < 0x10 ? "0" + s : s;
-      }).join("");
-      this.#connectPromises.set(bits, resolve);
+      this.#resolveConnect = resolve;
       this.#shards[0].postMessage({
         name: "CONNECT",
-        data: { token, bits },
+        data: token,
       });
     });
   }

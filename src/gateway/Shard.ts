@@ -150,8 +150,8 @@ class Shard {
     }
   }
 
-  async connect(data: any) {
-    this.token = data.token;
+  async connect(token: string) {
+    this.token = token;
 
     this.socket = await connectWebSocket(URLs.Gateway);
 
@@ -203,7 +203,7 @@ let shard: Shard;
 
 // @ts-ignore
 onmessage = async (msg: MessageEvent) => {
-  let event = msg.data as { name: string; data: any };
+  const event = msg.data as { name: string; data: any };
   switch (event.name) {
     case "INIT":
       shard = new Shard(
@@ -213,7 +213,6 @@ onmessage = async (msg: MessageEvent) => {
       );
       break;
     case "CONNECT":
-      console.log(event.data);
       await shard.connect(event.data);
       setTimeout(() => {
         postMessage({
