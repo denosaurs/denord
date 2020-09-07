@@ -139,9 +139,9 @@ export class Client extends EventEmitter<Events> {
     });
   }
 
-  connect(token: string) {
+  async connect(token: string) {
     this.rest.token = token;
-    this.gateway.connect(token);
+    await this.gateway.connect(token);
   }
 
   newChannelSwitch(data: channel.Channel): Channel {
