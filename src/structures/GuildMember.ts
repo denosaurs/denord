@@ -1,5 +1,5 @@
 import { Base } from "./Base.ts";
-import { Client } from "../Client.ts";
+import type { Client } from "../Client.ts";
 import type { guild, guildMember, Snowflake } from "../discord.ts";
 import { User } from "./User.ts";
 

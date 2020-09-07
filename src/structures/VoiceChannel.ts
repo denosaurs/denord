@@ -1,9 +1,9 @@
-import { Client } from "../Client.ts";
+import type { Client } from "../Client.ts";
 import type { channel, Snowflake } from "../discord.ts";
 import {
-  encodePermissionOverwrite,
   GuildChannel,
   PermissionOverwrite,
+  unparsePermissionOverwrite,
 } from "./GuildChannel.ts";
 
 export class VoiceChannel extends GuildChannel {
@@ -27,7 +27,7 @@ export class VoiceChannel extends GuildChannel {
   }) {
     const permissionOverwrites =
       options.permissionOverwrites?.map(({ permissions, id, type }) => {
-        const { allow, deny } = encodePermissionOverwrite(permissions);
+        const { allow, deny } = unparsePermissionOverwrite(permissions);
 
         return {
           id,

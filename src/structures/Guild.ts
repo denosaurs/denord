@@ -1,5 +1,5 @@
 import { SnowflakeBase } from "./Base.ts";
-import { Channel, Client } from "../Client.ts";
+import type { Channel, Client } from "../Client.ts";
 import type {
   channel,
   guild,
@@ -7,21 +7,17 @@ import type {
   role,
   Snowflake,
 } from "../discord.ts";
-import {
-  encodePermissionOverwrite,
-  ImageFormat,
-  ImageSize,
-  imageURLFormatter,
-} from "../utils/utils.ts";
+import { ImageFormat, ImageSize, imageURLFormatter } from "../utils/utils.ts";
 import { Role } from "./Role.ts";
 import { GuildMember } from "./GuildMember.ts";
 import { inverseTypeMap as channelInverseTypeMap } from "./BaseChannel.ts";
 import type { DMChannel } from "./DMChannel.ts";
 import type { GroupDMChannel } from "./GroupDMChannel.ts";
 import type { PermissionOverwrite } from "./GuildChannel.ts";
+import { unparsePermissionOverwrite } from "./GuildChannel.ts";
 import { inverseActionType, parseAuditLog } from "./AuditLog.ts";
 import { Integration, parseIntegration } from "./Integration.ts";
-import { Emoji, parseEmoji } from "./Emoji.ts";
+import { GuildEmoji, parseEmoji } from "./Emoji.ts";
 
 export class Guild extends SnowflakeBase {
   name: string;
@@ -36,6 +32,7 @@ export class Guild extends SnowflakeBase {
   defaultNotifyAllMessages: boolean;
   explicitContentFilter: guild.ExplicitContentFilter;
   roles: Map<Snowflake, Role>;
+  emojis: Map<Snowflake, GuildEmoji>;
   requiresMFA: boolean;
   applicationId: Snowflake | null;
   systemChannelId: Snowflake | null;
@@ -69,11 +66,13 @@ export class Guild extends SnowflakeBase {
     this.verificationLevel = data.verification_level;
     this.defaultNotifyAllMessages = !data.default_message_notifications;
     this.explicitContentFilter = data.explicit_content_filter;
-    this.roles = new Map<Snowflake, Role>(
+    this.roles = new Map(
       data.roles.map((role) => [role.id, new Role(client, role, data.id)]),
     );
-    this.emojis = new Map<Snowflake, Emoji>(
-      data.emojis.map((emoji) => [emoji.id!, parseEmoji(client, emoji)]),
+    this.emojis = new Map(
+      data.emojis.map((
+        emoji,
+      ) => [emoji.id, parseEmoji(client, emoji) as GuildEmoji]),
     );
     this.features = data.features;
     this.requiresMFA = data.mfa_level;
@@ -171,7 +170,7 @@ export class Guild extends SnowflakeBase {
   }) {
     const permissionOverwrites = options.permissionOverwrites?.map(
       ({ permissions, id, type }) => {
-        const { allow, deny } = encodePermissionOverwrite(permissions);
+        const { allow, deny } = unparsePermissionOverwrite(permissions);
 
         return {
           id,

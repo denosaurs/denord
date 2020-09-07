@@ -13,6 +13,11 @@ export interface Emoji {
   available?: boolean;
 }
 
+export interface GuildEmoji extends Emoji {
+  id: Snowflake;
+  name: string;
+}
+
 export function parseEmoji(
   client: Client,
   { user, require_colons, ...emoji }: emoji.Emoji,

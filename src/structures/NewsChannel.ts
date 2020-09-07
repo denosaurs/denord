@@ -1,7 +1,7 @@
 import { EditOptions, TextBasedGuildChannel } from "./TextBasedGuildChannel.ts";
-import { Client } from "../Client.ts";
+import type { Client } from "../Client.ts";
 import type { channel } from "../discord.ts";
-import { TextChannel } from "./TextChannel.ts";
+import type { TextChannel } from "./TextChannel.ts";
 
 export class NewsChannel extends TextBasedGuildChannel {
   constructor(client: Client, data: channel.NewsChannel) {

@@ -1,5 +1,5 @@
 import { SnowflakeBase } from "./Base.ts";
-import { Client } from "../Client.ts";
+import type { Client } from "../Client.ts";
 import type { role, Snowflake } from "../discord.ts";
 
 export const permissionMap = {
