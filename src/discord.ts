@@ -707,6 +707,10 @@ export namespace guild {
     include_roles?: Snowflake[];
   }
 
+  export interface DryPruneData {
+    pruned: number;
+  }
+
   export interface PruneData {
     pruned: number | null;
   }
@@ -788,6 +792,10 @@ export namespace guildMember {
 
   export interface ModifyCurrentNick {
     nick?: string | null;
+  }
+
+  export interface ModifyCurrentNickResponse {
+    nick: string;
   }
 
   export interface Modify extends ModifyCurrentNick {

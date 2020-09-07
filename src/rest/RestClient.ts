@@ -610,11 +610,11 @@ export class RestClient {
   async modifyCurrentUserNick(
     guildId: Discord.Snowflake,
     data: Discord.guildMember.ModifyCurrentNick,
-  ): Promise<Discord.guildMember.GuildMember> {
+  ): Promise<Discord.guildMember.ModifyCurrentNickResponse> {
     return this.request(`guilds/${guildId}/members/@me/nick`, {
       method: "PATCH",
       data,
-    }) as Promise<Discord.guildMember.GuildMember>;
+    }) as Promise<Discord.guildMember.ModifyCurrentNickResponse>;
   }
 
   async addGuildMemberRole(
@@ -746,11 +746,11 @@ export class RestClient {
   async getGuildPruneCount(
     guildId: Discord.Snowflake,
     params: Discord.guild.PruneCount,
-  ): Promise<Discord.guild.PruneData> {
+  ): Promise<Discord.guild.DryPruneData> {
     return this.request(`guilds/${guildId}/prune`, {
       method: "GET",
       params,
-    }) as Promise<Discord.guild.PruneData>;
+    }) as Promise<Discord.guild.DryPruneData>;
   }
 
   async beginGuildPrune(

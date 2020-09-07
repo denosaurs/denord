@@ -71,15 +71,16 @@ export class Role extends SnowflakeBase {
     return `<@&${this.id}>`;
   }
 
-  async delete() {
-    await this.client.rest.deleteGuildRole(this.guildId, this.id);
+  async delete(reason?: string) {
+    await this.client.rest.deleteGuildRole(this.guildId, this.id, reason);
   }
 
-  async edit(options: {}) {
+  async edit(options: {}, reason?: string) {
     const role = await this.client.rest.modifyGuildRole(
       this.guildId,
       this.id,
       options,
+      reason,
     );
 
     return new Role(this.client, role, this.guildId);

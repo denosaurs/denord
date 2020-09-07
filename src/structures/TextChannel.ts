@@ -18,8 +18,11 @@ export class TextChannel extends TextBasedGuildChannel {
     return super.edit(options);
   }
 
-  async delete() {
-    const channel = await this.client.rest.deleteChannel(this.id) as channel.TextChannel;
+  async delete(reason?: string) {
+    const channel = await this.client.rest.deleteChannel(
+      this.id,
+      reason,
+    ) as channel.TextChannel;
     return new TextChannel(this.client, channel);
   }
 }

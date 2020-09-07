@@ -34,7 +34,10 @@ export abstract class TextBasedGuildChannel extends GuildChannel {
     this.topic = data.topic;
   }
 
-  async edit(options: EditOptions): Promise<TextChannel | NewsChannel> {
+  async edit(
+    options: EditOptions,
+    reason?: string,
+  ): Promise<TextChannel | NewsChannel> {
     const permissionOverwrites =
       options.permissionOverwrites?.map(({ permissions, id, type }) => {
         const { allow, deny } = unparsePermissionOverwrite(permissions);
@@ -56,7 +59,7 @@ export abstract class TextBasedGuildChannel extends GuildChannel {
       rate_limit_per_user: options.slowMode,
       permission_overwrites: permissionOverwrites,
       parent_id: options.parentId,
-    });
+    }, reason);
 
     if (channel.type === 0) {
       return new TextChannel(this.client, channel);
@@ -77,9 +80,9 @@ export abstract class TextBasedGuildChannel extends GuildChannel {
     return this.client.getPins(this.id);
   }
 
-  async bulkDeleteMessages(messageIds: Snowflake[]) {
+  async bulkDeleteMessages(messageIds: Snowflake[], reason?: string) {
     await this.client.rest.bulkDeleteMessages(this.id, {
       messages: messageIds,
-    });
+    }, reason);
   }
 }

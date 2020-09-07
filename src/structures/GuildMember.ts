@@ -37,46 +37,55 @@ export class GuildMember extends Base {
     await this.client.rest.createGuildBan(this.guildId, this.user.id, options);
   }
 
-  async kick() {
-    await this.client.rest.removeGuildMember(this.guildId, this.user.id);
+  async kick(reason?: string) {
+    await this.client.rest.removeGuildMember(
+      this.guildId,
+      this.user.id,
+      reason,
+    );
   }
 
-  async modify(options: guildMember.Modify) {
+  async modify(options: guildMember.Modify, reason?: string) { //TODO overload
     let newMember;
     const keys = Object.keys(options);
     if (
       this.client.user!.id === this.user.id &&
       (keys.length === 1 && keys[0] === "nick")
     ) {
-      newMember = await this.client.rest.modifyCurrentUserNick(
-        this.guildId,
-        this.user.id,
-        options,
-      );
+      newMember = {
+        ...this.raw,
+        ...await this.client.rest.modifyCurrentUserNick(
+          this.guildId,
+          options,
+        ),
+      };
     } else {
       newMember = await this.client.rest.modifyGuildMember(
         this.guildId,
         this.user.id,
         options,
+        reason,
       );
     }
 
     return new GuildMember(this.client, newMember, this.guildId);
   }
 
-  async addRole(roleId: Snowflake) {
+  async addRole(roleId: Snowflake, reason?: string) {
     await this.client.rest.addGuildMemberRole(
       this.guildId,
       this.user.id,
       roleId,
+      reason,
     );
   }
 
-  async removeRole(roleId: Snowflake) {
+  async removeRole(roleId: Snowflake, reason?: string) {
     await this.client.rest.removeGuildMemberRole(
       this.guildId,
       this.user.id,
       roleId,
+      reason,
     );
   }
 }
