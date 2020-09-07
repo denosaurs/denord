@@ -18,6 +18,41 @@ import { unparsePermissionOverwrite } from "./GuildChannel.ts";
 import { inverseActionType, parseAuditLog } from "./AuditLog.ts";
 import { Integration, parseIntegration } from "./Integration.ts";
 import { GuildEmoji, parseEmoji } from "./Emoji.ts";
+import type { StoreChannel } from "./StoreChannel.ts";
+import type { NewsChannel } from "./NewsChannel.ts";
+import type { CategoryChannel } from "./CategoryChannel.ts";
+import type { VoiceChannel } from "./VoiceChannel.ts";
+import type { TextChannel } from "./TextChannel.ts";
+
+interface CreateChannel {
+  type?: Exclude<keyof typeof channelInverseTypeMap, "DM" | "groupDM">;
+  topic?: string;
+  bitrate?: number;
+  userLimit?: number;
+  slowMode?: number;
+  position?: number;
+  permissionOverwrites?: PermissionOverwrite[];
+  parentId?: Snowflake;
+  nsfw?: boolean;
+}
+
+interface BasePrune {
+  computePruneCount?: boolean;
+  days?: number;
+  includeRoles?: Snowflake[];
+  dry?: boolean;
+}
+
+interface DryPrune extends BasePrune {
+  computePruneCount: undefined;
+  dry: true;
+}
+
+interface RealPrune extends BasePrune {
+  dry?: false;
+}
+
+type Prune = DryPrune | RealPrune;
 
 export class Guild extends SnowflakeBase {
   name: string;
@@ -128,7 +163,7 @@ export class Guild extends SnowflakeBase {
     rulesChannelId?: Snowflake | null;
     publicUpdatesChannelId?: Snowflake | null;
     preferredLocale?: string | null;
-  }) {
+  }, reason?: string) {
     const guild = await this.client.rest.modifyGuild(this.id, {
       name: options.name,
       region: options.region,
@@ -148,26 +183,45 @@ export class Guild extends SnowflakeBase {
       rules_channel_id: options.rulesChannelId,
       public_updates_channel_id: options.publicUpdatesChannelId,
       preferred_locale: options.preferredLocale,
-    });
+    }, reason);
 
     return new Guild(this.client, guild);
   }
 
-  async unban(userId: Snowflake) {
-    await this.client.rest.removeGuildBan(this.id, userId);
+  async unban(userId: Snowflake, reason?: string) {
+    await this.client.rest.removeGuildBan(this.id, userId, reason);
   }
 
-  async createChannel(name: string, options: {
-    type?: Exclude<keyof typeof channelInverseTypeMap, "DM" | "groupDM">;
-    topic?: string;
-    bitrate?: number;
-    userLimit?: number;
-    rateLimitPerUser?: number;
-    position?: number;
-    permissionOverwrites?: PermissionOverwrite[];
-    parentId?: Snowflake;
-    nsfw?: boolean;
-  }) {
+  async createChannel(
+    name: string,
+    options?: CreateChannel & { type?: "text" },
+    reason?: string,
+  ): Promise<TextChannel>;
+  async createChannel(
+    name: string,
+    options?: CreateChannel & { type: "voice" },
+    reason?: string,
+  ): Promise<VoiceChannel>;
+  async createChannel(
+    name: string,
+    options?: CreateChannel & { type: "category" },
+    reason?: string,
+  ): Promise<CategoryChannel>;
+  async createChannel(
+    name: string,
+    options?: CreateChannel & { type: "news" },
+    reason?: string,
+  ): Promise<NewsChannel>;
+  async createChannel(
+    name: string,
+    options?: CreateChannel & { type: "store" },
+    reason?: string,
+  ): Promise<StoreChannel>;
+  async createChannel(
+    name: string,
+    options: CreateChannel = {},
+    reason?: string,
+  ): Promise<Exclude<Channel, DMChannel | GroupDMChannel>> {
     const permissionOverwrites = options.permissionOverwrites?.map(
       ({ permissions, id, type }) => {
         const { allow, deny } = unparsePermissionOverwrite(permissions);
@@ -187,12 +241,12 @@ export class Guild extends SnowflakeBase {
       topic: options.topic,
       bitrate: options.bitrate,
       user_limit: options.userLimit,
-      rate_limit_per_user: options.rateLimitPerUser,
+      rate_limit_per_user: options.slowMode,
       position: options.position,
       permission_overwrites: permissionOverwrites,
       parent_id: options.parentId,
       nsfw: options.nsfw,
-    });
+    }, reason);
 
     return this.client.newChannelSwitch(channel) as Exclude<
       Channel,
@@ -204,12 +258,17 @@ export class Guild extends SnowflakeBase {
     await this.client.rest.modifyGuildChannelPositions(this.id, options);
   }
 
-  async createEmoji(name: string, image: string, roles: Snowflake[] = []) {
+  async createEmoji(
+    name: string,
+    image: string,
+    roles: Snowflake[] = [],
+    reason?: string,
+  ) {
     const emoji = await this.client.rest.createGuildEmoji(this.id, {
       name,
       image,
       roles,
-    });
+    }, reason);
 
     return parseEmoji(this.client, emoji);
   }
@@ -217,22 +276,27 @@ export class Guild extends SnowflakeBase {
   async modifyEmoji(emojiId: string, options: {
     name?: string;
     roles?: Snowflake[] | null;
-  } = {}) {
+  } = {}, reason?: string) {
     const emoji = await this.client.rest.modifyGuildEmoji(
       this.id,
       emojiId,
       options,
+      reason,
     );
 
     return parseEmoji(this.client, emoji);
   }
 
-  async deleteEmoji(emojiId: string) {
-    await this.client.rest.deleteGuildEmoji(this.id, emojiId);
+  async deleteEmoji(emojiId: string, reason?: string) {
+    await this.client.rest.deleteGuildEmoji(this.id, emojiId, reason);
   }
 
-  async createRole(options: role.Create = {}) {
-    const role = await this.client.rest.createGuildRole(this.id, options);
+  async createRole(options: role.Create = {}, reason?: string) {
+    const role = await this.client.rest.createGuildRole(
+      this.id,
+      options,
+      reason,
+    );
 
     return new Role(this.client, role, this.id);
   }
@@ -258,12 +322,15 @@ export class Guild extends SnowflakeBase {
     );
   }
 
-  async prune(options: {
-    computePruneCount?: boolean;
-    days?: number;
-    includeRoles?: Snowflake[];
-    dry?: boolean;
-  } = { dry: false }) {
+  async prune(
+    options: Prune & { dry?: false },
+    reason?: string,
+  ): Promise<number | null>;
+  async prune(options: Prune & { dry: true }): Promise<number>;
+  async prune(
+    options: Prune = { dry: false },
+    reason?: string,
+  ): Promise<number | null> {
     let prune;
 
     if (options.dry) {
@@ -276,7 +343,7 @@ export class Guild extends SnowflakeBase {
         compute_prune_count: options.computePruneCount,
         days: options.days,
         include_roles: options.includeRoles,
-      });
+      }, reason);
     }
 
     return prune.pruned;
@@ -388,3 +455,5 @@ export class Guild extends SnowflakeBase {
       : null;
   }
 }
+
+const x = new Guild({} as Client, {} as guild.GatewayGuild);

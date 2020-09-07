@@ -78,7 +78,7 @@ export abstract class GuildChannel extends BaseChannel {
     }));
   }
 
-  async editPermissions(overwrite: PermissionOverwrite) {
+  async editPermissions(overwrite: PermissionOverwrite, reason?: string) {
     const { allow, deny } = unparsePermissionOverwrite(overwrite.permissions);
 
     await this.client.rest.editChannelPermissions(
@@ -89,11 +89,16 @@ export abstract class GuildChannel extends BaseChannel {
         deny,
         type: overwrite.type,
       },
+      reason,
     );
   }
 
-  async deletePermissions(overwriteId: Snowflake) {
-    await this.client.rest.deleteChannelPermission(this.id, overwriteId);
+  async deletePermissions(overwriteId: Snowflake, reason?: string) {
+    await this.client.rest.deleteChannelPermission(
+      this.id,
+      overwriteId,
+      reason,
+    );
   }
 
   async getInvites() {
@@ -107,13 +112,13 @@ export abstract class GuildChannel extends BaseChannel {
     unique?: boolean;
     targetUser?: Snowflake;
     targetUserType?: 1;
-  } = {}) {
+  } = {}, reason?: string) {
     return await this.client.rest.createChannelInvite(this.id, {
       max_age: options.maxAge,
       max_uses: options.maxAge,
       unique: options.unique,
       target_user: options.targetUser,
       target_user_type: options.targetUserType,
-    });
+    }, reason);
   }
 }

@@ -15,7 +15,7 @@ export class CategoryChannel extends GuildChannel {
     name?: string;
     position?: number | null;
     permissionOverwrites?: PermissionOverwrite[] | null;
-  }) {
+  }, reason?: string) {
     const permissionOverwrites =
       options.permissionOverwrites?.map(({ permissions, id, type }) => {
         const { allow, deny } = unparsePermissionOverwrite(permissions);
@@ -32,7 +32,7 @@ export class CategoryChannel extends GuildChannel {
       name: options.name,
       position: options.position,
       permission_overwrites: permissionOverwrites,
-    });
+    }, reason);
 
     return new CategoryChannel(this.client, channel as channel.CategoryChannel);
   }

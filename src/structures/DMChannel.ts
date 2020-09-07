@@ -31,7 +31,9 @@ export class DMChannel extends BaseChannel {
   }
 
   async delete() {
-    const channel = await this.client.rest.deleteChannel(this.id) as channel.DMChannel;
+    const channel = await this.client.rest.deleteChannel(
+      this.id,
+    ) as channel.DMChannel;
     return new DMChannel(this.client, channel);
   }
 }

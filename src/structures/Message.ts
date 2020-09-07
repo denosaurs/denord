@@ -139,8 +139,12 @@ export class Message extends SnowflakeBase {
     }
   }
 
-  async delete() {
-    await this.client.rest.deleteMessage(this.channelId, this.id);
+  async delete(reason?: string) {
+    await this.client.rest.deleteMessage(
+      this.channelId,
+      this.id,
+      this.guildId && reason,
+    );
   }
 
   async edit(options: {

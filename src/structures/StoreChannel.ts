@@ -21,7 +21,7 @@ export class StoreChannel extends GuildChannel {
     nsfw?: boolean | null;
     permissionOverwrites?: PermissionOverwrite[] | null;
     parentId: Snowflake | null;
-  }) {
+  }, reason?: string) {
     const permissionOverwrites =
       options.permissionOverwrites?.map(({ permissions, id, type }) => {
         const { allow, deny } = unparsePermissionOverwrite(permissions);
@@ -40,13 +40,16 @@ export class StoreChannel extends GuildChannel {
       nsfw: options.nsfw,
       permission_overwrites: permissionOverwrites,
       parent_id: options.parentId,
-    });
+    }, reason);
 
     return new StoreChannel(this.client, channel as channel.StoreChannel);
   }
 
-  async delete() {
-    const channel = await this.client.rest.deleteChannel(this.id) as channel.StoreChannel;
+  async delete(reason?: string) {
+    const channel = await this.client.rest.deleteChannel(
+      this.id,
+      reason,
+    ) as channel.StoreChannel;
     return new StoreChannel(this.client, channel);
   }
 }

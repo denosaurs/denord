@@ -1,7 +1,7 @@
 import type * as Discord from "../discord.ts";
 import { URLs } from "../utils/utils.ts";
 import { DiscordJSONError, HTTPError } from "./Error.ts";
-import { TaskQueue, RateLimit } from "./TaskQueue.ts";
+import { RateLimit, TaskQueue } from "./TaskQueue.ts";
 
 /**
  * A client to make HTTP requests to Discord
@@ -613,12 +613,12 @@ export class RestClient {
     guildId: Discord.Snowflake,
     data: Discord.guildMember.ModifyCurrentNick,
     reason?: string,
-  ): Promise<Discord.guildMember.GuildMember> {
+  ): Promise<Discord.guildMember.ModifyCurrentNickResponse> {
     return this.request(`guilds/${guildId}/members/@me/nick`, {
       method: "PATCH",
       data,
       reason,
-    }) as Promise<Discord.guildMember.GuildMember>;
+    }) as Promise<Discord.guildMember.ModifyCurrentNickResponse>;
   }
 
   async addGuildMemberRole(
@@ -752,11 +752,11 @@ export class RestClient {
   async getGuildPruneCount(
     guildId: Discord.Snowflake,
     params: Discord.guild.PruneCount,
-  ): Promise<Discord.guild.PruneData> {
+  ): Promise<Discord.guild.DryPruneData> {
     return this.request(`guilds/${guildId}/prune`, {
       method: "GET",
       params,
-    }) as Promise<Discord.guild.PruneData>;
+    }) as Promise<Discord.guild.DryPruneData>;
   }
 
   async beginGuildPrune(

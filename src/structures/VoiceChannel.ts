@@ -24,7 +24,7 @@ export class VoiceChannel extends GuildChannel {
     userLimit?: number | null;
     permissionOverwrites?: PermissionOverwrite[] | null;
     parentId: Snowflake | null;
-  }) {
+  }, reason?: string) {
     const permissionOverwrites =
       options.permissionOverwrites?.map(({ permissions, id, type }) => {
         const { allow, deny } = unparsePermissionOverwrite(permissions);
@@ -44,13 +44,16 @@ export class VoiceChannel extends GuildChannel {
       user_limit: options.userLimit,
       permission_overwrites: permissionOverwrites,
       parent_id: options.parentId,
-    });
+    }, reason);
 
     return new VoiceChannel(this.client, channel as channel.VoiceChannel);
   }
 
-  async delete() {
-    const channel = await this.client.rest.deleteChannel(this.id) as channel.VoiceChannel;
+  async delete(reason?: string) {
+    const channel = await this.client.rest.deleteChannel(
+      this.id,
+      reason,
+    ) as channel.VoiceChannel;
     return new VoiceChannel(this.client, channel);
   }
 }
