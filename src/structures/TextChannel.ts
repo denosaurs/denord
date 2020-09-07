@@ -1,7 +1,7 @@
 import { EditOptions, TextBasedGuildChannel } from "./TextBasedGuildChannel.ts";
-import { Client } from "../Client.ts";
+import type { Client } from "../Client.ts";
 import type { channel } from "../discord.ts";
-import { NewsChannel } from "./NewsChannel.ts";
+import type { NewsChannel } from "./NewsChannel.ts";
 
 export class TextChannel extends TextBasedGuildChannel {
   slowMode: number;

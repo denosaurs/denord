@@ -3,7 +3,7 @@ import { Client } from "../Client.ts";
 import type { message, Snowflake } from "../discord.ts";
 import { User } from "./User.ts";
 import { GuildMember } from "./GuildMember.ts";
-import { decodeEmbed, Embed, encodeEmbed } from "./Embed.ts";
+import { Embed, parseEmbed, unparseEmbed } from "./Embed.ts";
 
 const messageTypeMap = {
   0: "normal",
@@ -63,7 +63,7 @@ export class Message extends SnowflakeBase {
     width: number | null;
   }[];
   embeds: Embed[];
-  reactions: message.Reaction[]; // TODO
+  reactions: message.Reaction[];
   pinned: boolean;
   type: typeof messageTypeMap[keyof typeof messageTypeMap];
   activity?: {
@@ -110,7 +110,7 @@ export class Message extends SnowflakeBase {
       ...attachment,
       proxyUrl: proxy_url,
     }));
-    this.embeds = data.embeds.map((embed) => decodeEmbed(embed));
+    this.embeds = data.embeds.map((embed) => parseEmbed(embed));
     this.reactions = data.reactions ?? [];
     // nonce
     this.pinned = data.pinned;
@@ -134,9 +134,8 @@ export class Message extends SnowflakeBase {
     };
 
     const flags = data.flags ?? 0;
-
     for (const [key, val] of Object.entries(flagsMap)) {
-      this.flags[key as keyof typeof flagsMap] = ((flags & +val) === +val);
+      this.flags[key as keyof typeof flagsMap] = ((flags & val) === val);
     }
   }
 
@@ -169,7 +168,7 @@ export class Message extends SnowflakeBase {
       this.id,
       {
         content: options.content,
-        embed: options.embed && encodeEmbed(options.embed),
+        embed: options.embed && unparseEmbed(options.embed),
         flags,
       },
     );

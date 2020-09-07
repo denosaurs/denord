@@ -1,4 +1,4 @@
-import { embed } from "../discord.ts";
+import type { embed } from "../discord.ts";
 
 export interface Embed {
   title?: string;
@@ -43,7 +43,52 @@ export interface Author {
   proxyIconUrl?: string;
 }
 
-export function encodeEmbed({
+export function parseEmbed({
+  timestamp,
+  footer,
+  image,
+  thumbnail,
+  author,
+  ...embed
+}: embed.Embed): Embed {
+  return {
+    ...embed,
+    timestamp: timestamp ? Date.parse(timestamp) : undefined,
+    footer: footer
+      ? {
+        text: footer.text,
+        iconUrl: footer.icon_url,
+        proxyIconUrl: footer.proxy_icon_url,
+      }
+      : undefined,
+    image: image
+      ? {
+        url: image.url,
+        proxyUrl: image.proxy_url,
+        height: image.height,
+        width: image.width,
+      }
+      : undefined,
+    thumbnail: thumbnail
+      ? {
+        url: thumbnail.url,
+        proxyUrl: thumbnail.proxy_url,
+        height: thumbnail.height,
+        width: thumbnail.width,
+      }
+      : undefined,
+    author: author
+      ? {
+        name: author.name,
+        url: author.url,
+        iconUrl: author.icon_url,
+        proxyIconUrl: author.proxy_icon_url,
+      }
+      : undefined,
+  };
+}
+
+export function unparseEmbed({
   timestamp,
   footer,
   image,
@@ -85,51 +130,6 @@ export function encodeEmbed({
         url: author.url,
         icon_url: author.iconUrl,
         proxy_icon_url: author.proxyIconUrl,
-      }
-      : undefined,
-  };
-}
-
-export function decodeEmbed({
-  timestamp,
-  footer,
-  image,
-  thumbnail,
-  author,
-  ...embed
-}: embed.Embed): Embed {
-  return {
-    ...embed,
-    timestamp: timestamp ? Date.parse(timestamp) : undefined,
-    footer: footer
-      ? {
-        text: footer.text,
-        iconUrl: footer.icon_url,
-        proxyIconUrl: footer.proxy_icon_url,
-      }
-      : undefined,
-    image: image
-      ? {
-        url: image.url,
-        proxyUrl: image.proxy_url,
-        height: image.height,
-        width: image.width,
-      }
-      : undefined,
-    thumbnail: thumbnail
-      ? {
-        url: thumbnail.url,
-        proxyUrl: thumbnail.proxy_url,
-        height: thumbnail.height,
-        width: thumbnail.width,
-      }
-      : undefined,
-    author: author
-      ? {
-        name: author.name,
-        url: author.url,
-        iconUrl: author.icon_url,
-        proxyIconUrl: author.proxy_icon_url,
       }
       : undefined,
   };

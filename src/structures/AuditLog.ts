@@ -1,11 +1,14 @@
 import { User } from "./User.ts";
-import type { auditLog, Snowflake } from "../discord.ts";
+import type { auditLog, role, Snowflake } from "../discord.ts";
 import type { Client } from "../Client.ts";
 import type { Integration } from "./Integration.ts";
 import { inverseMap } from "../utils/utils.ts";
+import { parseWebhook, Webhook } from "./Webhook.ts";
+import { Role } from "./Role.ts";
+import { PermissionOverwrite } from "./GuildChannel.ts";
 
 export interface AuditLog {
-  webhooks: any;
+  webhooks: Webhook[];
   users: User[];
   entries: Entry[];
   integrations: Pick<Integration, "id" | "name" | "type" | "account">[];
@@ -154,11 +157,70 @@ type Entry =
   | ChannelOverwriteEntry
   | NonExtraEntry;
 
-export interface Change {
-  newValue?: any;
-  oldValue?: any;
-  key: any;
+export interface ChangeKey {
+  name: string;
+  icon_hash: string;
+  splash_hash: string;
+  owner_id: Snowflake;
+  region: string;
+  afk_channel_id: Snowflake;
+  afk_timeout: number;
+  mfa_level: number;
+  verification_level: number;
+  explicit_content_filter: number;
+  default_message_notifications: number;
+  vanity_url_code: string;
+  roleAdd: Role[];
+  roleRemove: Role[];
+  prune_delete_days: number;
+  widget_enabled: boolean;
+  widget_channel_id: Snowflake;
+  system_channel_id: Snowflake;
+  position: number;
+  topic: string;
+  bitrate: number;
+  permission_overwrites: PermissionOverwrite[];
+  nsfw: boolean;
+  application_id: Snowflake;
+  rate_limit_per_user: number;
+  permissions: number;
+  permissions_new: string;
+  color: number;
+  hoist: boolean;
+  mentionable: boolean;
+  allow: number;
+  allow_new: string;
+  deny: number;
+  deny_new: string;
+  code: string;
+  channel_id: Snowflake;
+  inviter_id: Snowflake;
+  max_uses: number;
+  uses: number;
+  max_age: number;
+  temporary: boolean;
+  deaf: boolean;
+  mute: boolean;
+  nick: string;
+  avatar_hash: string;
+  id: Snowflake;
+  type: number | string;
+  enable_emoticons: boolean;
+  expire_behavior: number;
+  expire_grace_period: number;
 }
+
+export interface UnspecificChange<T extends keyof ChangeKey> {
+  newValue?: ChangeKey[T];
+  oldValue?: ChangeKey[T];
+  key: T;
+}
+
+type SpecificChange<T extends keyof ChangeKey> = T extends keyof ChangeKey
+  ? UnspecificChange<T>
+  : never;
+
+export type Change = SpecificChange<keyof ChangeKey>;
 
 export function parseAuditLog(
   client: Client,
@@ -168,7 +230,7 @@ export function parseAuditLog(
     users: auditLog.users.map((user) => new User(client, user)),
     entries: auditLog.audit_log_entries.map((entry) => parseEntry(entry)),
     integrations: auditLog.integrations,
-    webhooks: undefined,
+    webhooks: auditLog.webhooks.map((webhook) => parseWebhook(client, webhook)),
   };
 }
 
@@ -217,11 +279,27 @@ function parseEntry(entry: auditLog.Entry): Entry {
 
   return {
     targetId: entry.target_id,
-    changes: undefined,
+    changes: entry.changes,
     userId: entry.user_id,
     id: entry.id,
     actionType: actionTypeMap[entry.action_type],
     extra: extra,
     reason: entry.reason,
   };
+}
+
+function parseChanges(change: auditLog.Change): Change {
+  switch (change.key) {
+    case "$add":
+      return {
+        key: "roleAdd",
+        newValue: change.new_value,
+      };
+      break;
+    case "$remove":
+      return {
+        key: "roleRemove",
+      };
+      break;
+  }
 }

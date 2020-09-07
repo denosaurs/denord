@@ -1,5 +1,5 @@
 import { BaseChannel } from "./BaseChannel.ts";
-import { Client, SendMessage } from "../Client.ts";
+import type { Client, SendMessage } from "../Client.ts";
 import type { channel, Snowflake } from "../discord.ts";
 import { User } from "./User.ts";
 

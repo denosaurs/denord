@@ -13,7 +13,7 @@ import { CategoryChannel } from "./structures/CategoryChannel.ts";
 import { StoreChannel } from "./structures/StoreChannel.ts";
 import { GroupDMChannel } from "./structures/GroupDMChannel.ts";
 import { Message } from "./structures/Message.ts";
-import { Embed, encodeEmbed } from "./structures/Embed.ts";
+import { Embed, unparseEmbed } from "./structures/Embed.ts";
 
 export type Channel =
   | TextChannel
@@ -169,7 +169,7 @@ export class Client extends EventEmitter<Events> {
   async sendMessage(channelId: Snowflake, data: SendMessage) {
     let embed;
     if (data.embed) {
-      embed = encodeEmbed(data.embed);
+      embed = unparseEmbed(data.embed);
     }
 
     let convertedData: message.Create = {

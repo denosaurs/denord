@@ -1,8 +1,24 @@
 import { SnowflakeBase } from "./Base.ts";
-import { Client } from "../Client.ts";
+import type { Client } from "../Client.ts";
 import type { user } from "../discord.ts";
 import { ImageFormat, ImageSize, imageURLFormatter } from "../utils/utils.ts";
 import { DMChannel } from "./DMChannel.ts";
+
+const flagsMap = {
+  "discordEmployee": 0x00001,
+  "discordPartner": 0x00002,
+  "hypeSquadEvents": 0x00004,
+  "bugHunterLevel1": 0x00008,
+  "houseBravery": 0x00040,
+  "houseBrilliance": 0x00080,
+  "houseBalance": 0x00100,
+  "earlySupporter": 0x00200,
+  "teamUser": 0x00400,
+  "system": 0x01000,
+  "bugHunterLevel2": 0x04000,
+  "verifiedBot": 0x10000,
+  "verifiedBotDeveloper": 0x20000,
+} as const;
 
 export class User extends SnowflakeBase {
   username: string;
@@ -10,7 +26,7 @@ export class User extends SnowflakeBase {
   avatar: string | null;
   bot: boolean;
   system: boolean;
-  publicFlags: number;
+  publicFlags = {} as Record<keyof typeof flagsMap, boolean>;
 
   constructor(client: Client, data: user.PublicUser) {
     super(client, data);
@@ -20,7 +36,11 @@ export class User extends SnowflakeBase {
     this.avatar = data.avatar;
     this.bot = !!data.bot;
     this.system = !!data.system;
-    this.publicFlags = data.public_flags ?? 0;
+
+    const flags = data.public_flags ?? 0;
+    for (const [key, val] of Object.entries(flagsMap)) {
+      this.publicFlags[key as keyof typeof flagsMap] = ((flags & val) === val);
+    }
   }
 
   get tag() {
@@ -65,7 +85,7 @@ export class User extends SnowflakeBase {
 
 export class PrivateUser extends User {
   email: string | null;
-  flags: number;
+  flags = {} as Record<keyof typeof flagsMap, boolean>;
   locale: string;
   mfaEnabled: boolean;
   phone?: string | null;
@@ -76,12 +96,16 @@ export class PrivateUser extends User {
     super(client, data);
 
     this.email = data.email;
-    this.flags = data.flags ?? 0;
     this.locale = data.locale;
     this.mfaEnabled = data.mfa_enabled;
     this.phone = data.phone;
     this.verified = data.verified;
     this.premiumType = data.premium_type ?? 0;
+
+    const flags = data.flags ?? 0;
+    for (const [key, val] of Object.entries(flagsMap)) {
+      this.flags[key as keyof typeof flagsMap] = ((flags & val) === val);
+    }
   }
 
   async edit(options: user.Modify) {

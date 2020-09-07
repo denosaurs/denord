@@ -1,9 +1,9 @@
 import {
-  encodePermissionOverwrite,
   GuildChannel,
   PermissionOverwrite,
+  unparsePermissionOverwrite,
 } from "./GuildChannel.ts";
-import { Client, SendMessage } from "../Client.ts";
+import type { Client, SendMessage } from "../Client.ts";
 import type { channel, Snowflake } from "../discord.ts";
 import { TextChannel } from "./TextChannel.ts";
 import { NewsChannel } from "./NewsChannel.ts";
@@ -37,7 +37,7 @@ export abstract class TextBasedGuildChannel extends GuildChannel {
   async edit(options: EditOptions): Promise<TextChannel | NewsChannel> {
     const permissionOverwrites =
       options.permissionOverwrites?.map(({ permissions, id, type }) => {
-        const { allow, deny } = encodePermissionOverwrite(permissions);
+        const { allow, deny } = unparsePermissionOverwrite(permissions);
 
         return {
           id,

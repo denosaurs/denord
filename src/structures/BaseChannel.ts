@@ -1,5 +1,5 @@
 import { SnowflakeBase } from "./Base.ts";
-import { Client } from "../Client.ts";
+import type { Client } from "../Client.ts";
 import type { channel } from "../discord.ts";
 import { inverseMap } from "../utils/utils.ts";
 

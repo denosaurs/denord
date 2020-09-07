@@ -67,8 +67,8 @@ export namespace auditLog {
     explicit_content_filter: number;
     default_message_notifications: number;
     vanity_url_code: string;
-    $add: Partial<role.Role>[];
-    $remove: Partial<role.Role>[];
+    $add: Pick<role.Role, "id" | "name">[];
+    $remove: Pick<role.Role, "id" | "name">[];
     prune_delete_days: number;
     widget_enabled: boolean;
     widget_channel_id: Snowflake;
@@ -248,10 +248,10 @@ export namespace auditLog {
     | NonOptionsEntry;
 
   export interface Params {
-    user_id: Snowflake;
-    action_type: number;
-    before: Snowflake;
-    limit: number;
+    user_id?: Snowflake;
+    action_type?: number;
+    before?: Snowflake;
+    limit?: number;
   }
 }
 
@@ -515,6 +515,11 @@ export namespace emoji {
     available?: boolean;
   }
 
+  export interface GuildEmoji extends Emoji {
+    id: Snowflake;
+    name: string;
+  }
+
   export interface Create {
     name: string;
     image: string;
@@ -545,7 +550,7 @@ export namespace guild {
     default_message_notifications: DefaultMessageNotifications;
     explicit_content_filter: ExplicitContentFilter;
     roles: role.Role[];
-    emojis: emoji.Emoji[];
+    emojis: emoji.GuildEmoji[];
     features: Features[];
     mfa_level: 0 | 1;
     application_id: Snowflake | null;
@@ -938,7 +943,7 @@ export namespace message {
   export interface Reaction {
     count: number;
     me: boolean;
-    emoji: Pick<emoji.Emoji, "id" | "name">;
+    emoji: Pick<emoji.Emoji, "id" | "name" | "animated">;
   }
 
   export interface Activity {

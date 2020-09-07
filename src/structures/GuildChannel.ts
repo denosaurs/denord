@@ -1,5 +1,5 @@
 import type { channel, Snowflake } from "../discord.ts";
-import { Client } from "../Client.ts";
+import type { Client } from "../Client.ts";
 import { BaseChannel } from "./BaseChannel.ts";
 import { permissionMap } from "./Role.ts";
 
@@ -9,7 +9,30 @@ export interface PermissionOverwrite {
   permissions: Record<keyof typeof permissionMap, boolean | undefined>;
 }
 
-export function encodePermissionOverwrite(
+function parsePermissionOverwrite(allow: string, deny: string) {
+  const bAllow = BigInt(allow);
+  const bDeny = BigInt(deny);
+
+  const permissions = {} as Record<
+    keyof typeof permissionMap,
+    boolean | undefined
+  >;
+
+  for (const [key, val] of Object.entries(permissionMap)) {
+    const bVal = BigInt(val);
+    if ((bAllow & bVal) == bVal) {
+      permissions[key as keyof typeof permissionMap] = true;
+    } else if ((bDeny & bVal) == bVal) {
+      permissions[key as keyof typeof permissionMap] = false;
+    } else {
+      permissions[key as keyof typeof permissionMap] = undefined;
+    }
+  }
+
+  return permissions;
+}
+
+export function unparsePermissionOverwrite(
   permissions: Record<keyof typeof permissionMap, boolean | undefined>,
 ) {
   let allow = 0n;
@@ -46,37 +69,17 @@ export abstract class GuildChannel extends BaseChannel {
     this.position = data.position;
     this.parentId = data.parent_id;
     this.guildId = data.guild_id;
-    this.permissionOverwrites = data.permission_overwrites.map(
-      ({ id, type, allow_new, deny_new }) => {
-        const allow = BigInt(allow_new);
-        const deny = BigInt(deny_new);
-        const permissions = {} as Record<
-          keyof typeof permissionMap,
-          boolean | undefined
-        >;
-
-        for (const [key, val] of Object.entries(permissionMap)) {
-          const bVal = BigInt(val);
-          if ((allow & bVal) == bVal) {
-            permissions[key as keyof typeof permissionMap] = true;
-          } else if ((deny & bVal) == bVal) {
-            permissions[key as keyof typeof permissionMap] = false;
-          } else {
-            permissions[key as keyof typeof permissionMap] = undefined;
-          }
-        }
-
-        return {
-          id,
-          type,
-          permissions,
-        };
-      },
-    );
+    this.permissionOverwrites = data.permission_overwrites.map((
+      { id, type, allow_new, deny_new },
+    ) => ({
+      id,
+      type,
+      permissions: parsePermissionOverwrite(allow_new, deny_new),
+    }));
   }
 
   async editPermissions(overwrite: PermissionOverwrite) {
-    const { allow, deny } = encodePermissionOverwrite(overwrite.permissions);
+    const { allow, deny } = unparsePermissionOverwrite(overwrite.permissions);
 
     await this.client.rest.editChannelPermissions(
       this.id,
