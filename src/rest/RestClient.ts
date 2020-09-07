@@ -1,7 +1,7 @@
 import type * as Discord from "../discord.ts";
 import { URLs } from "../utils/utils.ts";
 import { DiscordJSONError, HTTPError } from "./Error.ts";
-import { TaskQueue, RateLimit } from "./TaskQueue.ts";
+import { RateLimit, TaskQueue } from "./TaskQueue.ts";
 
 /**
  * A client to make HTTP requests to Discord
@@ -587,12 +587,10 @@ export class RestClient {
     guildId: Discord.Snowflake,
     userId: Discord.Snowflake,
     data: Discord.guildMember.Add,
-    reason?: string,
   ): Promise<Discord.guildMember.GuildMember> {
     return this.request(`guilds/${guildId}/members/${userId}`, {
       method: "PUT",
       data,
-      reason,
     }) as Promise<Discord.guildMember.GuildMember>;
   }
 
@@ -612,12 +610,10 @@ export class RestClient {
   async modifyCurrentUserNick(
     guildId: Discord.Snowflake,
     data: Discord.guildMember.ModifyCurrentNick,
-    reason?: string,
   ): Promise<Discord.guildMember.GuildMember> {
     return this.request(`guilds/${guildId}/members/@me/nick`, {
       method: "PATCH",
       data,
-      reason,
     }) as Promise<Discord.guildMember.GuildMember>;
   }
 
@@ -675,12 +671,10 @@ export class RestClient {
     guildId: Discord.Snowflake,
     userId: Discord.Snowflake,
     data: Discord.guild.CreateBan,
-    reason?: string,
   ): Promise<void> {
     await this.request(`guilds/${guildId}/bans/${userId}`, {
       method: "PUT",
       data,
-      reason,
     });
   }
 
