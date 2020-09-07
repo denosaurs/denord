@@ -203,7 +203,7 @@ let shard: Shard;
 
 // @ts-ignore
 onmessage = async (msg: MessageEvent) => {
-  let event = msg.data as { name: string; data: any };
+  const event = msg.data as { name: string; data: any };
   switch (event.name) {
     case "INIT":
       shard = new Shard(
