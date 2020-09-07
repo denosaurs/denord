@@ -794,9 +794,7 @@ export namespace guildMember {
     nick?: string | null;
   }
 
-  export interface ModifyCurrentNickResponse {
-    nick: string;
-  }
+  export type ModifyCurrentNickResponse = Required<ModifyCurrentNick>;
 
   export interface Modify extends ModifyCurrentNick {
     roles?: Snowflake[] | null;

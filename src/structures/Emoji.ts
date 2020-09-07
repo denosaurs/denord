@@ -18,10 +18,12 @@ export interface GuildEmoji extends Emoji {
   name: string;
 }
 
+export function parseEmoji(client: Client, emoji: emoji.GuildEmoji): GuildEmoji;
+export function parseEmoji(client: Client, emoji: emoji.Emoji): Emoji;
 export function parseEmoji(
   client: Client,
-  { user, require_colons, ...emoji }: emoji.Emoji,
-): Emoji {
+  { user, require_colons, ...emoji }: emoji.Emoji | emoji.GuildEmoji,
+): Emoji | GuildEmoji {
   return {
     ...emoji,
     user: user && new User(client, user),

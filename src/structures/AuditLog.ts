@@ -54,6 +54,59 @@ const actionTypeMap = {
 
 export const inverseActionType = inverseMap(actionTypeMap);
 
+const changeKeyMap = {
+  name: "name",
+  icon_hash: "iconHash",
+  splash_hash: "splashHash",
+  owner_id: "ownerId",
+  region: "region",
+  afk_channel_id: "afkChannelId",
+  afk_timeout: "afkTimeout",
+  mfa_level: "mfaLevel",
+  verification_level: "verificationLevel",
+  explicit_content_filter: "explicitContentFilter",
+  default_message_notifications: "defaultMessageNotifications",
+  vanity_url_code: "vanityUrlCode",
+  $add: "roleAdd",
+  $remove: "roleRemove",
+  prune_delete_days: "pruneDeleteDays",
+  widget_enabled: "widgetEnabled",
+  widget_channel_id: "widgetChannelId",
+  system_channel_id: "systemChannelId",
+  position: "position",
+  topic: "topic",
+  bitrate: "bitrate",
+  permission_overwrites: "permissionOverwrites",
+  nsfw: "nsfw",
+  application_id: "application_id",
+  rate_limit_per_user: "rateLimitPerUser",
+  permissions: "permissions",
+  permissions_new: "permissionsNew",
+  color: "color",
+  hoist: "hoist",
+  mentionable: "mentionable",
+  allow: "allow",
+  allow_new: "allowNew",
+  deny: "deny",
+  deny_new: "denyNew",
+  code: "code",
+  channel_id: "channelId",
+  inviter_id: "inviterId",
+  max_uses: "maxUses",
+  uses: "uses",
+  max_age: "maxAge",
+  temporary: "temporary",
+  deaf: "deaf",
+  mute: "mute",
+  nick: "nick",
+  avatar_hash: "avatarHash",
+  id: "id",
+  type: "type",
+  enable_emoticons: "enableEmoticons",
+  expire_behavior: "expireBehavior",
+  expire_grace_period: "expireGracePeriod",
+} as const;
+
 interface BaseEntry {
   targetId: string | null;
   changes?: Change[];
@@ -159,55 +212,55 @@ type Entry =
 
 export interface ChangeKey {
   name: string;
-  icon_hash: string;
-  splash_hash: string;
-  owner_id: Snowflake;
+  iconHash: string;
+  splashHash: string;
+  ownerId: Snowflake;
   region: string;
-  afk_channel_id: Snowflake;
-  afk_timeout: number;
-  mfa_level: number;
-  verification_level: number;
-  explicit_content_filter: number;
-  default_message_notifications: number;
-  vanity_url_code: string;
+  afkChannelId: Snowflake;
+  afkTimeout: number;
+  mfaLevel: number;
+  verificationLevel: number;
+  explicitContentFilter: number;
+  defaultMessageNotifications: number;
+  vanityUrlCode: string;
   roleAdd: Role[];
   roleRemove: Role[];
-  prune_delete_days: number;
-  widget_enabled: boolean;
-  widget_channel_id: Snowflake;
-  system_channel_id: Snowflake;
+  pruneDeleteDays: number;
+  widgetEnabled: boolean;
+  widgetChannelId: Snowflake;
+  systemChannelId: Snowflake;
   position: number;
   topic: string;
   bitrate: number;
-  permission_overwrites: PermissionOverwrite[];
+  permissionOverwrites: PermissionOverwrite[];
   nsfw: boolean;
   application_id: Snowflake;
-  rate_limit_per_user: number;
+  rateLimitPerUser: number;
   permissions: number;
-  permissions_new: string;
+  permissionsNew: string;
   color: number;
   hoist: boolean;
   mentionable: boolean;
   allow: number;
-  allow_new: string;
+  allowNew: string;
   deny: number;
-  deny_new: string;
+  denyNew: string;
   code: string;
-  channel_id: Snowflake;
-  inviter_id: Snowflake;
-  max_uses: number;
+  channelId: Snowflake;
+  inviterId: Snowflake;
+  maxUses: number;
   uses: number;
-  max_age: number;
+  maxAge: number;
   temporary: boolean;
   deaf: boolean;
   mute: boolean;
   nick: string;
-  avatar_hash: string;
+  avatarHash: string;
   id: Snowflake;
   type: number | string;
-  enable_emoticons: boolean;
-  expire_behavior: number;
-  expire_grace_period: number;
+  enableEmoticons: boolean;
+  expireBehavior: number;
+  expireGracePeriod: number;
 }
 
 export interface UnspecificChange<T extends keyof ChangeKey> {
@@ -289,17 +342,17 @@ function parseEntry(entry: auditLog.Entry): Entry {
 }
 
 function parseChanges(change: auditLog.Change): Change {
+  let newChange = {
+    key: changeKeyMap[change.key],
+  };
+
   switch (change.key) {
     case "$add":
-      return {
-        key: "roleAdd",
-        newValue: change.new_value,
-      };
+      newChange.newValue = change.new_value;
       break;
     case "$remove":
-      return {
-        key: "roleRemove",
-      };
       break;
   }
+
+  return newChange;
 }

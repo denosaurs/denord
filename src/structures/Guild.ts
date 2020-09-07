@@ -1,5 +1,5 @@
 import { SnowflakeBase } from "./Base.ts";
-import type { Channel, Client } from "../Client.ts";
+import type { Channel, Client, GuildChannels } from "../Client.ts";
 import type {
   channel,
   guild,
@@ -23,6 +23,7 @@ import type { NewsChannel } from "./NewsChannel.ts";
 import type { CategoryChannel } from "./CategoryChannel.ts";
 import type { VoiceChannel } from "./VoiceChannel.ts";
 import type { TextChannel } from "./TextChannel.ts";
+import { parseState, State } from "./VoiceState.ts";
 
 interface CreateChannel {
   type?: Exclude<keyof typeof channelInverseTypeMap, "DM" | "groupDM">;
@@ -54,6 +55,22 @@ interface RealPrune extends BasePrune {
 
 type Prune = DryPrune | RealPrune;
 
+const featuresMap = {
+  "INVITE_SPLASH": "inviteSplash",
+  "VIP_REGIONS": "vipRegions",
+  "VANITY_URL": "vanityURL",
+  "VERIFIED": "verified",
+  "PARTNERED": "partnered",
+  "PUBLIC": "public",
+  "COMMERCE": "commerce",
+  "NEWS": "news",
+  "DISCOVERABLE": "discoverable",
+  "FEATURABLE": "featurable",
+  "ANIMATED_ICON": "animatedIcon",
+  "BANNER": "banner",
+  "PUBLIC_DISABLED": "publicDisabled",
+} as const;
+
 export class Guild extends SnowflakeBase {
   name: string;
   icon: string | null;
@@ -68,6 +85,7 @@ export class Guild extends SnowflakeBase {
   explicitContentFilter: guild.ExplicitContentFilter;
   roles: Map<Snowflake, Role>;
   emojis: Map<Snowflake, GuildEmoji>;
+  features = {} as Record<typeof featuresMap[keyof typeof featuresMap], boolean>;
   requiresMFA: boolean;
   applicationId: Snowflake | null;
   systemChannelId: Snowflake | null;
@@ -77,7 +95,9 @@ export class Guild extends SnowflakeBase {
   large: boolean;
   unavailable: boolean;
   memberCount: number;
-  members: GuildMember[];
+  voiceStates: Map<Snowflake, State>;
+  members: Map<Snowflake, GuildMember>;
+  channels: Map<Snowflake, GuildChannels>;
   vanityURLCode: string | null;
   description: string | null;
   banner: string | null;
@@ -105,12 +125,14 @@ export class Guild extends SnowflakeBase {
       data.roles.map((role) => [role.id, new Role(client, role, data.id)]),
     );
     this.emojis = new Map(
-      data.emojis.map((
-        emoji,
-      ) => [emoji.id, parseEmoji(client, emoji) as GuildEmoji]),
+      data.emojis.map((emoji) => [emoji.id, parseEmoji(client, emoji)]),
     );
-    this.features = data.features;
-    this.requiresMFA = data.mfa_level;
+
+    for (const [key, val] of Object.entries(featuresMap)) {
+      this.features[val] = data.features.includes(key as guild.Features);
+    }
+
+    this.requiresMFA = !!data.mfa_level;
     this.applicationId = data.application_id;
     this.widgetEnabled = data.widget_enabled;
     this.widgetChannelId = data.widget_channel_id;
@@ -122,21 +144,26 @@ export class Guild extends SnowflakeBase {
     this.large = data.large;
     this.unavailable = data.unavailable;
     this.memberCount = data.member_count;
-    this.voiceStates = data.voice_states;
-    this.members = data.members.map((member) =>
-      new GuildMember(client, member, data.id)
+    this.voiceStates = new Map(data.voice_states.map(state => [state.user_id, parseState(state, client)]));
+    this.members = new Map(data.members.map((member) => [member.user.id, new GuildMember(client, member, data.id)]));
+    this.channels = new Map(
+      data.channels.map(
+        (channel) => [
+          channel.id,
+          client.newChannelSwitch(channel) as GuildChannels,
+        ],
+      ),
     );
-    this.channels = data.channels;
     this.presences = data.presences;
 
     this.vanityURLCode = data.vanity_url_code;
     this.description = data.description;
     this.banner = data.banner;
     this.boostLevel = data.premium_tier;
-    this.boostCount = data.premium_subscription_count;
+    this.boostCount = data.premium_subscription_count; // discord-api-docs#2034
     this.preferredLocale = data.preferred_locale;
     this.publicUpdatesChannelId = data.public_updates_channel_id;
-    this.maxVideoChannelUsers = data.max_video_channel_users;
+    this.maxVideoChannelUsers = data.max_video_channel_users; // discord-api-docs#2034
   }
 
   get shardId() {
@@ -248,10 +275,7 @@ export class Guild extends SnowflakeBase {
       nsfw: options.nsfw,
     }, reason);
 
-    return this.client.newChannelSwitch(channel) as Exclude<
-      Channel,
-      DMChannel | GroupDMChannel
-    >;
+    return this.client.newChannelSwitch(channel) as GuildChannels;
   }
 
   async editChannelsPositions(options: channel.GuildPosition[]) {
@@ -455,5 +479,3 @@ export class Guild extends SnowflakeBase {
       : null;
   }
 }
-
-const x = new Guild({} as Client, {} as guild.GatewayGuild);

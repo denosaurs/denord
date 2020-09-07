@@ -15,14 +15,9 @@ import { GroupDMChannel } from "./structures/GroupDMChannel.ts";
 import { Message } from "./structures/Message.ts";
 import { Embed, unparseEmbed } from "./structures/Embed.ts";
 
-export type Channel =
-  | TextChannel
-  | DMChannel
-  | VoiceChannel
-  | GroupDMChannel
-  | CategoryChannel
-  | NewsChannel
-  | StoreChannel;
+export type DMChannels = DMChannel | GroupDMChannel;
+export type GuildChannels = TextChannel | VoiceChannel | CategoryChannel | NewsChannel | StoreChannel;
+export type Channel = DMChannels | GuildChannels;
 
 export interface BaseSendMessage {
   tts?: boolean;
@@ -64,21 +59,55 @@ export interface Events {
   guildMemberAdd: GuildMember;
 }
 
+const intentsMap = {
+  guilds: 1 << 0,
+  guildMembers: 1 << 1,
+  guildBans: 1 << 2,
+  guildEmojis: 1 << 3,
+  guildIntegrations: 1 << 4,
+  guildWebhooks: 1 << 5,
+  guildInvites: 1 << 6,
+  guildVoiceStates: 1 << 7,
+  guildPresences: 1 << 8,
+  guildMessages: 1 << 9,
+  guildMessageReactions: 1 << 10,
+  guildMessageTyping: 1 << 11,
+  directMessages: 1 << 12,
+  directMessageReactions: 1 << 13,
+  directMessageTyping: 1 << 14,
+} as const;
+
 export class Client extends EventEmitter<Events> {
   gateway: ShardManager;
   rest = new RestClient();
 
-  channels = new Map<Snowflake, Channel>();
-  DMChannels = new Map<Snowflake, DMChannel>();
+  channels = new Map<Snowflake, GuildChannels>();
+  DMChannels = new Map<Snowflake, DMChannels>();
   guilds = new Map<Snowflake, Guild>();
   users = new Map<Snowflake, User>();
 
   user?: PrivateUser;
 
-  constructor(shardAmount: number = 1, intents?: number) {
+  constructor(shardAmount: number = 1, intents: Record<keyof typeof intentsMap, boolean> | number | boolean = true) {
     super();
 
-    this.gateway = new ShardManager(shardAmount, intents);
+    let newIntents = 0;
+
+    if (intents) {
+      if (typeof intents === "boolean") {
+        newIntents = Object.values(intentsMap).reduce((prev, curr) => prev | curr, 0);
+      } else if (typeof intents === "number") {
+        newIntents = intents;
+      } else {
+        for (const [key, val] of Object.entries(intentsMap)) {
+          if (intents[key as keyof typeof intentsMap]) {
+            newIntents |= val;
+          }
+        }
+      }
+    }
+
+    this.gateway = new ShardManager(shardAmount, newIntents);
     let shardCount = 0;
     this.gateway.on("raw", (e) => {
       switch (e.name) {
