@@ -50,4 +50,9 @@ export class GroupDMChannel extends BaseChannel {
   async getPins() {
     return this.client.getPins(this.id);
   }
+
+  async delete() {
+    const channel = await this.client.rest.deleteChannel(this.id) as channel.GroupDMChannel;
+    return new GroupDMChannel(this.client, channel);
+  }
 }

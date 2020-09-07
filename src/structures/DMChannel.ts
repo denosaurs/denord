@@ -29,4 +29,9 @@ export class DMChannel extends BaseChannel {
   async getPins() {
     return this.client.getPins(this.id);
   }
+
+  async delete() {
+    const channel = await this.client.rest.deleteChannel(this.id) as channel.DMChannel;
+    return new DMChannel(this.client, channel);
+  }
 }

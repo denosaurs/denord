@@ -4,7 +4,7 @@ import type { Client } from "../Client.ts";
 
 export interface Webhook {
   id: Snowflake;
-  type: 1 | 2;
+  type: "incoming" | "channelFollower";
   guildId?: Snowflake; // TODO
   channelId: Snowflake;
   user?: User;
@@ -15,12 +15,13 @@ export interface Webhook {
 
 export function parseWebhook(
   client: Client,
-  { guild_id, channel_id, user, ...webhook }: webhook.Webhook,
+  { guild_id, channel_id, user, type, ...webhook }: webhook.Webhook,
 ): Webhook {
   return {
     ...webhook,
     guildId: guild_id,
     channelId: channel_id,
+    type: type === 1 ? "incoming" : "channelFollower",
     user: user && new User(client, user),
   };
 }
