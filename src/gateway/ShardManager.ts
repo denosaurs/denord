@@ -16,10 +16,11 @@ interface rawEvents extends Events {
 }
 
 /**
- * A shard manager that manages all shards that are used to conect to the discord gateway
+ * A shard manager that manages all shards that are used to connect to the discord gateway
  */
 export class ShardManager extends EventEmitter<rawEvents> {
   #shards: Worker[] = [];
+  #resolveConnect!: () => void;
   shardAmount: number;
 
   /**
@@ -43,8 +44,8 @@ export class ShardManager extends EventEmitter<rawEvents> {
         let event = msg.data as { name: string; data: any };
 
         switch (event.name) {
-          case "EVENT":
-            let payload = event.data as gateway.SpecificEventPayload<
+          case "EVENT": {
+            const payload = event.data as gateway.SpecificEventPayload<
               keyof Events
             >;
 
@@ -97,6 +98,7 @@ export class ShardManager extends EventEmitter<rawEvents> {
                 throw new Error("Unexpected event: " + payload);
             }
             break;
+          }
           case "CLOSE":
             console.log(`Shard ${name} closed`);
             break;
@@ -106,6 +108,8 @@ export class ShardManager extends EventEmitter<rawEvents> {
                 name: "CONNECT",
                 data: event.data,
               });
+            } else {
+              this.#resolveConnect();
             }
             break;
         }
@@ -129,11 +133,13 @@ export class ShardManager extends EventEmitter<rawEvents> {
    *
    * @param token - The token to connect with
    */
-  connect(token: string) {
-    //TODO: make async to resolve when all shards are connected
-    this.#shards[0].postMessage({
-      name: "CONNECT",
-      data: token,
+  async connect(token: string): Promise<void> {
+    return new Promise((resolve) => {
+      this.#resolveConnect = resolve;
+      this.#shards[0].postMessage({
+        name: "CONNECT",
+        data: token,
+      });
     });
   }
 
