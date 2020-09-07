@@ -45,7 +45,9 @@ export class ShardManager extends EventEmitter<rawEvents> {
 
         switch (event.name) {
           case "EVENT": {
-            const payload = event.data as gateway.SpecificEventPayload<keyof Events>;
+            const payload = event.data as gateway.SpecificEventPayload<
+              keyof Events
+            >;
 
             switch (payload.t) {
               case "READY":
