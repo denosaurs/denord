@@ -23,10 +23,4 @@ export abstract class BaseChannel extends SnowflakeBase {
 
     this.type = typeMap[data.type];
   }
-
-  async delete() { // TODO
-    return this.client.newChannelSwitch(
-      await this.client.rest.deleteChannel(this.id),
-    );
-  }
 }

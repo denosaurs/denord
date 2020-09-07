@@ -44,4 +44,9 @@ export class StoreChannel extends GuildChannel {
 
     return new StoreChannel(this.client, channel as channel.StoreChannel);
   }
+
+  async delete() {
+    const channel = await this.client.rest.deleteChannel(this.id) as channel.StoreChannel;
+    return new StoreChannel(this.client, channel);
+  }
 }

@@ -48,4 +48,9 @@ export class VoiceChannel extends GuildChannel {
 
     return new VoiceChannel(this.client, channel as channel.VoiceChannel);
   }
+
+  async delete() {
+    const channel = await this.client.rest.deleteChannel(this.id) as channel.VoiceChannel;
+    return new VoiceChannel(this.client, channel);
+  }
 }

@@ -17,4 +17,9 @@ export class TextChannel extends TextBasedGuildChannel {
   async edit(options: EditOptions): Promise<TextChannel | NewsChannel> {
     return super.edit(options);
   }
+
+  async delete() {
+    const channel = await this.client.rest.deleteChannel(this.id) as channel.TextChannel;
+    return new TextChannel(this.client, channel);
+  }
 }
