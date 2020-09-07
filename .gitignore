@@ -4,3 +4,6 @@
 
 # OS files
 .DS_Store
+
+# testing directories
+test
