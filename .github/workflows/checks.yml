@@ -10,19 +10,11 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup Deno environment
-        uses: denolib/setup-deno@master
-      - name: Deno Fmt Check
-        run: deno fmt --check
-
-  depsbot:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Run depsbot
-        uses: denosaurs/depsbot@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup deno
+        uses: denolib/setup-deno@master
+
+      - name: Run fmt check
+        run: deno fmt --check
