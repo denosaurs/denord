@@ -104,10 +104,12 @@ export class ShardManager extends EventEmitter<rawEvents> {
             break;
           case "CONNECT_NEXT":
             if (i + 1 < shardAmount) {
-              this.#shards[i + 1].postMessage({
-                name: "CONNECT",
-                data: event.data,
-              });
+              setTimeout(() => {
+                this.#shards[i + 1].postMessage({
+                  name: "CONNECT",
+                  data: event.data,
+                });
+              }, 5000);
             } else {
               this.#resolveConnect();
             }

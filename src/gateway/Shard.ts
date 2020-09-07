@@ -214,12 +214,10 @@ onmessage = async (msg: MessageEvent) => {
       break;
     case "CONNECT":
       await shard.connect(event.data);
-      setTimeout(() => {
-        postMessage({
-          name: "CONNECT_NEXT",
-          data: event.data,
-        });
-      }, 5000);
+      postMessage({
+        name: "CONNECT_NEXT",
+        data: event.data,
+      });
       break;
     case "GUILD_REQUEST_MEMBER":
       shard.guildRequestMember(event.data);
