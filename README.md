@@ -1,7 +1,7 @@
 # denord
 
 [![Tags](https://img.shields.io/github/release/denosaurs/denord)](https://github.com/denosaurs/denord/releases)
-[![CI Status](https://img.shields.io/github/workflow/status/denosaurs/denord/Lint)](https://github.com/denosaurs/denord/actions)
+[![CI Status](https://img.shields.io/github/workflow/status/denosaurs/denord/check)](https://github.com/denosaurs/denord/actions)
 [![License](https://img.shields.io/github/license/denosaurs/denord)](https://github.com/denosaurs/denord/blob/master/LICENSE)
 
 ---
