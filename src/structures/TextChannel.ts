@@ -1,6 +1,7 @@
 import { EditOptions, TextBasedGuildChannel } from "./TextBasedGuildChannel.ts";
 import type { Client } from "../Client.ts";
 import type { channel } from "../discord.ts";
+import { Snowflake } from "../discord.ts";
 import type { NewsChannel } from "./NewsChannel.ts";
 
 export class TextChannel extends TextBasedGuildChannel {
@@ -24,5 +25,13 @@ export class TextChannel extends TextBasedGuildChannel {
       reason,
     ) as channel.TextChannel;
     return new TextChannel(this.client, channel);
+  }
+
+  async follow(newsChannelId: Snowflake) {
+    const followedChannel = await this.client.rest.followNewsChannel(newsChannelId, {
+      webhook_channel_id: this.id,
+    });
+
+    return followedChannel.webhook_id;
   }
 }

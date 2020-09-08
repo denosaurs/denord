@@ -216,4 +216,8 @@ export class Message extends SnowflakeBase {
       await this.client.rest.deleteAllReactions(this.channelId, this.id);
     }
   }
+
+  async crosspost() {
+    await this.client.rest.crosspostMessage(this.channelId, this.id);
+  }
 }
