@@ -11,18 +11,14 @@ type BundledEvents<T extends keyof Events> = T extends keyof Events
   ? BundledEvent<T>
   : never;
 
-interface RawEvents extends Events {
+interface rawEvents extends Events {
   raw: BundledEvents<keyof Events>;
 }
-
-type ValueToTupleValue<T> = {
-  [K in keyof T]: [T[K]];
-};
 
 /**
  * A shard manager that manages all shards that are used to connect to the discord gateway
  */
-export class ShardManager extends EventEmitter<ValueToTupleValue<RawEvents>> {
+export class ShardManager extends EventEmitter<rawEvents> {
   #shards: Worker[] = [];
   #resolveConnect!: () => void;
   shardAmount: number;
@@ -45,11 +41,13 @@ export class ShardManager extends EventEmitter<ValueToTupleValue<RawEvents>> {
       });
 
       worker.onmessage = (msg) => {
-        const event = msg.data as { name: string; data: any };
+        let event = msg.data as { name: string; data: any };
 
         switch (event.name) {
           case "EVENT": {
-            const payload = event.data as gateway.SpecificEvent;
+            const payload = event.data as gateway.SpecificEventPayload<
+              keyof Events
+            >;
 
             switch (payload.t) {
               case "READY":
@@ -89,14 +87,13 @@ export class ShardManager extends EventEmitter<ValueToTupleValue<RawEvents>> {
               case "VOICE_STATE_UPDATE":
               case "VOICE_SERVER_UPDATE":
               case "WEBHOOKS_UPDATE":
-                // TODO(@qu4k): find a way to remove the any cast
-                this.emit(payload.t, payload.d as any);
-
+                this.emit(payload.t, payload.d);
                 this.emit("raw", {
                   name: payload.t,
                   data: payload.d,
-                } as BundledEvents<keyof Events>);
+                } as BundledEvents<keyof Events>); //TODO: don't cast
                 break;
+
               default:
                 throw new Error("Unexpected event: " + payload);
             }
