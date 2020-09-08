@@ -63,11 +63,6 @@ interface Ban {
   user: User;
 }
 
-interface EmojiUpdate {
-  guildId: Snowflake;
-  emojis: GuildEmoji[];
-}
-
 type UnknownMessage = Pick<Message, "id" | "channelId" | "guildId">;
 
 export interface Events {
@@ -84,7 +79,9 @@ export interface Events {
   guildDelete: guild.UnavailableGuild;
   guildBanAdd: Ban;
   guildBanRemove: Ban;
-  guildEmojiUpdate: EmojiUpdate;
+  guildEmojiCreate: [GatewayGuild, GuildEmoji];
+  guildEmojiUpdate: [GatewayGuild, GuildEmoji, GuildEmoji];
+  guildEmojiDelete: [GatewayGuild, GuildEmoji];
   guildIntegrationsUpdate: Snowflake;
 
   guildMemberAdd: [GatewayGuild, GuildMember];
@@ -252,38 +249,30 @@ export class Client extends EventEmitter<Events> {
           break;
         }
         case "GUILD_EMOJIS_UPDATE": {
-          const emojis = e.data.emojis.map(emoji => parseEmoji(this, emoji));
           const guild = this.guilds.get(e.data.guild_id)!;
-          //TODO
-          this.emit("guildEmojiUpdate", {
-            emojis,
-            guildId: e.data.guild_id,
-          });
-          /*
-          [
-            {
-              roles: [],
-              require_colons: true,
-              name: "N5",
-              managed: false,
-              id: "752563435555913781",
-              available: true,
-              animated: false
+          const newEmojis = new Map<Snowflake, GuildEmoji>(e.data.emojis.map(emoji => [emoji.id, parseEmoji(this, emoji)]));
+          guild.emojis = newEmojis;
+          this.guilds.set(guild.id, guild);
+
+          if (newEmojis.size > guild.emojis.size) {
+            let addedEmoji: GuildEmoji;
+            for (const [id, emoji] of newEmojis) {
+              if (!guild.emojis.has(id)) {
+                addedEmoji = emoji;
+              }
             }
-          ]
-          [
-            {
-              roles: [],
-              require_colons: true,
-              name: "foo",
-              managed: false,
-              id: "752563435555913781",
-              available: true,
-              animated: false
+            this.emit("guildEmojiCreate", [guild, addedEmoji!]);
+          } else if (newEmojis.size === guild.emojis.size) {
+            this.emit("guildEmojiUpdate", [guild]);
+          } else {
+            let deletedEmoji: GuildEmoji;
+            for (const [id, emoji] of guild.emojis) {
+              if (!newEmojis.has(id)) {
+                deletedEmoji = emoji;
+              }
             }
-          ]
-          []
-           */
+            this.emit("guildEmojiDelete", [guild, deletedEmoji!]);
+          }
           break;
         }
         case "GUILD_INTEGRATIONS_UPDATE":
