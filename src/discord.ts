@@ -874,13 +874,15 @@ export namespace invite {
     approximate_member_count?: number;
   }
 
-  export interface MetadataInvite extends Invite {
+  export interface Metadata {
     uses: number;
     max_uses: number;
     max_age: number;
     temporary: boolean;
     created_at: ISO8601;
   }
+
+  export type MetadataInvite = Invite & Metadata;
 
   export interface Create extends
     Partial<
@@ -895,26 +897,16 @@ export namespace invite {
 
   export type VanityURL = Pick<MetadataInvite, "code" | "uses">;
 
-  export interface CreateEvent extends
-    Pick<
-      MetadataInvite,
-      | "code"
-      | "created_at"
-      | "inviter"
-      | "max_age"
-      | "max_uses"
-      | "target_user"
-      | "target_user_type"
-      | "temporary"
-      | "uses"
-    > {
+  export interface CreateEvent extends Pick<Invite, "code" | "inviter" | "target_user" | "target_user_type">, Metadata {
     channel_id: Snowflake;
     guild_id: Snowflake;
   }
 
-  export type DeleteEvent =
-    & Pick<CreateEvent, "channel_id" | "code">
-    & Partial<Pick<CreateEvent, "guild_id">>;
+  export interface DeleteEvent {
+    channel_id: Snowflake;
+    guild_id?: Snowflake;
+    code: string;
+  }
 }
 
 export namespace message {

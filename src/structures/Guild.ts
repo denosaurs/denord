@@ -25,6 +25,7 @@ import type { VoiceChannel } from "./VoiceChannel.ts";
 import type { TextChannel } from "./TextChannel.ts";
 import { parseState, State } from "./VoiceState.ts";
 import { parsePresence, Presence } from "./Presence.ts";
+import { parseMetadataInvite } from "./Invite.ts";
 
 interface CreateChannel {
   type?: Exclude<keyof typeof channelInverseTypeMap, "DM" | "groupDM">;
@@ -424,7 +425,9 @@ abstract class BaseGuild extends SnowflakeBase {
   }
 
   async getInvites() {
-    return this.client.rest.getGuildInvites(this.id);
+    const invites = await this.client.rest.getGuildInvites(this.id);
+
+    return invites.map(invite => parseMetadataInvite(this.client, invite));
   }
 
   iconURL(options: {

@@ -8,6 +8,7 @@ import type { channel, Snowflake } from "../discord.ts";
 import { TextChannel } from "./TextChannel.ts";
 import { NewsChannel } from "./NewsChannel.ts";
 import { Message } from "./Message.ts";
+import { parseInvite } from "./Invite.ts";
 
 export interface EditOptions {
   name?: string;
@@ -86,5 +87,11 @@ export abstract class TextBasedGuildChannel extends GuildChannel {
     await this.client.rest.bulkDeleteMessages(this.id, {
       messages: messageIds,
     }, reason);
+  }
+
+  async getInvites() {
+    const invites = await this.client.rest.getChannelInvites(this.id);
+
+    return invites.map(invite => parseInvite(this.client, invite));
   }
 }

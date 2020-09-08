@@ -12,45 +12,18 @@ import { NewsChannel } from "./structures/NewsChannel.ts";
 import { CategoryChannel } from "./structures/CategoryChannel.ts";
 import { StoreChannel } from "./structures/StoreChannel.ts";
 import { GroupDMChannel } from "./structures/GroupDMChannel.ts";
-import { Message } from "./structures/Message.ts";
-import { Embed, unparseEmbed } from "./structures/Embed.ts";
+import { Message, SendMessage } from "./structures/Message.ts";
+import { unparseEmbed } from "./structures/Embed.ts";
 import { Emoji, GuildEmoji, parseEmoji } from "./structures/Emoji.ts";
 import { Role } from "./structures/Role.ts";
 import { parsePresence, Presence } from "./structures/Presence.ts";
+import { InviteCreate, parseMetadata } from "./structures/Invite.ts";
 
 export type DMChannels = DMChannel | GroupDMChannel;
 export type TextBasedGuildChannels = TextChannel | NewsChannel;
+export type TextBasedChannel = DMChannels | TextBasedGuildChannels;
 export type GuildChannels = TextBasedGuildChannels | VoiceChannel | CategoryChannel | StoreChannel;
 export type Channel = DMChannels | GuildChannels;
-export type TextBasedChannel = DMChannels | TextBasedGuildChannels;
-
-export interface BaseSendMessage {
-  tts?: boolean;
-  allowedMentions?: message.AllowedMentions;
-}
-
-export interface SendMessageContent extends BaseSendMessage {
-  content: string;
-  file?: File;
-  embed?: Embed;
-}
-
-export interface SendMessageFile extends BaseSendMessage {
-  content?: string;
-  file: File;
-  embed?: Embed;
-}
-
-export interface SendMessageEmbed extends BaseSendMessage {
-  content?: string;
-  file?: File;
-  embed: Embed;
-}
-
-export type SendMessage =
-  | SendMessageContent
-  | SendMessageFile
-  | SendMessageEmbed;
 
 interface ChannelPinsUpdate {
   guildId?: Snowflake;
@@ -58,55 +31,7 @@ interface ChannelPinsUpdate {
   lastPinTimestamp?: number;
 }
 
-interface Ban {
-  guildId: Snowflake;
-  user: User;
-}
-
 type UnknownMessage = Pick<Message, "id" | "channelId" | "guildId">;
-
-export interface Events {
-  ready: undefined;
-  shardReady: string;
-
-  channelCreate: Channel;
-  channelUpdate: [Channel, Channel];
-  channelDelete: Channel;
-  channelPinsUpdate: ChannelPinsUpdate;
-
-  guildCreate: GatewayGuild;
-  guildUpdate: [GatewayGuild, GatewayGuild];
-  guildDelete: guild.UnavailableGuild;
-  guildBanAdd: Ban;
-  guildBanRemove: Ban;
-  guildEmojiCreate: [GatewayGuild, GuildEmoji];
-  guildEmojiUpdate: [GatewayGuild, GuildEmoji, GuildEmoji];
-  guildEmojiDelete: [GatewayGuild, GuildEmoji];
-  guildIntegrationsUpdate: Snowflake;
-
-  guildMemberAdd: [GatewayGuild, GuildMember];
-  guildMemberUpdate: [GatewayGuild, GuildMember, GuildMember];
-  guildMemberRemove: [GatewayGuild, GuildMember];
-  guildMembersChunk: [GatewayGuild, Map<Snowflake, GuildMember>];
-
-  guildRoleCreate: [GatewayGuild, Role];
-  guildRoleUpdate: [GatewayGuild, Role];
-  guildRoleDelete: [GatewayGuild, Role];
-
-  messageCreate: [TextBasedChannel, Message];
-  messageUpdate: [TextBasedChannel, Message | undefined, Message];
-  messageDelete: [TextBasedChannel, Message | UnknownMessage];
-  messageDeleteBulk: [TextBasedChannel, Map<Snowflake, Message | Snowflake>];
-
-  messageReactionAdd: [TextBasedChannel, Message | Snowflake, Emoji, User];
-  messageReactionRemove: [TextBasedChannel, Message | Snowflake, Emoji, User];
-  messageReactionRemoveAll: [TextBasedChannel, Message | Snowflake];
-  messageReactionRemoveEmoji: [TextBasedChannel, Message | Snowflake, Emoji];
-
-  presenceUpdate: [GatewayGuild, Presence | undefined, Presence];
-  typingStart: [User, Snowflake, Snowflake | undefined];
-  currentUserUpdate: [PrivateUser, PrivateUser];
-}
 
 const intentsMap = {
   guilds: 1 << 0,
@@ -125,6 +50,54 @@ const intentsMap = {
   directMessageReactions: 1 << 13,
   directMessageTyping: 1 << 14,
 } as const;
+
+export interface Events {
+  ready: undefined;
+  shardReady: string;
+
+  channelCreate: [Channel];
+  channelUpdate: [Channel, Channel];
+  channelDelete: [Channel];
+  channelPinsUpdate: [ChannelPinsUpdate];
+
+  guildCreate: [GatewayGuild];
+  guildUpdate: [GatewayGuild, GatewayGuild];
+  guildDelete: [guild.UnavailableGuild];
+  guildBanAdd: [Snowflake, User];
+  guildBanRemove: [Snowflake, User];
+  guildEmojiCreate: [GatewayGuild, GuildEmoji];
+  guildEmojiUpdate: [GatewayGuild, GuildEmoji, GuildEmoji];
+  guildEmojiDelete: [GatewayGuild, GuildEmoji];
+  guildIntegrationsUpdate: [Snowflake];
+
+  guildMemberAdd: [GatewayGuild, GuildMember];
+  guildMemberUpdate: [GatewayGuild, GuildMember, GuildMember];
+  guildMemberRemove: [GatewayGuild, GuildMember];
+  guildMembersChunk: [GatewayGuild, Map<Snowflake, GuildMember>];
+
+  guildRoleCreate: [GatewayGuild, Role];
+  guildRoleUpdate: [GatewayGuild, Role];
+  guildRoleDelete: [GatewayGuild, Role];
+
+  inviteCreate: [InviteCreate];
+  inviteDelete: [Snowflake, Snowflake | undefined, string];
+
+  messageCreate: [TextBasedChannel, Message];
+  messageUpdate: [TextBasedChannel, Message | undefined, Message];
+  messageDelete: [TextBasedChannel, Message | UnknownMessage];
+  messageDeleteBulk: [TextBasedChannel, Map<Snowflake, Message | Snowflake>];
+
+  messageReactionAdd: [TextBasedChannel, Message | Snowflake, Emoji, User];
+  messageReactionRemove: [TextBasedChannel, Message | Snowflake, Emoji, User];
+  messageReactionRemoveAll: [TextBasedChannel, Message | Snowflake];
+  messageReactionRemoveEmoji: [TextBasedChannel, Message | Snowflake, Emoji];
+
+  presenceUpdate: [GatewayGuild, Presence | undefined, Presence];
+  typingStart: [User, Snowflake, Snowflake | undefined];
+  currentUserUpdate: [PrivateUser, PrivateUser];
+
+  webhookUpdate: [Snowflake, Snowflake];
+}
 
 export class Client extends EventEmitter<Events> {
   gateway: ShardManager;
@@ -175,7 +148,7 @@ export class Client extends EventEmitter<Events> {
           } else {
             this.guildChannels.set(channel.id, channel as GuildChannels);
           }
-          this.emit("channelCreate", channel);
+          this.emit("channelCreate", [channel]);
           break;
         }
         case "CHANNEL_UPDATE": {
@@ -198,15 +171,15 @@ export class Client extends EventEmitter<Events> {
           } else {
             this.guildChannels.delete(channel.id);
           }
-          this.emit("channelDelete", channel);
+          this.emit("channelDelete", [channel]);
           break;
         }
         case "CHANNEL_PINS_UPDATE":
-          this.emit("channelPinsUpdate", {
+          this.emit("channelPinsUpdate", [{
             guildId: e.data.guild_id,
             channelId: e.data.channel_id,
             lastPinTimestamp: e.data.last_pin_timestamp ? Date.parse(e.data.last_pin_timestamp) : undefined,
-          });
+          }]);
           break;
 
         case "GUILD_CREATE": {
@@ -215,7 +188,7 @@ export class Client extends EventEmitter<Events> {
             this.guildChannels.set(channel.id, this.newChannelSwitch(channel) as TextBasedGuildChannels);
           }
           this.guilds.set(e.data.id, guild);
-          this.emit("guildCreate", guild);
+          this.emit("guildCreate", [guild]);
           break;
         }
         case "GUILD_UPDATE": {
@@ -227,25 +200,19 @@ export class Client extends EventEmitter<Events> {
         }
         case "GUILD_DELETE":
           this.guilds.delete(e.data.id);
-          this.emit("guildDelete", e.data);
+          this.emit("guildDelete", [e.data]);
           break;
 
         case "GUILD_BAN_ADD": {
           const user = new User(this, e.data.user);
           this.users.set(e.data.user.id, user);
-          this.emit("guildBanAdd", {
-            guildId: e.data.guild_id,
-            user,
-          });
+          this.emit("guildBanAdd", [e.data.guild_id, user]);
           break;
         }
         case "GUILD_BAN_REMOVE": {
           const user = new User(this, e.data.user);
           this.users.set(e.data.user.id, user);
-          this.emit("guildBanRemove", {
-            guildId: e.data.guild_id,
-            user,
-          });
+          this.emit("guildBanRemove", [e.data.guild_id, user]);
           break;
         }
         case "GUILD_EMOJIS_UPDATE": {
@@ -276,7 +243,7 @@ export class Client extends EventEmitter<Events> {
           break;
         }
         case "GUILD_INTEGRATIONS_UPDATE":
-          this.emit("guildIntegrationsUpdate", e.data.guild_id);
+          this.emit("guildIntegrationsUpdate", [e.data.guild_id]);
           break;
 
         case "GUILD_MEMBER_ADD": {
@@ -344,9 +311,29 @@ export class Client extends EventEmitter<Events> {
           break;
         }
 
-        case "INVITE_CREATE": // TODO
+        case "INVITE_CREATE": {
+          const {guild_id, channel_id, code, inviter, target_user, target_user_type, ...metadata} = e.data;
+
+          let parsedInviter;
+
+          if (inviter) {
+            parsedInviter = new User(this, inviter);
+            this.users.set(parsedInviter.id, parsedInviter);
+          }
+
+          const data: InviteCreate = {
+            guildId: guild_id,
+            channelId: channel_id,
+            code,
+            inviter: parsedInviter,
+            ...parseMetadata(metadata),
+          }
+
+          this.emit("inviteCreate", [data]);
           break;
-        case "INVITE_DELETE": // TODO
+        }
+        case "INVITE_DELETE":
+          this.emit("inviteDelete", [e.data.channel_id, e.data.guild_id, e.data.code]);
           break;
 
         case "MESSAGE_CREATE": {
@@ -594,6 +581,7 @@ export class Client extends EventEmitter<Events> {
           break;
 
         case "WEBHOOKS_UPDATE":
+          this.emit("webhookUpdate", [e.data.channel_id, e.data.guild_id])
           break;
       }
     });

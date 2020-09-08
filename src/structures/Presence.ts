@@ -78,10 +78,12 @@ export function parsePresence(client: Client, {user, guild_id, premium_since, cl
 }
 
 function parseActivity(client: Client, {type, created_at, application_id, emoji, assets, flags, ...activity}: activity.Activity): Activity {
-  let newFlags = {} as Record<keyof typeof flagsMap, boolean>;
+  const newFlags = flags ?? 0;
+
+  let parsedFlags = {} as Record<keyof typeof flagsMap, boolean>;
 
   for (const [key, val] of Object.entries(flagsMap)) {
-    newFlags[key as keyof typeof flagsMap] = ((flags & val) === val);
+    parsedFlags[key as keyof typeof flagsMap] = ((newFlags & val) === val);
   }
 
   return {
@@ -96,6 +98,6 @@ function parseActivity(client: Client, {type, created_at, application_id, emoji,
       smallImage: assets.small_image,
       smallText: assets.small_text,
     },
-    flags: newFlags,
+    flags: parsedFlags,
   }
 }

@@ -101,10 +101,6 @@ export abstract class GuildChannel extends BaseChannel {
     );
   }
 
-  async getInvites() {
-    return await this.client.rest.getChannelInvites(this.id);
-  }
-
   async createInvite(options: {
     maxAge?: number;
     maxUses?: number;

@@ -5,6 +5,7 @@ import {
   PermissionOverwrite,
   unparsePermissionOverwrite,
 } from "./GuildChannel.ts";
+import { parseInvite } from "./Invite.ts";
 
 export class VoiceChannel extends GuildChannel {
   bitrate: number;
@@ -55,5 +56,11 @@ export class VoiceChannel extends GuildChannel {
       reason,
     ) as channel.VoiceChannel;
     return new VoiceChannel(this.client, channel);
+  }
+
+  async getInvites() {
+    const invites = await this.client.rest.getChannelInvites(this.id);
+
+    return invites.map(invite => parseInvite(this.client, invite));
   }
 }
