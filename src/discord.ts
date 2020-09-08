@@ -375,6 +375,15 @@ export namespace channel {
     messages: Snowflake[];
   }
 
+  export interface FollowedChannel {
+    channel_id: Snowflake;
+    webhook_id: Snowflake;
+  }
+
+  export interface FollowNewsChannel {
+    webhook_channel_id: Snowflake;
+  }
+
   export interface GroupDMAddRecipient {
     access_token: string;
     nick?: string;

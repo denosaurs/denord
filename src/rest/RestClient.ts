@@ -220,13 +220,27 @@ export class RestClient {
     }) as Promise<Discord.message.Message>;
   }
 
+  async crosspostMessage(
+    channelId: Discord.Snowflake,
+    messageId: Discord.Snowflake,
+  ): Promise<Discord.message.Message> {
+    return this.request(
+      `channels/${channelId}/messages/${messageId}/crosspost`,
+      {
+        method: "POST",
+      },
+    ) as Promise<Discord.message.Message>;
+  }
+
   async createReaction(
     channelId: Discord.Snowflake,
     messageId: Discord.Snowflake,
     emoji: string,
   ): Promise<void> {
     await this.request(
-      `channels/${channelId}/messages/${messageId}/reactions/${emoji}/@me`,
+      `channels/${channelId}/messages/${messageId}/reactions/${
+        encodeURIComponent(emoji)
+      }/@me`,
       {
         method: "PUT",
       },
@@ -239,7 +253,9 @@ export class RestClient {
     emoji: string,
   ): Promise<void> {
     await this.request(
-      `channels/${channelId}/messages/${messageId}/reactions/${emoji}/@me`,
+      `channels/${channelId}/messages/${messageId}/reactions/${
+        encodeURIComponent(emoji)
+      }/@me`,
       {
         method: "DELETE",
       },
@@ -253,7 +269,9 @@ export class RestClient {
     userId: Discord.Snowflake,
   ): Promise<void> {
     await this.request(
-      `channels/${channelId}/messages/${messageId}/${emoji}/reactions/${userId}`,
+      `channels/${channelId}/messages/${messageId}/${
+        encodeURIComponent(emoji)
+      }/reactions/${userId}`,
       {
         method: "DELETE",
       },
@@ -267,7 +285,9 @@ export class RestClient {
     params: Discord.channel.GetReactions,
   ): Promise<Discord.user.PublicUser[]> {
     return this.request(
-      `channels/${channelId}/messages/${messageId}/reactions/${emoji}`,
+      `channels/${channelId}/messages/${messageId}/reactions/${
+        encodeURIComponent(emoji)
+      }`,
       {
         method: "GET",
         params,
@@ -293,7 +313,9 @@ export class RestClient {
     emoji: string,
   ): Promise<void> {
     await this.request(
-      `channels/${channelId}/messages/${messageId}/reactions/${emoji}`,
+      `channels/${channelId}/messages/${messageId}/reactions/${
+        encodeURIComponent(emoji)
+      }`,
       {
         method: "DELETE",
       },
@@ -376,6 +398,16 @@ export class RestClient {
       method: "DELETE",
       reason,
     });
+  }
+
+  async followNewsChannel(
+    channelId: Discord.Snowflake,
+    data: Discord.channel.FollowNewsChannel,
+  ): Promise<Discord.channel.FollowedChannel> {
+    return this.request(`channels/${channelId}/followers`, {
+      method: "POST",
+      data,
+    }) as Promise<Discord.channel.FollowedChannel>;
   }
 
   async triggerTypingIndicator(channelId: Discord.Snowflake): Promise<void> {
