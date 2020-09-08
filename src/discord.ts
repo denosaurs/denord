@@ -1129,8 +1129,6 @@ export namespace gateway {
     T extends keyof Events,
   > = T extends keyof Events ? EventPayload<T> : never;
 
-  export type SpecificEvent = SpecificEventPayload<keyof Events>;
-
   interface OpPayload<T extends keyof Ops> {
     op: T;
     d: Ops[T];
@@ -1142,11 +1140,9 @@ export namespace gateway {
     ? OpPayload<T>
     : never;
 
-  export type SpecificOp = SpecificOpPayload<keyof Ops>;
-
   export type Payload =
-    | SpecificEvent
-    | SpecificOp;
+    | SpecificEventPayload<keyof Events>
+    | SpecificOpPayload<keyof Ops>;
 
   export interface Ops {
     1: number;
