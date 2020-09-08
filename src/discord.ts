@@ -504,7 +504,7 @@ export namespace embed {
 }
 
 export namespace emoji {
-  export interface Emoji {
+  export interface BaseEmoji {
     id: Snowflake | null;
     name: string | null;
     roles?: Snowflake[];
@@ -515,7 +515,17 @@ export namespace emoji {
     available?: boolean;
   }
 
-  export interface GuildEmoji extends Emoji {
+  interface idEmoji extends BaseEmoji {
+    id: Snowflake;
+  }
+
+  interface nameEmoji extends BaseEmoji {
+    name: string;
+  }
+
+  export type Emoji = idEmoji | nameEmoji;
+
+  export interface GuildEmoji extends BaseEmoji {
     id: Snowflake;
     name: string;
   }
@@ -533,16 +543,13 @@ export namespace emoji {
 }
 
 export namespace guild {
-  interface BaseGuild {
+  export interface BaseGuild {
     id: Snowflake;
     name: string;
     icon: string | null;
     splash: string | null;
     discovery_splash: string | null;
-    owner?: boolean; // Only on Get Current User Guilds
     owner_id: Snowflake;
-    permissions?: number; // Only on Get Current User Guilds
-    permissions_new?: string; // Only on Get Current User Guilds
     region: string;
     afk_channel_id: Snowflake | null;
     afk_timeout: number;
@@ -565,13 +572,24 @@ export namespace guild {
     description: string | null;
     banner: string | null;
     premium_tier: 0 | 1 | 2 | 3;
-    premium_subscription_count?: number;
+    premium_subscription_count?: number; // discord-api-docs#2034
     preferred_locale: string;
     public_updates_channel_id: Snowflake | null;
-    max_video_channel_users?: number;
+    max_video_channel_users?: number; // discord-api-docs#2034
+  }
+
+  export interface CurrentUserGuild extends BaseGuild {
+    owner: boolean;
+    permissions: number;
+    permissions_new: string;
   }
 
   export interface RESTGuild extends BaseGuild {
+    widget_enabled: boolean;
+    widget_channel_id: Snowflake | null;
+    max_presences: number | null;
+    max_members: number;
+
     approximate_member_count?: number;
     approximate_presence_count?: number;
   }
@@ -639,7 +657,7 @@ export namespace guild {
   }
 
   export interface PresenceUpdateEvent {
-    user: user.PublicUser;
+    user: Pick<user.PublicUser, "id"> & Partial<user.PublicUser>;
     roles: Snowflake[];
     game: activity.Activity | null;
     guild_id: Snowflake;
@@ -726,7 +744,7 @@ export namespace guild {
 
   export interface EmojisUpdateEvent {
     guild_id: Snowflake;
-    emojis: emoji.Emoji[];
+    emojis: emoji.GuildEmoji[];
   }
 
   export interface IntegrationsUpdateEvent {
@@ -1145,7 +1163,7 @@ export namespace webhook {
   export interface Webhook {
     id: Snowflake;
     type: 1 | 2;
-    guild_id?: Snowflake;
+    guild_id: Snowflake; // discord-api-docs#2048
     channel_id: Snowflake;
     user?: user.PublicUser;
     name: string | null;
@@ -1278,7 +1296,7 @@ export namespace gateway {
 
     PRESENCE_UPDATE: guild.PresenceUpdateEvent;
     TYPING_START: channel.TypingStartEvent;
-    USER_UPDATE: user.PublicUser;
+    USER_UPDATE: user.PrivateUser;
 
     VOICE_STATE_UPDATE: voice.State;
     VOICE_SERVER_UPDATE: voice.ServerUpdateEvent;

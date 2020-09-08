@@ -63,7 +63,7 @@ export class Message extends SnowflakeBase {
     width: number | null;
   }[];
   embeds: Embed[];
-  reactions: message.Reaction[];
+  reactions: Map<Snowflake | string, message.Reaction>;
   pinned: boolean;
   type: typeof messageTypeMap[keyof typeof messageTypeMap];
   activity?: {
@@ -111,7 +111,7 @@ export class Message extends SnowflakeBase {
       proxyUrl: proxy_url,
     }));
     this.embeds = data.embeds.map((embed) => parseEmbed(embed));
-    this.reactions = data.reactions ?? [];
+    this.reactions = new Map(data.reactions?.map(reaction => [reaction.emoji.id ?? reaction.emoji.name!, reaction]) ?? []);
     // nonce
     this.pinned = data.pinned;
     this.byWebhook = !!data.webhook_id;

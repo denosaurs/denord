@@ -72,8 +72,8 @@ export class User extends SnowflakeBase {
   }
 
   async getDM() {
-    if (this.client.DMChannels.has(this.id)) {
-      return this.client.DMChannels.get(this.id);
+    if (this.client.dmChannels.has(this.id)) {
+      return this.client.dmChannels.get(this.id);
     } else {
       return new DMChannel(
         this.client,

@@ -7,6 +7,7 @@ import type { Client, SendMessage } from "../Client.ts";
 import type { channel, Snowflake } from "../discord.ts";
 import { TextChannel } from "./TextChannel.ts";
 import { NewsChannel } from "./NewsChannel.ts";
+import { Message } from "./Message.ts";
 
 export interface EditOptions {
   name?: string;
@@ -23,6 +24,7 @@ export abstract class TextBasedGuildChannel extends GuildChannel {
   lastMessageId: Snowflake | null;
   lastPinTimestamp?: number;
   topic: string | null;
+  messages = new Map<Snowflake, Message>();
 
   protected constructor(client: Client, data: channel.TextBasedGuildChannel) {
     super(client, data);

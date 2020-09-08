@@ -24,6 +24,7 @@ import type { CategoryChannel } from "./CategoryChannel.ts";
 import type { VoiceChannel } from "./VoiceChannel.ts";
 import type { TextChannel } from "./TextChannel.ts";
 import { parseState, State } from "./VoiceState.ts";
+import { parsePresence, Presence } from "./Presence.ts";
 
 interface CreateChannel {
   type?: Exclude<keyof typeof channelInverseTypeMap, "DM" | "groupDM">;
@@ -71,7 +72,7 @@ const featuresMap = {
   "PUBLIC_DISABLED": "publicDisabled",
 } as const;
 
-export class Guild extends SnowflakeBase {
+abstract class BaseGuild extends SnowflakeBase {
   name: string;
   icon: string | null;
   splash: string | null;
@@ -88,33 +89,30 @@ export class Guild extends SnowflakeBase {
   features = {} as Record<typeof featuresMap[keyof typeof featuresMap], boolean>;
   requiresMFA: boolean;
   applicationId: Snowflake | null;
+  widgetEnabled?: boolean;
+  widgetChannelId?: Snowflake | null;
   systemChannelId: Snowflake | null;
   systemChannelFlags: number;
   rulesChannelId: Snowflake | null;
-  joinedAt: number;
-  large: boolean;
-  unavailable: boolean;
-  memberCount: number;
-  voiceStates: Map<Snowflake, State>;
-  members: Map<Snowflake, GuildMember>;
-  channels: Map<Snowflake, GuildChannels>;
+  maxPresences?: number | null;
+  maxMembers?: number;
   vanityURLCode: string | null;
   description: string | null;
   banner: string | null;
   boostLevel: 0 | 1 | 2 | 3;
+  boostCount?: number;
   preferredLocale: string;
   publicUpdatesChannelId: Snowflake | null;
+  maxVideoChannelUsers?: number;
 
-  constructor(client: Client, data: guild.GatewayGuild) {
+  protected constructor(client: Client, data: guild.BaseGuild) {
     super(client, data);
 
     this.name = data.name;
     this.icon = data.icon;
     this.splash = data.splash;
     this.discoverySplash = data.discovery_splash;
-    this.amOwner = data.owner;
     this.ownerId = data.owner_id;
-    this.permissions = data.permissions_new;
     this.region = data.region;
     this.afkChannelId = data.afk_channel_id;
     this.afkTimeout = data.afk_timeout;
@@ -139,31 +137,17 @@ export class Guild extends SnowflakeBase {
     this.systemChannelId = data.system_channel_id;
     this.systemChannelFlags = data.system_channel_flags;
     this.rulesChannelId = data.rules_channel_id;
-
-    this.joinedAt = Date.parse(data.joined_at);
-    this.large = data.large;
-    this.unavailable = data.unavailable;
-    this.memberCount = data.member_count;
-    this.voiceStates = new Map(data.voice_states.map(state => [state.user_id, parseState(state, client)]));
-    this.members = new Map(data.members.map((member) => [member.user.id, new GuildMember(client, member, data.id)]));
-    this.channels = new Map(
-      data.channels.map(
-        (channel) => [
-          channel.id,
-          client.newChannelSwitch(channel) as GuildChannels,
-        ],
-      ),
-    );
-    this.presences = data.presences;
+    this.maxPresences = data.max_presences;
+    this.maxMembers = data.max_members;
 
     this.vanityURLCode = data.vanity_url_code;
     this.description = data.description;
     this.banner = data.banner;
     this.boostLevel = data.premium_tier;
-    this.boostCount = data.premium_subscription_count; // discord-api-docs#2034
+    this.boostCount = data.premium_subscription_count;
     this.preferredLocale = data.preferred_locale;
     this.publicUpdatesChannelId = data.public_updates_channel_id;
-    this.maxVideoChannelUsers = data.max_video_channel_users; // discord-api-docs#2034
+    this.maxVideoChannelUsers = data.max_video_channel_users;
   }
 
   get shardId() {
@@ -212,7 +196,7 @@ export class Guild extends SnowflakeBase {
       preferred_locale: options.preferredLocale,
     }, reason);
 
-    return new Guild(this.client, guild);
+    return new RestGuild(this.client, guild);
   }
 
   async unban(userId: Snowflake, reason?: string) {
@@ -397,7 +381,7 @@ export class Guild extends SnowflakeBase {
     options: Pick<
       Integration,
       "expireBehavior" | "expireGracePeriod" | "enableEmoticons"
-    >,
+      >,
   ) {
     await this.client.rest.modifyGuildIntegration(this.id, integrationId, {
       expire_behavior: options.expireBehavior,
@@ -477,5 +461,47 @@ export class Guild extends SnowflakeBase {
     return this.discoverySplash
       ? imageURLFormatter(`icons/${this.id}/${this.discoverySplash}`, options)
       : null;
+  }
+}
+
+export class RestGuild extends BaseGuild {
+  widgetEnabled!: boolean;
+  widgetChannelId!: Snowflake | null;
+  maxPresences!: number | null;
+  maxMembers!: number;
+
+  constructor(client: Client, data: guild.RESTGuild) {
+    super(client, data);
+  }
+}
+
+export class GatewayGuild extends BaseGuild {
+  joinedAt: number;
+  large: boolean;
+  unavailable: boolean;
+  memberCount: number;
+  voiceStates: Map<Snowflake, State>;
+  members: Map<Snowflake, GuildMember>;
+  channels: Map<Snowflake, GuildChannels>;
+  presences: Map<Snowflake, Presence>;
+
+  constructor(client: Client, data: guild.GatewayGuild) {
+    super(client, data);
+
+    this.joinedAt = Date.parse(data.joined_at);
+    this.large = data.large;
+    this.unavailable = data.unavailable;
+    this.memberCount = data.member_count;
+    this.voiceStates = new Map(data.voice_states.map(state => [state.user_id, parseState(state, client)]));
+    this.members = new Map(data.members.map((member) => [member.user.id, new GuildMember(client, member, data.id)]));
+    this.channels = new Map(
+      data.channels.map(
+        (channel) => [
+          channel.id,
+          client.newChannelSwitch(channel) as GuildChannels,
+        ],
+      ),
+    );
+    this.presences = new Map(data.presences.map(presence => [presence.user.id, parsePresence(client, presence)]));
   }
 }

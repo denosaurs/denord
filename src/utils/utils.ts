@@ -42,9 +42,7 @@ export type InvertRecord<StringRecord extends Record<string, string | number>> =
 
 export function inverseMap<T extends Record<string, string | number>>(
   map: T,
-): {
-  [Entry in T[keyof T]]: FindKey<T, Entry>;
-} {
+): InvertRecord<T> {
   return Object.fromEntries(
     Object.entries(map).map((entry) => entry.reverse()),
   );

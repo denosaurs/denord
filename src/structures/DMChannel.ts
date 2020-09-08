@@ -2,11 +2,13 @@ import { BaseChannel } from "./BaseChannel.ts";
 import type { Client, SendMessage } from "../Client.ts";
 import type { channel, Snowflake } from "../discord.ts";
 import { User } from "./User.ts";
+import { Message } from "./Message.ts";
 
 export class DMChannel extends BaseChannel {
   lastMessageId: Snowflake | null;
   recipient: User;
   lastPinTimestamp?: number;
+  messages = new Map<Snowflake, Message>();
 
   constructor(client: Client, data: channel.DMChannel) {
     super(client, data);

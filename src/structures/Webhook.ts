@@ -5,7 +5,7 @@ import type { Client } from "../Client.ts";
 export interface Webhook {
   id: Snowflake;
   type: "incoming" | "channelFollower";
-  guildId?: Snowflake; // TODO
+  guildId: Snowflake;
   channelId: Snowflake;
   user?: User;
   name: string | null;

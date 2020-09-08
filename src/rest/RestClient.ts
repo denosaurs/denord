@@ -899,11 +899,11 @@ export class RestClient {
 
   async getCurrentUserGuilds(
     params: Discord.user.GetGuilds,
-  ): Promise<Discord.guild.RESTGuild[]> {
+  ): Promise<Discord.guild.CurrentUserGuild[]> {
     return this.request(`users/@me/guilds`, {
       method: "GET",
       params,
-    }) as Promise<Discord.guild.RESTGuild[]>;
+    }) as Promise<Discord.guild.CurrentUserGuild[]>;
   }
 
   async leaveGuild(guildId: Discord.Snowflake): Promise<void> {
