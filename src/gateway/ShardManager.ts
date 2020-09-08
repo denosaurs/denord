@@ -11,14 +11,18 @@ type BundledEvents<T extends keyof Events> = T extends keyof Events
   ? BundledEvent<T>
   : never;
 
-interface rawEvents extends Events {
+interface RawEvents extends Events {
   raw: BundledEvents<keyof Events>;
+}
+
+type ValueToTupleValue<T> = {
+  [K in keyof T]: [T[K]];
 }
 
 /**
  * A shard manager that manages all shards that are used to connect to the discord gateway
  */
-export class ShardManager extends EventEmitter<rawEvents> {
+export class ShardManager extends EventEmitter<ValueToTupleValue<RawEvents>> {
   #shards: Worker[] = [];
   #resolveConnect!: () => void;
   shardAmount: number;
@@ -41,62 +45,132 @@ export class ShardManager extends EventEmitter<rawEvents> {
       });
 
       worker.onmessage = (msg) => {
-        let event = msg.data as { name: string; data: any };
+        const event = msg.data as { name: string; data: any };
 
         switch (event.name) {
           case "EVENT": {
-            const payload = event.data as gateway.SpecificEventPayload<
-              keyof Events
-            >;
+            const payload = event.data as gateway.SpecificEvent;
 
             switch (payload.t) {
               case "READY":
+                this.emit(payload.t, payload.d);
+                break;
               case "RESUMED":
+                this.emit(payload.t, payload.d);
+                break;
               case "RECONNECT":
+                this.emit(payload.t, payload.d);
+                break;
               case "CHANNEL_CREATE":
+                this.emit(payload.t, payload.d);
+                break;
               case "CHANNEL_UPDATE":
+                this.emit(payload.t, payload.d);
+                break;
               case "CHANNEL_DELETE":
+                this.emit(payload.t, payload.d);
+                break;
               case "CHANNEL_PINS_UPDATE":
+                this.emit(payload.t, payload.d);
+                break;
               case "GUILD_CREATE":
+                this.emit(payload.t, payload.d);
+                break;
               case "GUILD_UPDATE":
+                this.emit(payload.t, payload.d);
+                break;
               case "GUILD_DELETE":
+                this.emit(payload.t, payload.d);
+                break;
               case "GUILD_BAN_ADD":
+                this.emit(payload.t, payload.d);
+                break;
               case "GUILD_BAN_REMOVE":
+                this.emit(payload.t, payload.d);
+                break;
               case "GUILD_EMOJIS_UPDATE":
+                this.emit(payload.t, payload.d);
+                break;
               case "GUILD_INTEGRATIONS_UPDATE":
+                this.emit(payload.t, payload.d);
+                break;
               case "GUILD_MEMBER_ADD":
+                this.emit(payload.t, payload.d);
+                break;
               case "GUILD_MEMBER_REMOVE":
+                this.emit(payload.t, payload.d);
+                break;
               case "GUILD_MEMBER_UPDATE":
+                this.emit(payload.t, payload.d);
+                break;
               case "GUILD_MEMBERS_CHUNK":
+                this.emit(payload.t, payload.d);
+                break;
               case "GUILD_ROLE_CREATE":
+                this.emit(payload.t, payload.d);
+                break;
               case "GUILD_ROLE_UPDATE":
+                this.emit(payload.t, payload.d);
+                break;
               case "GUILD_ROLE_DELETE":
+                this.emit(payload.t, payload.d);
+                break;
               case "INVITE_CREATE":
+                this.emit(payload.t, payload.d);
+                break;
               case "INVITE_DELETE":
+                this.emit(payload.t, payload.d);
+                break;
               case "MESSAGE_CREATE":
+                this.emit(payload.t, payload.d);
+                break;
               case "MESSAGE_UPDATE":
+                this.emit(payload.t, payload.d);
+                break;
               case "MESSAGE_DELETE":
+                this.emit(payload.t, payload.d);
+                break;
               case "MESSAGE_DELETE_BULK":
+                this.emit(payload.t, payload.d);
+                break;
               case "MESSAGE_REACTION_ADD":
+                this.emit(payload.t, payload.d);
+                break;
               case "MESSAGE_REACTION_REMOVE":
+                this.emit(payload.t, payload.d);
+                break;
               case "MESSAGE_REACTION_REMOVE_ALL":
+                this.emit(payload.t, payload.d);
+                break;
               case "MESSAGE_REACTION_REMOVE_EMOJI":
+                this.emit(payload.t, payload.d);
+                break;
               case "PRESENCE_UPDATE":
+                this.emit(payload.t, payload.d);
+                break;
               case "TYPING_START":
+                this.emit(payload.t, payload.d);
+                break;
               case "USER_UPDATE":
+                this.emit(payload.t, payload.d);
+                break;
               case "VOICE_STATE_UPDATE":
+                this.emit(payload.t, payload.d);
+                break;
               case "VOICE_SERVER_UPDATE":
+                this.emit(payload.t, payload.d);
+                break;
               case "WEBHOOKS_UPDATE":
                 this.emit(payload.t, payload.d);
-                this.emit("raw", {
-                  name: payload.t,
-                  data: payload.d,
-                } as BundledEvents<keyof Events>); //TODO: don't cast
                 break;
 
               default:
                 throw new Error("Unexpected event: " + payload);
             }
+            this.emit("raw", {
+              name: payload.t,
+              data: payload.d,
+            } as BundledEvents<keyof Events>);
             break;
           }
           case "CLOSE":

@@ -1,5 +1,5 @@
-export default class EventEmitter<E> {
-  listeners = {} as Record<any, ((args: any) => void)[]>; //TODO: proper types
+export default class EventEmitter<E extends Record<string, any[]>> {
+  listeners = {} as Record<any, ((...args: any) => void)[]>; //TODO: proper types
 
   /**
    * Adds the listener function to the end of the listeners array for the event
@@ -10,7 +10,7 @@ export default class EventEmitter<E> {
    */
   on<K extends keyof E, T extends E[K]>(
     eventName: K,
-    listener: (args: T) => void,
+    listener: (...args: T) => void,
   ) {
     if (!(eventName in this.listeners)) {
       this.listeners[eventName] = [];
@@ -24,10 +24,10 @@ export default class EventEmitter<E> {
    */
   once<K extends keyof E, T extends E[K]>(
     eventName: K,
-    listener: (args: T) => void,
+    listener: (...args: T) => void,
   ) {
-    const wrapped = (args: T): void => {
-      listener(args);
+    const wrapped = (...args: T): void => {
+      listener(...args);
       this.off(eventName, listener);
     };
 
@@ -41,7 +41,7 @@ export default class EventEmitter<E> {
    */
   off<K extends keyof E, T extends E[K]>(
     eventName?: K,
-    listener?: (args: T) => void,
+    listener?: (...args: T) => void,
   ) {
     if (eventName) {
       if (eventName in this.listeners) {
@@ -54,7 +54,7 @@ export default class EventEmitter<E> {
         }
       }
     } else {
-      this.listeners = {} as Record<K, ((args: T) => void)[]>;
+      this.listeners = {} as Record<any, ((...args: any[]) => void)[]>;
     }
   }
 
@@ -63,10 +63,10 @@ export default class EventEmitter<E> {
    * eventName, in the order they were registered, passing the supplied
    * arguments to each.
    */
-  emit<K extends keyof E, T extends E[K]>(eventName: K, args: T) {
+  emit<K extends keyof E, T extends E[K]>(eventName: K, ...args: T) {
     if (eventName in this.listeners) {
       for (const listener of this.listeners[eventName]) {
-        listener(args);
+        listener(...args);
       }
     }
   }
