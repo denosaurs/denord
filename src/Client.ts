@@ -24,6 +24,7 @@ import {
   parseMetadata,
 } from "./structures/Invite.ts";
 import { ExecuteWebhook, parseWebhook } from "./structures/Webhook.ts";
+import { equal } from "https://deno.land/std@0.68.0/testing/asserts.ts";
 
 export type DMChannels = DMChannel | GroupDMChannel;
 export type TextBasedGuildChannels = TextChannel | NewsChannel;
@@ -109,7 +110,7 @@ export interface Events {
   webhookUpdate: [Snowflake, Snowflake];
 }
 
-export class Client extends EventEmitter<Events> {
+export class Client extends EventEmitter<Record<string, any[]>> {
   gateway: ShardManager;
   rest = new RestClient();
 
@@ -253,7 +254,13 @@ export class Client extends EventEmitter<Events> {
             }
             this.emit("guildEmojiCreate", guild, addedEmoji!);
           } else if (newEmojis.size === guild.emojis.size) {
-            this.emit("guildEmojiUpdate", guild);
+            for (const [id, original] of guild.emojis) {
+              const updated = newEmojis.get(id);
+              if (updated && !equal(original, updated)) {
+                this.emit("guildEmojiUpdate", guild, original, updated);
+                break;
+              }
+            }
           } else {
             let deletedEmoji: GuildEmoji;
             for (const [id, emoji] of guild.emojis) {
@@ -824,7 +831,8 @@ export class Client extends EventEmitter<Events> {
     );
 
     if (wait) {
-      return new Message(this, res);
+      // TODO: cast should be unnecessary but ts complains
+      return new Message(this, res as message.Message);
     }
   }
 
