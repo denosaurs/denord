@@ -5,10 +5,10 @@ import { Snowflake, webhook } from "../discord.ts";
 import type { NewsChannel } from "./NewsChannel.ts";
 import { parseWebhook } from "./Webhook.ts";
 
-export class TextChannel extends TextBasedGuildChannel {
+export class TextChannel<T extends channel.TextChannel = channel.TextChannel> extends TextBasedGuildChannel<T> {
   slowMode: number;
 
-  constructor(client: Client, data: channel.TextChannel) {
+  constructor(client: Client, data: T) {
     super(client, data);
 
     this.slowMode = data.rate_limit_per_user;

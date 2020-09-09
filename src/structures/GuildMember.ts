@@ -3,7 +3,7 @@ import type { Client } from "../Client.ts";
 import type { guild, guildMember, Snowflake } from "../discord.ts";
 import { User } from "./User.ts";
 
-export class GuildMember extends Base {
+export class GuildMember<T extends guildMember.GuildMember = guildMember.GuildMember> extends Base<T> {
   user: User;
   nickname: string | null;
   roles: Snowflake[];
@@ -15,7 +15,7 @@ export class GuildMember extends Base {
 
   constructor(
     client: Client,
-    data: guildMember.GuildMember,
+    data: T,
     guildId: Snowflake,
   ) {
     super(client, data);

@@ -66,7 +66,7 @@ const flagsMap = {
   "urgent": 0x10,
 } as const;
 
-export class Message extends SnowflakeBase {
+export class Message<T extends message.Message = message.Message> extends SnowflakeBase<T> {
   channelId: Snowflake;
   guildId?: Snowflake;
   author: User;
@@ -112,7 +112,7 @@ export class Message extends SnowflakeBase {
   };
   flags = {} as Record<keyof typeof flagsMap, boolean>;
 
-  constructor(client: Client, data: message.Message) {
+  constructor(client: Client, data: T) {
     super(client, data);
 
     this.channelId = data.channel_id;

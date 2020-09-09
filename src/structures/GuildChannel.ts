@@ -55,14 +55,14 @@ export function unparsePermissionOverwrite(
   };
 }
 
-export abstract class GuildChannel extends BaseChannel {
+export abstract class GuildChannel<T extends channel.GuildChannel> extends BaseChannel<T> {
   name: string;
   position: number;
   parentId: Snowflake | null;
   guildId: Snowflake;
   permissionOverwrites: PermissionOverwrite[];
 
-  protected constructor(client: Client, data: channel.GuildChannel) {
+  protected constructor(client: Client, data: T) {
     super(client, data);
 
     this.name = data.name;

@@ -74,7 +74,7 @@ const featuresMap = {
   "PUBLIC_DISABLED": "publicDisabled",
 } as const;
 
-abstract class BaseGuild extends SnowflakeBase {
+abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
   name: string;
   icon: string | null;
   splash: string | null;
@@ -110,7 +110,7 @@ abstract class BaseGuild extends SnowflakeBase {
   publicUpdatesChannelId: Snowflake | null;
   maxVideoChannelUsers?: number;
 
-  protected constructor(client: Client, data: guild.BaseGuild) {
+  protected constructor(client: Client, data: T) {
     super(client, data);
 
     this.name = data.name;
@@ -483,18 +483,18 @@ abstract class BaseGuild extends SnowflakeBase {
   }
 }
 
-export class RestGuild extends BaseGuild {
+export class RestGuild<T extends guild.RESTGuild = guild.RESTGuild> extends BaseGuild<T> {
   widgetEnabled!: boolean;
   widgetChannelId!: Snowflake | null;
   maxPresences!: number | null;
   maxMembers!: number;
 
-  constructor(client: Client, data: guild.RESTGuild) {
+  constructor(client: Client, data: T) {
     super(client, data);
   }
 }
 
-export class GatewayGuild extends BaseGuild {
+export class GatewayGuild<T extends guild.GatewayGuild = guild.GatewayGuild> extends BaseGuild<T> {
   joinedAt: number;
   large: boolean;
   unavailable: boolean;
@@ -504,7 +504,7 @@ export class GatewayGuild extends BaseGuild {
   channels: Map<Snowflake, GuildChannels>;
   presences: Map<Snowflake, Presence>;
 
-  constructor(client: Client, data: guild.GatewayGuild) {
+  constructor(client: Client, data: T) {
     super(client, data);
 
     this.joinedAt = Date.parse(data.joined_at);

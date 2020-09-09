@@ -7,11 +7,11 @@ import {
 } from "./GuildChannel.ts";
 import { parseInvite } from "./Invite.ts";
 
-export class VoiceChannel extends GuildChannel {
+export class VoiceChannel<T extends channel.VoiceChannel = channel.VoiceChannel> extends GuildChannel<T> {
   bitrate: number;
   userLimit: number;
 
-  constructor(client: Client, data: channel.VoiceChannel) {
+  constructor(client: Client, data: T) {
     super(client, data);
 
     this.bitrate = data.bitrate;

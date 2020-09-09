@@ -4,7 +4,7 @@ import type { channel, Snowflake } from "../discord.ts";
 import { User } from "./User.ts";
 import { Message, SendMessage } from "./Message.ts";
 
-export class GroupDMChannel extends BaseChannel {
+export class GroupDMChannel<T extends channel.GroupDMChannel = channel.GroupDMChannel> extends BaseChannel<T> {
   lastMessageId: Snowflake | null;
   recipients: Map<Snowflake, User>;
   lastPinTimestamp?: number;
@@ -13,7 +13,7 @@ export class GroupDMChannel extends BaseChannel {
   ownerId: Snowflake;
   messages = new Map<Snowflake, Message>();
 
-  constructor(client: Client, data: channel.GroupDMChannel) {
+  constructor(client: Client, data: T) {
     super(client, data);
 
     this.lastMessageId = data.last_message_id;

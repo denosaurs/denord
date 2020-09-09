@@ -36,7 +36,7 @@ export const permissionMap = {
   "manageEmojis": 0x40000000,
 } as const;
 
-export class Role extends SnowflakeBase {
+export class Role<T extends role.Role = role.Role> extends SnowflakeBase<T> {
   name: string;
   color: number;
   hoist: boolean;
@@ -46,7 +46,7 @@ export class Role extends SnowflakeBase {
   position: number;
   guildId: Snowflake;
 
-  constructor(client: Client, data: role.Role, guildId: Snowflake) {
+  constructor(client: Client, data: T, guildId: Snowflake) {
     super(client, data);
 
     this.guildId = guildId;

@@ -6,8 +6,8 @@ import {
   unparsePermissionOverwrite,
 } from "./GuildChannel.ts";
 
-export class CategoryChannel extends GuildChannel {
-  constructor(client: Client, data: channel.CategoryChannel) {
+export class CategoryChannel<T extends channel.CategoryChannel = channel.CategoryChannel> extends GuildChannel<T> {
+  constructor(client: Client, data: T) {
     super(client, data);
   }
 

@@ -15,10 +15,10 @@ const typeMap = {
 
 export const inverseTypeMap = inverseMap(typeMap);
 
-export abstract class BaseChannel extends SnowflakeBase {
+export abstract class BaseChannel<T extends channel.BaseChannel> extends SnowflakeBase<T> {
   type: keyof typeof inverseTypeMap;
 
-  protected constructor(client: Client, data: channel.BaseChannel) {
+  protected constructor(client: Client, data: T) {
     super(client, data);
 
     this.type = typeMap[data.type];

@@ -20,7 +20,7 @@ const flagsMap = {
   "verifiedBotDeveloper": 0x20000,
 } as const;
 
-export class User extends SnowflakeBase {
+export class User<T extends user.PublicUser = user.PublicUser> extends SnowflakeBase<T> {
   username: string;
   discriminator: string;
   avatar: string | null;
@@ -28,7 +28,7 @@ export class User extends SnowflakeBase {
   system: boolean;
   publicFlags = {} as Record<keyof typeof flagsMap, boolean>;
 
-  constructor(client: Client, data: user.PublicUser) {
+  constructor(client: Client, data: T) {
     super(client, data);
 
     this.username = data.username;
@@ -83,7 +83,7 @@ export class User extends SnowflakeBase {
   }
 }
 
-export class PrivateUser extends User {
+export class PrivateUser<T extends user.PrivateUser = user.PrivateUser> extends User<T> {
   email: string | null;
   flags = {} as Record<keyof typeof flagsMap, boolean>;
   locale: string;
@@ -92,7 +92,7 @@ export class PrivateUser extends User {
   verified: boolean;
   premiumType: 0 | 1 | 2;
 
-  constructor(client: Client, data: user.PrivateUser) {
+  constructor(client: Client, data: T) {
     super(client, data);
 
     this.email = data.email;

@@ -1,20 +1,20 @@
 import type { Client } from "../Client.ts";
 import type { Snowflake } from "../discord.ts";
 
-export abstract class Base {
+export abstract class Base<T> {
   client: Client;
-  raw: any; //TODO specific type
+  raw: T;
 
-  protected constructor(client: Client, data: any) {
+  protected constructor(client: Client, data: T) {
     this.client = client;
     this.raw = data;
   }
 }
 
-export abstract class SnowflakeBase extends Base {
+export abstract class SnowflakeBase<T extends { id: Snowflake }> extends Base<T> {
   id: Snowflake;
 
-  protected constructor(client: Client, data: { id: Snowflake }) {
+  protected constructor(client: Client, data: T) {
     super(client, data);
 
     this.id = data.id;

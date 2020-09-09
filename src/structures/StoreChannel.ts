@@ -6,10 +6,10 @@ import {
   unparsePermissionOverwrite,
 } from "./GuildChannel.ts";
 
-export class StoreChannel extends GuildChannel {
+export class StoreChannel<T extends channel.StoreChannel = channel.StoreChannel> extends GuildChannel<T> {
   nsfw: boolean;
 
-  constructor(client: Client, data: channel.StoreChannel) {
+  constructor(client: Client, data: T) {
     super(client, data);
 
     this.nsfw = data.nsfw;

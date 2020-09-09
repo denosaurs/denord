@@ -21,13 +21,13 @@ export interface EditOptions {
   parentId?: Snowflake | null;
 }
 
-export abstract class TextBasedGuildChannel extends GuildChannel {
+export abstract class TextBasedGuildChannel<T extends channel.TextBasedGuildChannel> extends GuildChannel<T> {
   lastMessageId: Snowflake | null;
   lastPinTimestamp?: number;
   topic: string | null;
   messages = new Map<Snowflake, Message>();
 
-  protected constructor(client: Client, data: channel.TextBasedGuildChannel) {
+  protected constructor(client: Client, data: T) {
     super(client, data);
 
     this.lastMessageId = data.last_message_id;
