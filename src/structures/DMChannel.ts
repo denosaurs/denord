@@ -1,8 +1,8 @@
 import { BaseChannel } from "./BaseChannel.ts";
-import type { Client, SendMessage } from "../Client.ts";
+import type { Client } from "../Client.ts";
 import type { channel, Snowflake } from "../discord.ts";
 import { User } from "./User.ts";
-import { Message } from "./Message.ts";
+import { Message, SendMessage } from "./Message.ts";
 
 export class DMChannel extends BaseChannel {
   lastMessageId: Snowflake | null;
