@@ -12,8 +12,8 @@ export interface Presence {
   status: ActiveStatus;
   activities: Activity[];
   clientStatus: ClientStatus;
-  premiumSince?: number | null;
-  nickname?: string | null;
+  premiumSince: number | null;
+  nickname: string | null;
 }
 
 interface ClientStatus {
@@ -86,8 +86,8 @@ export function parsePresence(
     },
     premiumSince: premium_since
       ? Date.parse(premium_since)
-      : premium_since as null | undefined,
-    nickname: nick,
+      : null,
+    nickname: nick ?? null,
   };
 }
 
