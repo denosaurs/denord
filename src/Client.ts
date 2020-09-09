@@ -62,7 +62,7 @@ const intentsMap = {
   directMessageTyping: 1 << 14,
 } as const;
 
-export interface Events {
+export interface Events extends Record<string, any[]> { //TODO: dont extend record
   ready: [undefined];
   shardReady: [string];
 
@@ -104,13 +104,13 @@ export interface Events {
   messageReactionRemoveEmoji: [TextBasedChannel, Message | Snowflake, Emoji];
 
   presenceUpdate: [GatewayGuild, Presence | undefined, Presence];
-  typingStart: [User, Snowflake, Snowflake | undefined];
+  typingStart: [User | Snowflake, Snowflake, Snowflake | undefined];
   currentUserUpdate: [PrivateUser, PrivateUser];
 
   webhookUpdate: [Snowflake, Snowflake];
 }
 
-export class Client extends EventEmitter<Record<string, any[]>> {
+export class Client extends EventEmitter<Events> {
   gateway: ShardManager;
   rest = new RestClient();
 
@@ -661,7 +661,7 @@ export class Client extends EventEmitter<Record<string, any[]>> {
             user = new User(this, e.data.member.user);
             this.users.set(e.data.user_id, user);
           } else {
-            user = this.users.get(e.data.user_id)!;
+            user = this.users.get(e.data.user_id) || e.data.user_id;
           }
           this.emit("typingStart", user, e.data.channel_id, e.data.guild_id);
           break;
