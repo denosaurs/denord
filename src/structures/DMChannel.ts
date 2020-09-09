@@ -29,7 +29,8 @@ export class DMChannel extends BaseChannel {
   }
 
   async getPins() {
-    return this.client.getPins(this.id);
+    const messages = await this.client.rest.getPinnedMessages(this.id);
+    return messages.map((message) => new Message(this.client, message));
   }
 
   async delete() {

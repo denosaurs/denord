@@ -3,11 +3,11 @@ import {
   PermissionOverwrite,
   unparsePermissionOverwrite,
 } from "./GuildChannel.ts";
-import type { Client, SendMessage } from "../Client.ts";
+import type { Client } from "../Client.ts";
 import type { channel, Snowflake } from "../discord.ts";
 import { TextChannel } from "./TextChannel.ts";
 import { NewsChannel } from "./NewsChannel.ts";
-import { Message } from "./Message.ts";
+import { Message, SendMessage } from "./Message.ts";
 import { parseInvite } from "./Invite.ts";
 
 export interface EditOptions {
@@ -80,7 +80,8 @@ export abstract class TextBasedGuildChannel extends GuildChannel {
   }
 
   async getPins() {
-    return this.client.getPins(this.id);
+    const messages = await this.client.rest.getPinnedMessages(this.id);
+    return messages.map((message) => new Message(this.client, message));
   }
 
   async bulkDeleteMessages(messageIds: Snowflake[], reason?: string) {
@@ -92,6 +93,6 @@ export abstract class TextBasedGuildChannel extends GuildChannel {
   async getInvites() {
     const invites = await this.client.rest.getChannelInvites(this.id);
 
-    return invites.map(invite => parseInvite(this.client, invite));
+    return invites.map((invite) => parseInvite(this.client, invite));
   }
 }

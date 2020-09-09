@@ -61,6 +61,6 @@ export class VoiceChannel extends GuildChannel {
   async getInvites() {
     const invites = await this.client.rest.getChannelInvites(this.id);
 
-    return invites.map(invite => parseInvite(this.client, invite));
+    return invites.map((invite) => parseInvite(this.client, invite));
   }
 }

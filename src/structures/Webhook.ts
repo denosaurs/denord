@@ -1,6 +1,8 @@
 import type { Snowflake, webhook } from "../discord.ts";
 import { User } from "./User.ts";
 import type { Client } from "../Client.ts";
+import type { SendMessage } from "./Message.ts";
+import type { Embed } from "./Embed.ts";
 
 export interface Webhook {
   id: Snowflake;
@@ -11,6 +13,12 @@ export interface Webhook {
   name: string | null;
   avatar: string | null;
   token?: string;
+}
+
+export interface ExecuteWebhook extends Omit<SendMessage, "embed"> {
+  username?: string;
+  avatarUrl?: string;
+  embeds?: Embed[];
 }
 
 export function parseWebhook(

@@ -25,7 +25,8 @@ import type { VoiceChannel } from "./VoiceChannel.ts";
 import type { TextChannel } from "./TextChannel.ts";
 import { parseState, State } from "./VoiceState.ts";
 import { parsePresence, Presence } from "./Presence.ts";
-import { parseMetadataInvite } from "./Invite.ts";
+import { parseInvite, parseMetadataInvite } from "./Invite.ts";
+import { parseWebhook } from "./Webhook.ts";
 
 interface CreateChannel {
   type?: Exclude<keyof typeof channelInverseTypeMap, "DM" | "groupDM">;
@@ -87,7 +88,10 @@ abstract class BaseGuild extends SnowflakeBase {
   explicitContentFilter: guild.ExplicitContentFilter;
   roles: Map<Snowflake, Role>;
   emojis: Map<Snowflake, GuildEmoji>;
-  features = {} as Record<typeof featuresMap[keyof typeof featuresMap], boolean>;
+  features = {} as Record<
+    typeof featuresMap[keyof typeof featuresMap],
+    boolean
+  >;
   requiresMFA: boolean;
   applicationId: Snowflake | null;
   widgetEnabled?: boolean;
@@ -200,10 +204,6 @@ abstract class BaseGuild extends SnowflakeBase {
     return new RestGuild(this.client, guild);
   }
 
-  async unban(userId: Snowflake, reason?: string) {
-    await this.client.rest.removeGuildBan(this.id, userId, reason);
-  }
-
   async createChannel(
     name: string,
     options?: CreateChannel & { type?: "text" },
@@ -265,6 +265,10 @@ abstract class BaseGuild extends SnowflakeBase {
 
   async editChannelsPositions(options: channel.GuildPosition[]) {
     await this.client.rest.modifyGuildChannelPositions(this.id, options);
+  }
+
+  async unban(userId: Snowflake, reason?: string) {
+    await this.client.rest.removeGuildBan(this.id, userId, reason);
   }
 
   async createEmoji(
@@ -382,7 +386,7 @@ abstract class BaseGuild extends SnowflakeBase {
     options: Pick<
       Integration,
       "expireBehavior" | "expireGracePeriod" | "enableEmoticons"
-      >,
+    >,
   ) {
     await this.client.rest.modifyGuildIntegration(this.id, integrationId, {
       expire_behavior: options.expireBehavior,
@@ -427,7 +431,19 @@ abstract class BaseGuild extends SnowflakeBase {
   async getInvites() {
     const invites = await this.client.rest.getGuildInvites(this.id);
 
-    return invites.map(invite => parseMetadataInvite(this.client, invite));
+    return invites.map((invite) => parseMetadataInvite(this.client, invite));
+  }
+
+  async deleteInvite(code: string, reason?: string) {
+    const invite = await this.client.rest.deleteInvite(code, reason);
+
+    return parseInvite(this.client, invite);
+  }
+
+  async getWebhooks() {
+    const webhooks = await this.client.rest.getGuildWebhooks(this.id);
+
+    return webhooks.map((webhook) => parseWebhook(this.client, webhook));
   }
 
   iconURL(options: {
@@ -495,8 +511,16 @@ export class GatewayGuild extends BaseGuild {
     this.large = data.large;
     this.unavailable = data.unavailable;
     this.memberCount = data.member_count;
-    this.voiceStates = new Map(data.voice_states.map(state => [state.user_id, parseState(state, client)]));
-    this.members = new Map(data.members.map((member) => [member.user.id, new GuildMember(client, member, data.id)]));
+    this.voiceStates = new Map(
+      data.voice_states.map(
+        (state) => [state.user_id, parseState(state, client)]
+      ),
+    );
+    this.members = new Map(
+      data.members.map((
+        member,
+      ) => [member.user.id, new GuildMember(client, member, data.id)]),
+    );
     this.channels = new Map(
       data.channels.map(
         (channel) => [
@@ -505,6 +529,10 @@ export class GatewayGuild extends BaseGuild {
         ],
       ),
     );
-    this.presences = new Map(data.presences.map(presence => [presence.user.id, parsePresence(client, presence)]));
+    this.presences = new Map(
+      data.presences.map(
+        (presence) => [presence.user.id, parsePresence(client, presence)]
+      ),
+    );
   }
 }

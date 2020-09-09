@@ -633,9 +633,9 @@ export namespace guild {
     | "BANNER"
     | "PUBLIC_DISABLED";
 
-  export interface Preview extends
+  export type Preview = Required<
     Pick<
-      BaseGuild,
+      RESTGuild,
       | "id"
       | "name"
       | "icon"
@@ -644,10 +644,10 @@ export namespace guild {
       | "emojis"
       | "features"
       | "description"
-    > {
-    approximate_member_count: number;
-    approximate_presence_count: number;
-  }
+      | "approximate_member_count"
+      | "approximate_presence_count"
+    >
+  >;
 
   export interface Widget {
     enabled: boolean;
@@ -897,7 +897,10 @@ export namespace invite {
 
   export type VanityURL = Pick<MetadataInvite, "code" | "uses">;
 
-  export interface CreateEvent extends Pick<Invite, "code" | "inviter" | "target_user" | "target_user_type">, Metadata {
+  export interface CreateEvent
+    extends
+      Pick<Invite, "code" | "inviter" | "target_user" | "target_user_type">,
+      Metadata {
     channel_id: Snowflake;
     guild_id: Snowflake;
   }
@@ -985,7 +988,7 @@ export namespace message {
   }
 
   export interface AllowedMentions {
-    parse: ("roles" | "users" | "everyone")[];
+    parse: ["roles"?, "users"?, "everyone"?];
     roles: Snowflake[];
     users: Snowflake[];
   }
@@ -1174,7 +1177,7 @@ export namespace webhook {
 
   export interface Create {
     name: string;
-    avatar: string | null;
+    avatar?: string | null;
   }
 
   export interface Modify extends Partial<Create> {

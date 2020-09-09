@@ -22,7 +22,8 @@ export function parseState(state: voice.State, client?: Client): State {
     guildId: state.guild_id,
     channelId: state.channel_id,
     userId: state.user_id,
-    member: state.member && new GuildMember(client!, state.member, state.guild_id!),
+    member: state.member &&
+      new GuildMember(client!, state.member, state.guild_id!),
     sessionId: state.session_id,
     deaf: state.deaf,
     mute: state.mute,
@@ -31,5 +32,5 @@ export function parseState(state: voice.State, client?: Client): State {
     selfStream: state.self_stream,
     selfVideo: state.self_video,
     suppress: state.suppress,
-  }
+  };
 }

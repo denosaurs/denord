@@ -1069,9 +1069,11 @@ export class RestClient {
   async deleteWebhookWithToken(
     webhookId: Discord.Snowflake,
     webhookToken: string,
+    reason?: string,
   ): Promise<void> {
     await this.request(`webhooks/${webhookId}/${webhookToken}`, {
       method: "DELETE",
+      reason,
     });
   }
 
@@ -1079,13 +1081,31 @@ export class RestClient {
     webhookId: Discord.Snowflake,
     webhookToken: string,
     data: Discord.webhook.ExecuteBody,
+    params: Discord.webhook.ExecuteParams & { wait: true },
+  ): Promise<Discord.message.Message>;
+  async executeWebhook(
+    webhookId: Discord.Snowflake,
+    webhookToken: string,
+    data: Discord.webhook.ExecuteBody,
+    params: Discord.webhook.ExecuteParams & { wait?: false },
+  ): Promise<void>;
+  async executeWebhook(
+    webhookId: Discord.Snowflake,
+    webhookToken: string,
+    data: Discord.webhook.ExecuteBody,
     params: Discord.webhook.ExecuteParams,
-  ): Promise<void> {
-    await this.request(`webhooks/${webhookId}/${webhookToken}`, {
+  ): Promise<void | Discord.message.Message>;
+  async executeWebhook(
+    webhookId: Discord.Snowflake,
+    webhookToken: string,
+    data: Discord.webhook.ExecuteBody,
+    params: Discord.webhook.ExecuteParams,
+  ): Promise<void | Discord.message.Message> {
+    return this.request(`webhooks/${webhookId}/${webhookToken}`, {
       method: "POST",
       data,
       params,
-    });
+    }) as Promise<void | Discord.message.Message>;
   }
 
   async executeSlackCompatibleWebhook(

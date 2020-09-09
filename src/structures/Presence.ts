@@ -34,7 +34,7 @@ interface Activity {
   assets?: Assets;
   secrets?: activity.Secrets;
   instance?: boolean;
-  flags?: Record<keyof typeof flagsMap, boolean>;
+  flags: Record<keyof typeof flagsMap, boolean>;
 }
 
 interface Assets {
@@ -48,7 +48,7 @@ const typeMap = {
   0: "game",
   1: "streaming",
   2: "listening",
-  4: "custom"
+  4: "custom",
 } as const;
 
 const flagsMap = {
@@ -60,24 +60,42 @@ const flagsMap = {
   "play": 0x20,
 } as const;
 
-export function parsePresence(client: Client, {user, guild_id, premium_since, client_status, game, nick, activities, ...presence}: guild.PresenceUpdateEvent): Presence {
+export function parsePresence(
+  client: Client,
+  {
+    user,
+    guild_id,
+    premium_since,
+    client_status,
+    game,
+    nick,
+    activities,
+    ...presence
+  }: guild.PresenceUpdateEvent,
+): Presence {
   return {
     ...presence,
     userId: user.id,
     game: game && parseActivity(client, game),
     guildId: guild_id,
-    activities: activities.map(activity => parseActivity(client, activity)),
+    activities: activities.map((activity) => parseActivity(client, activity)),
     clientStatus: {
       desktop: client_status.desktop ?? "offline",
       mobile: client_status.mobile ?? "offline",
       web: client_status.web ?? "offline",
     },
-    premiumSince: premium_since ? Date.parse(premium_since) : premium_since as null | undefined,
+    premiumSince: premium_since
+      ? Date.parse(premium_since)
+      : premium_since as null | undefined,
     nickname: nick,
-  }
+  };
 }
 
-function parseActivity(client: Client, {type, created_at, application_id, emoji, assets, flags, ...activity}: activity.Activity): Activity {
+function parseActivity(
+  client: Client,
+  { type, created_at, application_id, emoji, assets, flags, ...activity }:
+    activity.Activity,
+): Activity {
   const newFlags = flags ?? 0;
 
   let parsedFlags = {} as Record<keyof typeof flagsMap, boolean>;
@@ -94,10 +112,10 @@ function parseActivity(client: Client, {type, created_at, application_id, emoji,
     emoji: emoji && parseEmoji(client, emoji),
     assets: assets && {
       largeImage: assets.large_image,
-      largeText: assets.large_text  ,
+      largeText: assets.large_text,
       smallImage: assets.small_image,
       smallText: assets.small_text,
     },
     flags: parsedFlags,
-  }
+  };
 }
