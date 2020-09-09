@@ -86,7 +86,7 @@ export interface Events {
   guildMembersChunk: [GatewayGuild, Map<Snowflake, GuildMember>];
 
   guildRoleCreate: [GatewayGuild, Role];
-  guildRoleUpdate: [GatewayGuild, Role];
+  guildRoleUpdate: [GatewayGuild, Role, Role];
   guildRoleDelete: [GatewayGuild, Role];
 
   inviteCreate: [InviteCreate];
@@ -159,7 +159,7 @@ export class Client extends EventEmitter<Events> {
 
         case "CHANNEL_CREATE": {
           const channel = this.newChannelSwitch(e.data);
-          if (channel.type === "DM" || channel.type === "groupDM") {
+          if (channel.type === "dm" || channel.type === "groupDM") {
             this.dmChannels.set(channel.id, channel as DMChannels);
           } else {
             this.guildChannels.set(channel.id, channel as GuildChannels);
@@ -170,7 +170,7 @@ export class Client extends EventEmitter<Events> {
         case "CHANNEL_UPDATE": {
           let oldChannel: Channel;
           const newChannel = this.newChannelSwitch(e.data);
-          if (newChannel.type === "DM" || newChannel.type === "groupDM") {
+          if (newChannel.type === "dm" || newChannel.type === "groupDM") {
             oldChannel = this.dmChannels.get(e.data.id)!;
             this.dmChannels.set(newChannel.id, newChannel as DMChannels);
           } else {
@@ -182,7 +182,7 @@ export class Client extends EventEmitter<Events> {
         }
         case "CHANNEL_DELETE": {
           const channel = this.newChannelSwitch(e.data);
-          if (channel.type === "DM" || channel.type === "groupDM") {
+          if (channel.type === "dm" || channel.type === "groupDM") {
             this.dmChannels.delete(channel.id);
           } else {
             this.guildChannels.delete(channel.id);
@@ -326,10 +326,11 @@ export class Client extends EventEmitter<Events> {
         }
         case "GUILD_ROLE_UPDATE": {
           const guild = this.guilds.get(e.data.guild_id)!;
-          const role = new Role(this, e.data.role, e.data.guild_id);
-          guild.roles.set(e.data.role.id, role);
+          const oldRole = guild.roles.get(e.data.role.id)!;
+          const newRole = new Role(this, e.data.role, e.data.guild_id);
+          guild.roles.set(e.data.role.id, newRole);
           this.guilds.set(e.data.guild_id, guild);
-          this.emit("guildRoleUpdate", guild, role);
+          this.emit("guildRoleUpdate", guild, oldRole, newRole);
           break;
         }
         case "GUILD_ROLE_DELETE": {
