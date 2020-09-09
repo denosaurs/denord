@@ -1,7 +1,7 @@
 import type { channel, Snowflake } from "../discord.ts";
 import type { Client } from "../Client.ts";
-import { BaseChannel } from "./BaseChannel.ts";
 import { permissionMap } from "./Role.ts";
+import { SnowflakeBase } from "./Base.ts";
 
 export interface PermissionOverwrite {
   id: Snowflake;
@@ -55,7 +55,7 @@ export function unparsePermissionOverwrite(
   };
 }
 
-export abstract class GuildChannel<T extends channel.GuildChannel> extends BaseChannel<T> {
+export abstract class GuildChannel<T extends channel.GuildChannel> extends SnowflakeBase<T> {
   name: string;
   position: number;
   parentId: Snowflake | null;

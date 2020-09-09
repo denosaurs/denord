@@ -7,6 +7,8 @@ import {
 } from "./GuildChannel.ts";
 
 export class CategoryChannel<T extends channel.CategoryChannel = channel.CategoryChannel> extends GuildChannel<T> {
+  type = "category";
+
   constructor(client: Client, data: T) {
     super(client, data);
   }

@@ -1,5 +1,5 @@
 import { SnowflakeBase } from "./Base.ts";
-import type { Channel, Client, GuildChannels } from "../Client.ts";
+import type { Client, GuildChannels } from "../Client.ts";
 import type {
   channel,
   guild,
@@ -10,9 +10,6 @@ import type {
 import { ImageFormat, ImageSize, imageURLFormatter } from "../utils/utils.ts";
 import { Role } from "./Role.ts";
 import { GuildMember } from "./GuildMember.ts";
-import { inverseTypeMap as channelInverseTypeMap } from "./BaseChannel.ts";
-import type { DMChannel } from "./DMChannel.ts";
-import type { GroupDMChannel } from "./GroupDMChannel.ts";
 import type { PermissionOverwrite } from "./GuildChannel.ts";
 import { unparsePermissionOverwrite } from "./GuildChannel.ts";
 import { inverseActionType, parseAuditLog } from "./AuditLog.ts";
@@ -28,8 +25,18 @@ import { parsePresence, Presence } from "./Presence.ts";
 import { parseInvite, parseMetadataInvite } from "./Invite.ts";
 import { parseWebhook } from "./Webhook.ts";
 
+const channelTypeMap = {
+  "text": 0,
+  "dm": 1,
+  "voice": 2,
+  "groupDM": 3,
+  "category": 4,
+  "news": 5,
+  "store": 6,
+} as const;
+
 interface CreateChannel {
-  type?: Exclude<keyof typeof channelInverseTypeMap, "DM" | "groupDM">;
+  type?: Exclude<keyof typeof channelTypeMap, "dm" | "groupDM">;
   topic?: string;
   bitrate?: number;
   userLimit?: number;
@@ -233,7 +240,7 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     name: string,
     options: CreateChannel = {},
     reason?: string,
-  ): Promise<Exclude<Channel, DMChannel | GroupDMChannel>> {
+  ): Promise<GuildChannels> {
     const permissionOverwrites = options.permissionOverwrites?.map(
       ({ permissions, id, type }) => {
         const { allow, deny } = unparsePermissionOverwrite(permissions);
@@ -249,7 +256,7 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
 
     const channel = await this.client.rest.createGuildChannel(this.id, {
       name,
-      type: options.type ? channelInverseTypeMap[options.type] : undefined,
+      type: options.type ? channelTypeMap[options.type] : undefined,
       topic: options.topic,
       bitrate: options.bitrate,
       user_limit: options.userLimit,

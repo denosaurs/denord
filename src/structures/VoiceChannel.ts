@@ -8,6 +8,7 @@ import {
 import { parseInvite } from "./Invite.ts";
 
 export class VoiceChannel<T extends channel.VoiceChannel = channel.VoiceChannel> extends GuildChannel<T> {
+  type = "voice";
   bitrate: number;
   userLimit: number;
 

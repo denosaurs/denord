@@ -1,10 +1,11 @@
-import { BaseChannel } from "./BaseChannel.ts";
 import type { Client } from "../Client.ts";
 import type { channel, Snowflake } from "../discord.ts";
 import { User } from "./User.ts";
 import { Message, SendMessage } from "./Message.ts";
+import { SnowflakeBase } from "./Base.ts";
 
-export class GroupDMChannel<T extends channel.GroupDMChannel = channel.GroupDMChannel> extends BaseChannel<T> {
+export class GroupDMChannel<T extends channel.GroupDMChannel = channel.GroupDMChannel> extends SnowflakeBase<T> {
+  type = "groupDM";
   lastMessageId: Snowflake | null;
   recipients: Map<Snowflake, User>;
   lastPinTimestamp?: number;

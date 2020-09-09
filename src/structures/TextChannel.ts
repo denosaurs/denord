@@ -6,6 +6,7 @@ import type { NewsChannel } from "./NewsChannel.ts";
 import { parseWebhook } from "./Webhook.ts";
 
 export class TextChannel<T extends channel.TextChannel = channel.TextChannel> extends TextBasedGuildChannel<T> {
+  type = "text";
   slowMode: number;
 
   constructor(client: Client, data: T) {

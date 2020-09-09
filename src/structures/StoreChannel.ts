@@ -7,6 +7,7 @@ import {
 } from "./GuildChannel.ts";
 
 export class StoreChannel<T extends channel.StoreChannel = channel.StoreChannel> extends GuildChannel<T> {
+  type = "store";
   nsfw: boolean;
 
   constructor(client: Client, data: T) {
