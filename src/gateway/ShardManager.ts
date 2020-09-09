@@ -91,15 +91,14 @@ export class ShardManager extends EventEmitter<ValueToTupleValue<RawEvents>> {
               case "WEBHOOKS_UPDATE":
                 // TODO(@qu4k): find a way to remove the any cast
                 this.emit(payload.t, payload.d as any);
-
-                this.emit("raw", {
-                  name: payload.t,
-                  data: payload.d,
-                } as BundledEvents<keyof Events>);
                 break;
               default:
                 throw new Error("Unexpected event: " + payload);
             }
+            this.emit("raw", {
+              name: payload.t,
+              data: payload.d,
+            } as BundledEvents<keyof Events>);
             break;
           }
           case "CLOSE":
