@@ -11,14 +11,18 @@ type BundledEvents<T extends keyof Events> = T extends keyof Events
   ? BundledEvent<T>
   : never;
 
-interface rawEvents extends Events {
+interface RawEvents extends Events {
   raw: BundledEvents<keyof Events>;
 }
+
+type ValueToTupleValue<T> = {
+  [K in keyof T]: [T[K]];
+};
 
 /**
  * A shard manager that manages all shards that are used to connect to the discord gateway
  */
-export class ShardManager extends EventEmitter<rawEvents> {
+export class ShardManager extends EventEmitter<ValueToTupleValue<RawEvents>> {
   #shards: Worker[] = [];
   #resolveConnect!: () => void;
   shardAmount: number;
@@ -41,13 +45,11 @@ export class ShardManager extends EventEmitter<rawEvents> {
       });
 
       worker.onmessage = (msg) => {
-        let event = msg.data as { name: string; data: any };
+        const event = msg.data as { name: string; data: any };
 
         switch (event.name) {
           case "EVENT": {
-            const payload = event.data as gateway.SpecificEventPayload<
-              keyof Events
-            >;
+            const payload = event.data as gateway.SpecificEvent;
 
             switch (payload.t) {
               case "READY":
@@ -87,16 +89,16 @@ export class ShardManager extends EventEmitter<rawEvents> {
               case "VOICE_STATE_UPDATE":
               case "VOICE_SERVER_UPDATE":
               case "WEBHOOKS_UPDATE":
-                this.emit(payload.t, payload.d);
-                this.emit("raw", {
-                  name: payload.t,
-                  data: payload.d,
-                } as BundledEvents<keyof Events>); //TODO: don't cast
+                // TODO(@qu4k): find a way to remove the any cast
+                this.emit(payload.t, payload.d as any);
                 break;
-
               default:
                 throw new Error("Unexpected event: " + payload);
             }
+            this.emit("raw", {
+              name: payload.t,
+              data: payload.d,
+            } as BundledEvents<keyof Events>);
             break;
           }
           case "CLOSE":
