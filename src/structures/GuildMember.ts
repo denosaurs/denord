@@ -3,7 +3,9 @@ import type { Client } from "../Client.ts";
 import type { guild, guildMember, Snowflake } from "../discord.ts";
 import { User } from "./User.ts";
 
-export class GuildMember<T extends guildMember.GuildMember = guildMember.GuildMember> extends Base<T> {
+export class GuildMember<
+  T extends guildMember.GuildMember = guildMember.GuildMember,
+> extends Base<T> {
   user: User;
   nickname: string | null;
   roles: Snowflake[];

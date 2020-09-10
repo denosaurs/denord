@@ -6,7 +6,8 @@ import {
   unparsePermissionOverwrite,
 } from "./GuildChannel.ts";
 
-export class StoreChannel<T extends channel.StoreChannel = channel.StoreChannel> extends GuildChannel<T> {
+export class StoreChannel<T extends channel.StoreChannel = channel.StoreChannel>
+  extends GuildChannel<T> {
   type = "store";
   nsfw: boolean;
 

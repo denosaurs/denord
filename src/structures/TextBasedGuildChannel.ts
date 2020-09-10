@@ -21,7 +21,9 @@ export interface EditOptions {
   parentId?: Snowflake | null;
 }
 
-export abstract class TextBasedGuildChannel<T extends channel.TextBasedGuildChannel> extends GuildChannel<T> {
+export abstract class TextBasedGuildChannel<
+  T extends channel.TextBasedGuildChannel,
+> extends GuildChannel<T> {
   lastMessageId: Snowflake | null;
   lastPinTimestamp?: number;
   topic: string | null;

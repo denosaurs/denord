@@ -1,7 +1,19 @@
 export type Snowflake = string;
 export type ISO8601 = string;
 
-export namespace activity {
+export namespace presence {
+  export interface Presence {
+    user: Pick<user.PublicUser, "id"> & Partial<user.PublicUser>;
+    roles?: Snowflake[];
+    game?: Activity | null;
+    guild_id?: Snowflake;
+    status?: Exclude<ActiveStatus, "invisible">;
+    activities?: Activity[];
+    client_status?: ClientStatus;
+    premium_since?: string | null;
+    nick?: string | null;
+  }
+
   export interface Activity {
     name: string;
     type: 0 | 1 | 2 | 4;
@@ -41,6 +53,19 @@ export namespace activity {
     spectate?: string;
     match?: string;
   }
+
+  export interface ClientStatus {
+    desktop?: Exclude<ActiveStatus, "invisible" | "offline">;
+    mobile?: Exclude<ActiveStatus, "invisible" | "offline">;
+    web?: Exclude<ActiveStatus, "invisible" | "offline">;
+  }
+
+  export type ActiveStatus =
+    | "idle"
+    | "dnd"
+    | "online"
+    | "invisible"
+    | "offline";
 }
 
 export namespace auditLog {
@@ -611,7 +636,7 @@ export namespace guild {
     voice_states: Omit<voice.State, "guild_id">[];
     members: guildMember.GuildMember[];
     channels: channel.GuildChannels[];
-    presences: Partial<PresenceUpdateEvent>[];
+    presences: presence.Presence[];
   }
 
   export type VerificationLevel = 0 | 1 | 2 | 3 | 4;
@@ -658,26 +683,6 @@ export namespace guild {
     reason: string | null;
     user: user.PublicUser;
   }
-
-  export interface ClientStatus {
-    desktop?: ActiveStatus;
-    mobile?: ActiveStatus;
-    web?: ActiveStatus;
-  }
-
-  export interface PresenceUpdateEvent {
-    user: Pick<user.PublicUser, "id"> & Partial<user.PublicUser>;
-    roles: Snowflake[];
-    game: activity.Activity | null;
-    guild_id: Snowflake;
-    status: ActiveStatus | "offline";
-    activities: activity.Activity[];
-    client_status: ClientStatus;
-    premium_since?: string | null;
-    nick?: string | null;
-  }
-
-  export type ActiveStatus = "idle" | "dnd" | "online";
 
   export interface Create {
     name: string;
@@ -784,7 +789,7 @@ export namespace guild {
     chunk_index: number;
     chunk_count: number;
     not_found?: [];
-    presences?: PresenceUpdateEvent[];
+    presences?: presence.Presence[];
     nonce?: string;
   }
 
@@ -1302,7 +1307,7 @@ export namespace gateway {
     MESSAGE_REACTION_REMOVE_ALL: message.ReactionRemoveAllEvent;
     MESSAGE_REACTION_REMOVE_EMOJI: message.ReactionRemoveEmojiEvent;
 
-    PRESENCE_UPDATE: guild.PresenceUpdateEvent;
+    PRESENCE_UPDATE: presence.Presence;
     TYPING_START: channel.TypingStartEvent;
     USER_UPDATE: user.PrivateUser;
 
@@ -1332,8 +1337,8 @@ export namespace gateway {
 
   export interface StatusUpdate {
     since: number | null;
-    game: activity.Activity | null;
-    status: string;
+    game: presence.Activity | null;
+    status: presence.ActiveStatus;
     afk: boolean;
   }
 }

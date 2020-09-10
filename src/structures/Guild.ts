@@ -490,7 +490,8 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
   }
 }
 
-export class RestGuild<T extends guild.RESTGuild = guild.RESTGuild> extends BaseGuild<T> {
+export class RestGuild<T extends guild.RESTGuild = guild.RESTGuild>
+  extends BaseGuild<T> {
   widgetEnabled!: boolean;
   widgetChannelId!: Snowflake | null;
   maxPresences!: number | null;
@@ -501,7 +502,8 @@ export class RestGuild<T extends guild.RESTGuild = guild.RESTGuild> extends Base
   }
 }
 
-export class GatewayGuild<T extends guild.GatewayGuild = guild.GatewayGuild> extends BaseGuild<T> {
+export class GatewayGuild<T extends guild.GatewayGuild = guild.GatewayGuild>
+  extends BaseGuild<T> {
   joinedAt: number;
   large: boolean;
   unavailable: boolean;
@@ -520,7 +522,7 @@ export class GatewayGuild<T extends guild.GatewayGuild = guild.GatewayGuild> ext
     this.memberCount = data.member_count;
     this.voiceStates = new Map(
       data.voice_states.map(
-        (state) => [state.user_id, parseState(state, client)]
+        (state) => [state.user_id, parseState(state, client)],
       ),
     );
     this.members = new Map(
@@ -538,7 +540,7 @@ export class GatewayGuild<T extends guild.GatewayGuild = guild.GatewayGuild> ext
     );
     this.presences = new Map(
       data.presences.map(
-        (presence) => [presence.user.id, parsePresence(client, presence)]
+        (presence) => [presence.user.id, parsePresence(client, presence)],
       ),
     );
   }

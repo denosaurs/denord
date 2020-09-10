@@ -11,7 +11,8 @@ export abstract class Base<T> {
   }
 }
 
-export abstract class SnowflakeBase<T extends { id: Snowflake }> extends Base<T> {
+export abstract class SnowflakeBase<T extends { id: Snowflake }>
+  extends Base<T> {
   id: Snowflake;
 
   protected constructor(client: Client, data: T) {

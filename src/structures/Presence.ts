@@ -1,38 +1,37 @@
-import type { activity, guild, Snowflake } from "../discord.ts";
-import { Emoji, parseEmoji } from "./Emoji.ts";
+import type { presence, Snowflake } from "../discord.ts";
+import { Emoji, parseEmoji, unparseEmoji } from "./Emoji.ts";
 import type { Client } from "../Client.ts";
-
-type ActiveStatus = guild.ActiveStatus | "offline";
+import { inverseMap } from "../utils/utils.ts";
 
 export interface Presence {
   userId: Snowflake;
-  roles: Snowflake[];
-  game: Activity | null;
-  guildId: Snowflake;
-  status: ActiveStatus;
-  activities: Activity[];
-  clientStatus: ClientStatus;
-  premiumSince: number | null;
-  nickname: string | null;
+  roles?: Snowflake[];
+  game?: Activity | null;
+  guildId?: Snowflake;
+  status?: Exclude<presence.ActiveStatus, "invisible">;
+  activities?: Activity[];
+  clientStatus?: ClientStatus;
+  premiumSince?: number | null;
+  nickname?: string | null;
 }
 
 interface ClientStatus {
-  desktop: ActiveStatus;
-  mobile: ActiveStatus;
-  web: ActiveStatus;
+  desktop?: Exclude<presence.ActiveStatus, "invisible" | "offline">;
+  mobile?: Exclude<presence.ActiveStatus, "invisible" | "offline">;
+  web?: Exclude<presence.ActiveStatus, "invisible" | "offline">;
 }
 
-interface Activity {
+export interface Activity {
   name: string;
   type: typeof typeMap[keyof typeof typeMap];
   url?: string | null;
   createdAt: number;
-  timestamps?: activity.Timestamps;
+  timestamps?: presence.Timestamps;
   applicationId?: Snowflake;
   emoji?: Emoji | null;
-  party?: activity.Party;
+  party?: presence.Party;
   assets?: Assets;
-  secrets?: activity.Secrets;
+  secrets?: presence.Secrets;
   instance?: boolean;
   flags: Record<keyof typeof flagsMap, boolean>;
 }
@@ -50,6 +49,8 @@ const typeMap = {
   2: "listening",
   4: "custom",
 } as const;
+
+const inverseTypeMap = inverseMap(typeMap);
 
 const flagsMap = {
   "instance": 0x01,
@@ -71,30 +72,26 @@ export function parsePresence(
     nick,
     activities,
     ...presence
-  }: guild.PresenceUpdateEvent,
+  }: presence.Presence,
 ): Presence {
   return {
     ...presence,
     userId: user.id,
     game: game && parseActivity(client, game),
     guildId: guild_id,
-    activities: activities.map((activity) => parseActivity(client, activity)),
-    clientStatus: {
-      desktop: client_status.desktop ?? "offline",
-      mobile: client_status.mobile ?? "offline",
-      web: client_status.web ?? "offline",
-    },
+    activities: activities?.map((activity) => parseActivity(client, activity)),
+    clientStatus: client_status,
     premiumSince: premium_since
       ? Date.parse(premium_since)
-      : null,
-    nickname: nick ?? null,
+      : (premium_since as null | undefined),
+    nickname: nick,
   };
 }
 
 function parseActivity(
   client: Client,
   { type, created_at, application_id, emoji, assets, flags, ...activity }:
-    activity.Activity,
+    presence.Activity,
 ): Activity {
   const newFlags = flags ?? 0;
 
@@ -115,6 +112,34 @@ function parseActivity(
       largeText: assets.large_text,
       smallImage: assets.small_image,
       smallText: assets.small_text,
+    },
+    flags: parsedFlags,
+  };
+}
+
+export function unparseActivity(
+  { type, createdAt, applicationId, emoji, assets, flags, ...activity }:
+    Activity,
+): presence.Activity {
+  let parsedFlags = 0;
+
+  for (const [key, val] of Object.entries(flagsMap)) {
+    if (flags[key as keyof typeof flagsMap]) {
+      parsedFlags |= val;
+    }
+  }
+
+  return {
+    ...activity,
+    type: inverseTypeMap[type],
+    created_at: createdAt,
+    application_id: applicationId,
+    emoji: emoji && unparseEmoji(emoji),
+    assets: assets && {
+      large_image: assets.largeImage,
+      large_text: assets.largeText,
+      small_image: assets.smallImage,
+      small_text: assets.smallText,
     },
     flags: parsedFlags,
   };

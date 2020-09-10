@@ -2,7 +2,7 @@ import EventEmitter from "./utils/EventEmitter.ts";
 import { ShardManager } from "./gateway/ShardManager.ts";
 import { RestClient } from "./rest/RestClient.ts";
 import type { channel, guild, message, role, Snowflake } from "./discord.ts";
-import { embed, webhook } from "./discord.ts";
+import { embed, presence, webhook } from "./discord.ts";
 import { PrivateUser, User } from "./structures/User.ts";
 import { GatewayGuild, RestGuild } from "./structures/Guild.ts";
 import { GuildMember } from "./structures/GuildMember.ts";
@@ -17,14 +17,19 @@ import { Message, SendMessage } from "./structures/Message.ts";
 import { unparseEmbed } from "./structures/Embed.ts";
 import { Emoji, GuildEmoji, parseEmoji } from "./structures/Emoji.ts";
 import { Role } from "./structures/Role.ts";
-import { parsePresence, Presence } from "./structures/Presence.ts";
+import {
+  Activity,
+  parsePresence,
+  Presence,
+  unparseActivity,
+} from "./structures/Presence.ts";
 import {
   InviteCreate,
   parseInvite,
   parseMetadata,
 } from "./structures/Invite.ts";
 import { ExecuteWebhook, parseWebhook } from "./structures/Webhook.ts";
-import { equal } from "https://deno.land/std@0.68.0/testing/asserts.ts";
+import { equal } from "../deps.ts";
 
 export type DMChannels = DMChannel | GroupDMChannel;
 export type TextBasedGuildChannels = TextChannel | NewsChannel;
@@ -103,12 +108,12 @@ export type Events = {
   messageReactionRemoveAll: [TextBasedChannel, Message | Snowflake];
   messageReactionRemoveEmoji: [TextBasedChannel, Message | Snowflake, Emoji];
 
-  presenceUpdate: [GatewayGuild, Presence | undefined, Presence];
+  presenceUpdate: [GatewayGuild | undefined, Presence | undefined, Presence];
   typingStart: [User | Snowflake, Snowflake, Snowflake | undefined];
   currentUserUpdate: [PrivateUser, PrivateUser];
 
   webhookUpdate: [Snowflake, Snowflake];
-}
+};
 
 export class Client extends EventEmitter<Events> {
   gateway: ShardManager;
@@ -311,7 +316,7 @@ export class Client extends EventEmitter<Events> {
               (member) => [
                 member.user.id,
                 new GuildMember(this, member, e.data.guild_id),
-              ]
+              ],
             ),
           );
           guild.members = new Map({
@@ -647,11 +652,15 @@ export class Client extends EventEmitter<Events> {
         }
 
         case "PRESENCE_UPDATE": {
-          const guild = this.guilds.get(e.data.guild_id)!;
-          const oldPresence = guild.presences.get(e.data.user.id);
           const newPresence = parsePresence(this, e.data);
-          guild.presences.set(e.data.user.id, newPresence);
-          this.guilds.set(e.data.guild_id, guild);
+          let guild;
+          let oldPresence;
+          if (e.data.guild_id) {
+            guild = this.guilds.get(e.data.guild_id)!;
+            oldPresence = guild.presences.get(e.data.user.id);
+            guild.presences.set(e.data.user.id, newPresence);
+            this.guilds.set(e.data.guild_id, guild);
+          }
           this.emit("presenceUpdate", guild, oldPresence, newPresence);
           break;
         }
@@ -831,9 +840,44 @@ export class Client extends EventEmitter<Events> {
     );
 
     if (wait) {
-      // TODO: cast should be unnecessary but ts complains
+      // TODO: cast shouldn't be unnecessary but ts complains
       return new Message(this, res as message.Message);
     }
+  }
+
+  requestGuildMembers(
+    shardNumber: number,
+    guildIds: Snowflake | Snowflake[],
+    options: {
+      query?: string;
+      limit: number;
+      presences?: boolean;
+      userIds?: Snowflake | Snowflake[];
+      nonce?: string;
+    },
+  ) {
+    this.gateway.guildRequestMember(shardNumber, {
+      guild_id: guildIds,
+      query: options.query,
+      limit: options.limit,
+      presences: options.presences,
+      user_ids: options.userIds,
+      nonce: options.nonce,
+    });
+  }
+
+  statusUpdate(shardNumber: number, data: {
+    since: number | null;
+    game: Activity | null;
+    status: presence.ActiveStatus;
+    afk: boolean;
+  }) {
+    this.gateway.statusUpdate(shardNumber, {
+      since: data.since,
+      game: data.game && unparseActivity(data.game),
+      status: data.status,
+      afk: data.afk,
+    });
   }
 
   // utils

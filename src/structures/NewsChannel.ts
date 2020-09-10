@@ -3,7 +3,8 @@ import type { Client } from "../Client.ts";
 import type { channel } from "../discord.ts";
 import type { TextChannel } from "./TextChannel.ts";
 
-export class NewsChannel<T extends channel.NewsChannel = channel.NewsChannel> extends TextBasedGuildChannel<T> {
+export class NewsChannel<T extends channel.NewsChannel = channel.NewsChannel>
+  extends TextBasedGuildChannel<T> {
   type = "news";
 
   constructor(client: Client, data: T) {

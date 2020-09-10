@@ -55,7 +55,8 @@ export function unparsePermissionOverwrite(
   };
 }
 
-export abstract class GuildChannel<T extends channel.GuildChannel> extends SnowflakeBase<T> {
+export abstract class GuildChannel<T extends channel.GuildChannel>
+  extends SnowflakeBase<T> {
   name: string;
   position: number;
   parentId: Snowflake | null;

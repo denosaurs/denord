@@ -49,7 +49,7 @@ export function parseInvite(
     guild: "",
     channel: "",
     inviter: inviter && new User(client, inviter),
-    targetUser: target_user && new User(client, inviter),
+    targetUser: target_user && new User(client, target_user),
     targetUserType: target_user_type && "stream",
     approximateMemberCount: approximate_member_count,
     approximatePresenceCount: approximate_presence_count,

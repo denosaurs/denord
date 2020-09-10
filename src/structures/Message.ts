@@ -66,7 +66,8 @@ const flagsMap = {
   "urgent": 0x10,
 } as const;
 
-export class Message<T extends message.Message = message.Message> extends SnowflakeBase<T> {
+export class Message<T extends message.Message = message.Message>
+  extends SnowflakeBase<T> {
   channelId: Snowflake;
   guildId?: Snowflake;
   author: User;
@@ -141,7 +142,7 @@ export class Message<T extends message.Message = message.Message> extends Snowfl
     this.embeds = data.embeds.map((embed) => parseEmbed(embed));
     this.reactions = new Map(
       data.reactions?.map(
-        (reaction) => [reaction.emoji.id ?? reaction.emoji.name!, reaction]
+        (reaction) => [reaction.emoji.id ?? reaction.emoji.name!, reaction],
       ) ?? [],
     );
     // nonce

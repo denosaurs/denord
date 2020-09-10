@@ -30,3 +30,15 @@ export function parseEmoji(
     requireColons: require_colons,
   };
 }
+
+export function unparseEmoji(emoji: GuildEmoji): emoji.GuildEmoji;
+export function unparseEmoji(emoji: Emoji): emoji.Emoji;
+export function unparseEmoji(
+  { user, requireColons, ...emoji }: Emoji | GuildEmoji,
+): emoji.Emoji | emoji.GuildEmoji {
+  return {
+    ...emoji,
+    user: user?.raw,
+    require_colons: requireColons,
+  };
+}
