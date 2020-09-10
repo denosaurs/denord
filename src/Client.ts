@@ -62,7 +62,7 @@ const intentsMap = {
   directMessageTyping: 1 << 14,
 } as const;
 
-export interface Events extends Record<string, any[]> { //TODO: dont extend record
+export type Events = {
   ready: [undefined];
   shardReady: [string];
 
