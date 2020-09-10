@@ -47,30 +47,25 @@ export class GuildMember<
     );
   }
 
-  async modify(options: guildMember.Modify, reason?: string) { //TODO overload
-    let newMember;
-    const keys = Object.keys(options);
-    if (
-      this.client.user!.id === this.user.id &&
-      (keys.length === 1 && keys[0] === "nick")
-    ) {
-      newMember = {
-        ...this.raw,
-        ...await this.client.rest.modifyCurrentUserNick(
-          this.guildId,
-          options,
-        ),
-      };
-    } else {
-      newMember = await this.client.rest.modifyGuildMember(
-        this.guildId,
-        this.user.id,
-        options,
-        reason,
-      );
-    }
+  async edit(options: guildMember.Modify, reason?: string) {
+    const member = await this.client.rest.modifyGuildMember(
+      this.guildId,
+      this.user.id,
+      options,
+      reason,
+    );
+    return new GuildMember(this.client, member, this.guildId);
+  }
 
-    return new GuildMember(this.client, newMember, this.guildId);
+  async editCurrentNick(nickname: string | null) {
+    const nick = await this.client.rest.modifyCurrentUserNick(
+      this.guildId,
+      { nick: nickname },
+    );
+    return new GuildMember(this.client, {
+      ...this.raw,
+      ...nick,
+    }, this.guildId);
   }
 
   async addRole(roleId: Snowflake, reason?: string) {
