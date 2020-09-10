@@ -1,5 +1,5 @@
-export default class EventEmitter<E extends Record<string, any[]>> {
-  listeners = {} as Record<any, ((...args: any) => void)[]>; //TODO: proper types
+export default class EventEmitter<E extends Record<string, any[]>, K extends keyof E = keyof E, T extends E[K] = E[K]> {
+  listeners = {} as Record<K, ((...args: T) => void)[]>;
 
   /**
    * Adds the listener function to the end of the listeners array for the event
@@ -8,10 +8,7 @@ export default class EventEmitter<E extends Record<string, any[]>> {
    * listener will result in the listener being added, and called, multiple
    * times.
    */
-  on<K extends keyof E, T extends E[K]>(
-    eventName: K,
-    listener: (...args: T) => void,
-  ) {
+  on(eventName: K, listener: (...args: T) => void) {
     if (!(eventName in this.listeners)) {
       this.listeners[eventName] = [];
     }
@@ -22,10 +19,7 @@ export default class EventEmitter<E extends Record<string, any[]>> {
    * Adds a one-time listener function for the event named eventName. The next
    * time eventName is triggered, this listener is removed and then invoked.
    */
-  once<K extends keyof E, T extends E[K]>(
-    eventName: K,
-    listener: (...args: T) => void,
-  ) {
+  once(eventName: K, listener: (...args: T) => void) {
     const wrapped = (...args: T): void => {
       listener(...args);
       this.off(eventName, listener);
@@ -39,10 +33,7 @@ export default class EventEmitter<E extends Record<string, any[]>> {
    * If no listener is passed, all listeners will be removed from eventName.
    * If no eventName is passed, all listeners will be removed from the EventEmitter.
    */
-  off<K extends keyof E, T extends E[K]>(
-    eventName?: K,
-    listener?: (...args: T) => void,
-  ) {
+  off(eventName?: K, listener?: (...args: T) => void) {
     if (eventName) {
       if (eventName in this.listeners) {
         if (listener) {
@@ -54,7 +45,7 @@ export default class EventEmitter<E extends Record<string, any[]>> {
         }
       }
     } else {
-      this.listeners = {} as Record<any, ((...args: any[]) => void)[]>;
+      this.listeners = {} as Record<K, ((...args: T[]) => void)[]>;
     }
   }
 
@@ -63,7 +54,7 @@ export default class EventEmitter<E extends Record<string, any[]>> {
    * eventName, in the order they were registered, passing the supplied
    * arguments to each.
    */
-  emit<K extends keyof E, T extends E[K]>(eventName: K, ...args: T) {
+  emit(eventName: K, ...args: T) {
     if (eventName in this.listeners) {
       for (const listener of this.listeners[eventName]) {
         listener(...args);
