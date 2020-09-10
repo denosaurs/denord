@@ -1,4 +1,4 @@
-export default class EventEmitter<E extends Record<string, any[]>> {
+export default class EventEmitter<E extends Record<string, unknown[]>> {
   listeners: {
     [K in keyof E]?: Array<{
       once: boolean;
@@ -6,27 +6,46 @@ export default class EventEmitter<E extends Record<string, any[]>> {
     }>;
   } = Object.create(null);
   #writer: WritableStreamDefaultWriter<[keyof E, E[keyof E]]> | undefined;
+  #writers: {
+    [K in keyof E]?: WritableStreamDefaultWriter<E[K]>;
+  } = Object.create(null);
 
   /**
-   * Adds the listener function to the end of the listeners array for the event
-   *  named eventName. No checks are made to see if the listener has already
-   * been added. Multiple calls passing the same combination of eventName and
-   * listener will result in the listener being added, and called, multiple
-   * times.
+   * Appends the listener to the listeners array of the corresponding eventName.
+   * No checks are made if the listener was already added, so adding multiple
+   * listeners will result in the listener being called multiple times.
+   *
+   * If no listener is supplied, an asyncIterator is returned which will fire
+   * every time an event with the eventName is emitted.
    */
-  on<K extends keyof E>(eventName: K, listener: (...args: E[K]) => void) {
-    if (!this.listeners[eventName]) {
-      this.listeners[eventName] = [];
+  on<K extends keyof E>(eventName: K): AsyncIterableIterator<E[K]>;
+  on<K extends keyof E>(eventName: K, listener: (...args: E[K]) => void): void;
+  on<K extends keyof E>(
+    eventName: K,
+    listener?: (...args: E[K]) => void,
+  ): AsyncIterableIterator<E[K]> | void {
+    if (listener) {
+      if (!this.listeners[eventName]) {
+        this.listeners[eventName] = [];
+      }
+      this.listeners[eventName]!.push({
+        once: false,
+        cb: listener,
+      });
+    } else {
+      return this.asyncOn(eventName);
     }
-    this.listeners[eventName]!.push({
-      once: false,
-      cb: listener,
-    });
+  }
+
+  async *asyncOn<K extends keyof E>(eventName: K): AsyncIterableIterator<E[K]> {
+    const { readable, writable } = new TransformStream<E[K], E[K]>();
+    this.#writers[eventName] = writable.getWriter();
+    yield* readable.getIterator();
   }
 
   /**
    * Adds a one-time listener function for the event named eventName. The next
-   * time eventName is triggered, this listener is removed and then invoked.
+   * time eventName is emitted, listener is called and then removed.
    */
   once<K extends keyof E>(eventName: K, listener: (...args: E[K]) => void) {
     if (!this.listeners[eventName]) {
@@ -72,7 +91,8 @@ export default class EventEmitter<E extends Record<string, any[]>> {
       }
     }
 
-    return this.#writer?.write([eventName, args]);
+    this.#writer?.write([eventName, args]);
+    this.#writers[eventName]?.write(args);
   }
 
   async *[Symbol.asyncIterator](): AsyncIterableIterator<
