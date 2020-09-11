@@ -1,4 +1,5 @@
-import EventEmitter from "./utils/EventEmitter.ts";
+import { EventEmitter, delay } from "../deps.ts";
+
 import { ShardManager } from "./gateway/ShardManager.ts";
 import { RestClient } from "./rest/RestClient.ts";
 import type { channel, guild, message, role, Snowflake } from "./discord.ts";
@@ -31,6 +32,18 @@ import {
 import { ExecuteWebhook, parseWebhook } from "./structures/Webhook.ts";
 import { equal } from "../deps.ts";
 
+export interface AwaitMessageOptionsOptional {
+  time?: number; // in milliseconds
+  max?: number; // integer
+  maxProcessed?: number; // integer
+}
+
+type RequireField<T, K extends keyof T> = T & Required<Pick<T, K>>;
+type AwaitMessageOptions =
+  | RequireField<AwaitMessageOptionsOptional, "time">
+  | RequireField<AwaitMessageOptionsOptional, "max">
+  | RequireField<AwaitMessageOptionsOptional, "maxProcessed">;
+
 export type DMChannels = DMChannel | GroupDMChannel;
 export type TextBasedGuildChannels = TextChannel | NewsChannel;
 export type TextBasedChannel = DMChannels | TextBasedGuildChannels;
@@ -41,13 +54,13 @@ export type GuildChannels =
   | StoreChannel;
 export type Channel = DMChannels | GuildChannels;
 
-interface ChannelPinsUpdate {
+export interface ChannelPinsUpdate {
   guildId?: Snowflake;
   channelId: Snowflake;
   lastPinTimestamp?: number;
 }
 
-type UnknownMessage = Pick<Message, "id" | "channelId" | "guildId">;
+export type UnknownMessage = Pick<Message, "id" | "channelId" | "guildId">;
 
 const intentsMap = {
   guilds: 1 << 0,
@@ -292,10 +305,14 @@ export class Client extends EventEmitter<Events> {
         case "GUILD_MEMBER_UPDATE": {
           const guild = this.guilds.get(e.data.guild_id)!;
           const oldMember = guild.members.get(e.data.user.id)!;
-          const newMember = new GuildMember(this, {
-            ...oldMember.raw,
-            ...e.data,
-          }, e.data.guild_id);
+          const newMember = new GuildMember(
+            this,
+            {
+              ...oldMember.raw,
+              ...e.data,
+            },
+            e.data.guild_id,
+          );
           guild.members.set(e.data.user.id, newMember);
           this.guilds.set(e.data.guild_id, guild);
           this.emit("guildMemberUpdate", guild, oldMember, newMember);
@@ -312,12 +329,10 @@ export class Client extends EventEmitter<Events> {
         case "GUILD_MEMBERS_CHUNK": {
           const guild = this.guilds.get(e.data.guild_id)!;
           const members = new Map(
-            e.data.members.map(
-              (member) => [
-                member.user.id,
-                new GuildMember(this, member, e.data.guild_id),
-              ],
-            ),
+            e.data.members.map((member) => [
+              member.user.id,
+              new GuildMember(this, member, e.data.guild_id),
+            ]),
           );
           guild.members = new Map({
             ...guild.members.entries(),
@@ -702,18 +717,21 @@ export class Client extends EventEmitter<Events> {
     this.emit("ready", undefined);
   }
 
-  async createGuild(name: string, options: {
-    region?: string;
-    icon?: string;
-    verificationLevel?: guild.VerificationLevel;
-    defaultNotifyAllMessages?: boolean;
-    explicitContentFilter?: guild.ExplicitContentFilter;
-    roles?: role.Role[];
-    channels?: channel.GuildChannels[];
-    afkChannelId?: Snowflake;
-    afkTimeout?: number;
-    systemChannelId?: Snowflake;
-  } = {}) {
+  async createGuild(
+    name: string,
+    options: {
+      region?: string;
+      icon?: string;
+      verificationLevel?: guild.VerificationLevel;
+      defaultNotifyAllMessages?: boolean;
+      explicitContentFilter?: guild.ExplicitContentFilter;
+      roles?: role.Role[];
+      channels?: channel.GuildChannels[];
+      afkChannelId?: Snowflake;
+      afkTimeout?: number;
+      systemChannelId?: Snowflake;
+    } = {},
+  ) {
     const guild = await this.rest.createGuild({
       name,
       region: options.region,
@@ -721,7 +739,7 @@ export class Client extends EventEmitter<Events> {
       verification_level: options.verificationLevel,
       default_message_notifications:
         typeof options.defaultNotifyAllMessages === "boolean"
-          ? +!options.defaultNotifyAllMessages as 0 | 1
+          ? (+!options.defaultNotifyAllMessages as 0 | 1)
           : undefined,
       explicit_content_filter: options.explicitContentFilter,
       roles: options.roles,
@@ -770,17 +788,26 @@ export class Client extends EventEmitter<Events> {
   ) {
     let webhook;
     if (token) {
-      webhook = await this.rest.modifyWebhookWithToken(webhookId, token, {
-        name: options.name,
-        avatar: options.avatar,
-        channel_id: options.channelId,
-      }, reason);
+      webhook = await this.rest.modifyWebhookWithToken(
+        webhookId,
+        token,
+        {
+          name: options.name,
+          avatar: options.avatar,
+          channel_id: options.channelId,
+        },
+        reason,
+      );
     } else {
-      webhook = await this.rest.modifyWebhook(webhookId, {
-        name: options.name,
-        avatar: options.avatar,
-        channel_id: options.channelId,
-      }, reason);
+      webhook = await this.rest.modifyWebhook(
+        webhookId,
+        {
+          name: options.name,
+          avatar: options.avatar,
+          channel_id: options.channelId,
+        },
+        reason,
+      );
     }
     return parseWebhook(this, webhook);
   }
@@ -866,12 +893,15 @@ export class Client extends EventEmitter<Events> {
     });
   }
 
-  statusUpdate(shardNumber: number, data: {
-    since: number | null;
-    game: Activity | null;
-    status: presence.ActiveStatus;
-    afk: boolean;
-  }) {
+  statusUpdate(
+    shardNumber: number,
+    data: {
+      since: number | null;
+      game: Activity | null;
+      status: presence.ActiveStatus;
+      afk: boolean;
+    },
+  ) {
     this.gateway.statusUpdate(shardNumber, {
       since: data.since,
       game: data.game && unparseActivity(data.game),
@@ -924,5 +954,32 @@ export class Client extends EventEmitter<Events> {
     const message = await this.rest.createMessage(channelId, convertedData);
 
     return new Message(this, message);
+  }
+
+  async awaitMessage(
+    channelId: string,
+    filter: (msg: Message) => boolean,
+    options: AwaitMessageOptions,
+  ): Promise<Message[]> {
+    return new Promise((_resolve) => {
+      const found: Message[] = [];
+      let i = 0;
+      function listener(where: TextBasedChannel, what: Message) {
+        if (where.id !== channelId) return;
+        i++;
+        if (filter(what)) found.push(what);
+        if (options.max && found.length >= options.max) resolve(found);
+        if (options.maxProcessed && i >= options.maxProcessed) resolve(found);
+      }
+      const resolve = (found: Message[]) => {
+        this.off("messageCreate", listener);
+        _resolve(found);
+      };
+
+      if (options.time) {
+        setTimeout(() => resolve(found), options.time);
+      }
+      this.on("messageCreate", listener);
+    });
   }
 }
