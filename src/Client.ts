@@ -31,17 +31,16 @@ import {
 import { ExecuteWebhook, parseWebhook } from "./structures/Webhook.ts";
 import { equal } from "../deps.ts";
 
-export interface AwaitMessageOptionsOptional {
+interface AwaitMessage {
   time?: number; // in milliseconds
   max?: number; // integer
   maxProcessed?: number; // integer
 }
 
-type RequireField<T, K extends keyof T> = T & Required<Pick<T, K>>;
-type AwaitMessageOptions =
-  | RequireField<AwaitMessageOptionsOptional, "time">
-  | RequireField<AwaitMessageOptionsOptional, "max">
-  | RequireField<AwaitMessageOptionsOptional, "maxProcessed">;
+export type AwaitMessagesOptions =
+  | AwaitMessage & Required<Pick<AwaitMessage, "time">>
+  | AwaitMessage & Required<Pick<AwaitMessage, "max">>
+  | AwaitMessage & Required<Pick<AwaitMessage, "maxProcessed">>;
 
 export type DMChannels = DMChannel | GroupDMChannel;
 export type TextBasedGuildChannels = TextChannel | NewsChannel;
@@ -938,10 +937,10 @@ export class Client extends EventEmitter<Events> {
     return new Message(this, message);
   }
 
-  async awaitMessage(
+  async awaitMessages(
     channelId: string,
     filter: (msg: Message) => boolean,
-    options: AwaitMessageOptions,
+    options: AwaitMessagesOptions,
   ): Promise<Message[]> {
     return new Promise((_resolve) => {
       const found: Message[] = [];
@@ -958,9 +957,7 @@ export class Client extends EventEmitter<Events> {
         _resolve(found);
       };
 
-      if (options.time) {
-        setTimeout(() => resolve(found), options.time);
-      }
+      if (options.time) setTimeout(() => resolve(found), options.time);
       this.on("messageCreate", listener);
     });
   }

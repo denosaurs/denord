@@ -1,4 +1,4 @@
-import type { Client } from "../Client.ts";
+import type { AwaitMessagesOptions, Client } from "../Client.ts";
 import type { channel, Snowflake } from "../discord.ts";
 import { User } from "./User.ts";
 import { Message, SendMessage } from "./Message.ts";
@@ -62,5 +62,12 @@ export class GroupDMChannel<
       this.id,
     ) as channel.GroupDMChannel;
     return new GroupDMChannel(this.client, channel);
+  }
+
+  async awaitMessages(
+    filter: (msg: Message) => boolean,
+    options: AwaitMessagesOptions,
+  ): Promise<Message[]> {
+    return this.client.awaitMessages(this.id, filter, options);
   }
 }
