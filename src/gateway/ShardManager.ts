@@ -1,5 +1,6 @@
+import { EventEmitter } from "../../deps.ts";
+
 import type { gateway } from "../discord.ts";
-import EventEmitter from "../utils/EventEmitter.ts";
 
 type Events = gateway.Events;
 
