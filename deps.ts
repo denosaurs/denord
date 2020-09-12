@@ -6,6 +6,4 @@ export {
 
 export { equal } from "https://deno.land/std@0.68.0/testing/asserts.ts";
 
-export { delay } from "https://deno.land/std@0.68.0/async/delay.ts";
-
 export { default as EventEmitter } from "https://deno.land/x/event@0.1.0/mod.ts";
