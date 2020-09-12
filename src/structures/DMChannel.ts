@@ -1,4 +1,4 @@
-import type { Client } from "../Client.ts";
+import type { Client, AwaitMessagesOptions } from "../Client.ts";
 import type { channel, Snowflake } from "../discord.ts";
 import { User } from "./User.ts";
 import { Message, SendMessage } from "./Message.ts";
@@ -40,5 +40,12 @@ export class DMChannel<T extends channel.DMChannel = channel.DMChannel>
       this.id,
     ) as channel.DMChannel;
     return new DMChannel(this.client, channel);
+  }
+
+  async awaitMessages(
+    filter: (message: Message) => boolean,
+    options: AwaitMessagesOptions,
+  ): Promise<Message[]> {
+    return this.client.awaitMessages(this.id, filter, options);
   }
 }

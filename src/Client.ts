@@ -1,4 +1,4 @@
-import EventEmitter from "./utils/EventEmitter.ts";
+import { EventEmitter } from "../deps.ts";
 import { ShardManager } from "./gateway/ShardManager.ts";
 import { RestClient } from "./rest/RestClient.ts";
 import type { channel, guild, message, role, Snowflake } from "./discord.ts";
@@ -30,6 +30,17 @@ import {
 } from "./structures/Invite.ts";
 import { ExecuteWebhook, parseWebhook } from "./structures/Webhook.ts";
 import { equal } from "../deps.ts";
+
+interface AwaitMessage {
+  time?: number; // in milliseconds
+  max?: number; // integer
+  maxProcessed?: number; // integer
+}
+
+export type AwaitMessagesOptions =
+  | AwaitMessage & Required<Pick<AwaitMessage, "time">>
+  | AwaitMessage & Required<Pick<AwaitMessage, "max">>
+  | AwaitMessage & Required<Pick<AwaitMessage, "maxProcessed">>;
 
 export type DMChannels = DMChannel | GroupDMChannel;
 export type TextBasedGuildChannels = TextChannel | NewsChannel;
@@ -924,5 +935,30 @@ export class Client extends EventEmitter<Events> {
     const message = await this.rest.createMessage(channelId, convertedData);
 
     return new Message(this, message);
+  }
+
+  async awaitMessages(
+    channelId: string,
+    filter: (msg: Message) => boolean,
+    options: AwaitMessagesOptions,
+  ): Promise<Message[]> {
+    return new Promise((_resolve) => {
+      const found: Message[] = [];
+      let i = 0;
+      function listener(where: TextBasedChannel, what: Message) {
+        if (where.id !== channelId) return;
+        i++;
+        if (filter(what)) found.push(what);
+        if (options.max && found.length >= options.max) resolve(found);
+        if (options.maxProcessed && i >= options.maxProcessed) resolve(found);
+      }
+      const resolve = (found: Message[]) => {
+        this.off("messageCreate", listener);
+        _resolve(found);
+      };
+
+      if (options.time) setTimeout(() => resolve(found), options.time);
+      this.on("messageCreate", listener);
+    });
   }
 }

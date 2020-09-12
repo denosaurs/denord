@@ -3,7 +3,7 @@ import {
   PermissionOverwrite,
   unparsePermissionOverwrite,
 } from "./GuildChannel.ts";
-import type { Client } from "../Client.ts";
+import type { AwaitMessagesOptions, Client } from "../Client.ts";
 import type { channel, Snowflake } from "../discord.ts";
 import { TextChannel } from "./TextChannel.ts";
 import { NewsChannel } from "./NewsChannel.ts";
@@ -96,5 +96,12 @@ export abstract class TextBasedGuildChannel<
     const invites = await this.client.rest.getChannelInvites(this.id);
 
     return invites.map((invite) => parseInvite(this.client, invite));
+  }
+
+  async awaitMessages(
+    filter: (msg: Message) => boolean,
+    options: AwaitMessagesOptions,
+  ): Promise<Message[]> {
+    return this.client.awaitMessages(this.id, filter, options);
   }
 }
