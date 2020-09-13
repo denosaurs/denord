@@ -162,7 +162,7 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     this.maxVideoChannelUsers = data.max_video_channel_users;
   }
 
-  get shardId() {
+  get shardNumber() {
     return (+this.id / (2 ** 22)) % this.client.gateway.shardAmount;
   }
 

@@ -559,10 +559,7 @@ export namespace emoji {
 
   export type Emoji = idEmoji | nameEmoji;
 
-  export interface GuildEmoji extends BaseEmoji {
-    id: Snowflake;
-    name: string;
-  }
+  export type GuildEmoji = idEmoji & nameEmoji;
 
   export interface Create {
     name: string;
@@ -692,7 +689,7 @@ export namespace guild {
     default_message_notifications?: DefaultMessageNotifications;
     explicit_content_filter?: ExplicitContentFilter;
     roles?: role.Role[];
-    channels?: Partial<channel.GuildChannels>[];
+    channels?: (Partial<channel.GuildChannels> & Pick<channel.GuildChannels, "name">)[];
     afk_channel_id?: Snowflake;
     afk_timeout?: number;
     system_channel_id?: Snowflake;
@@ -1004,7 +1001,7 @@ export namespace message {
     guild_id?: Snowflake;
   }
 
-  export interface Create {
+  interface BaseCreate {
     content?: string;
     nonce?: number | string;
     tts?: boolean;
@@ -1013,6 +1010,11 @@ export namespace message {
     payload_json?: string;
     allowed_mentions?: AllowedMentions;
   }
+
+  export type Create =
+    | BaseCreate & Required<Pick<BaseCreate, "content">>
+    | BaseCreate & Required<Pick<BaseCreate, "file">>
+    | BaseCreate & Required<Pick<BaseCreate, "embed">>;
 
   export interface Edit {
     content?: string;

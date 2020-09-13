@@ -1,4 +1,4 @@
-import { EventEmitter } from "../deps.ts";
+import { equal, EventEmitter } from "../deps.ts";
 import { ShardManager } from "./gateway/ShardManager.ts";
 import { RestClient } from "./rest/RestClient.ts";
 import type { channel, guild, message, role, Snowflake } from "./discord.ts";
@@ -13,7 +13,7 @@ import { NewsChannel } from "./structures/NewsChannel.ts";
 import { CategoryChannel } from "./structures/CategoryChannel.ts";
 import { StoreChannel } from "./structures/StoreChannel.ts";
 import { GroupDMChannel } from "./structures/GroupDMChannel.ts";
-import { Message, SendMessage } from "./structures/Message.ts";
+import { Message, SendMessageOptions } from "./structures/Message.ts";
 import { unparseEmbed } from "./structures/Embed.ts";
 import { Emoji, GuildEmoji, parseEmoji } from "./structures/Emoji.ts";
 import { Role } from "./structures/Role.ts";
@@ -29,7 +29,6 @@ import {
   parseMetadata,
 } from "./structures/Invite.ts";
 import { ExecuteWebhook, parseWebhook } from "./structures/Webhook.ts";
-import { equal } from "../deps.ts";
 
 interface AwaitMessage {
   time?: number; // in milliseconds
@@ -114,10 +113,10 @@ export type Events = {
   messageDelete: [TextBasedChannel, Message | UnknownMessage];
   messageDeleteBulk: [TextBasedChannel, Map<Snowflake, Message | Snowflake>];
 
-  messageReactionAdd: [TextBasedChannel, Message | Snowflake, Emoji, User];
-  messageReactionRemove: [TextBasedChannel, Message | Snowflake, Emoji, User];
+  messageReactionAdd: [TextBasedChannel, Message | Snowflake, Pick<Emoji, "id" | "name" | "animated">, User];
+  messageReactionRemove: [TextBasedChannel, Message | Snowflake, Pick<Emoji, "id" | "name" | "animated">, User];
   messageReactionRemoveAll: [TextBasedChannel, Message | Snowflake];
-  messageReactionRemoveEmoji: [TextBasedChannel, Message | Snowflake, Emoji];
+  messageReactionRemoveEmoji: [TextBasedChannel, Message | Snowflake, Pick<Emoji, "id" | "name" | "animated">];
 
   presenceUpdate: [GatewayGuild | undefined, Presence | undefined, Presence];
   typingStart: [User | Snowflake, Snowflake, Snowflake | undefined];
@@ -912,7 +911,7 @@ export class Client extends EventEmitter<Events> {
     }
   }
 
-  async sendMessage(channelId: Snowflake, data: SendMessage) {
+  async sendMessage(channelId: Snowflake, data: SendMessageOptions) {
     let embed;
     if (data.embed) {
       embed = unparseEmbed(data.embed);

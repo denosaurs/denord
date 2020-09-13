@@ -56,11 +56,11 @@ export class RestClient {
 
       if (data !== undefined) {
         if (data.file) {
-          let { file, ...otherData } = data;
+          const { file, payload_json } = data;
 
           data = new FormData();
           data.append("file", file, file.name);
-          data.append("payload_json", otherData);
+          data.append("payload_json", payload_json);
           body = data;
         } else {
           headers.set("Content-Type", "application/json");

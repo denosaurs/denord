@@ -1,7 +1,7 @@
 import type { AwaitMessagesOptions, Client } from "../Client.ts";
 import type { channel, Snowflake } from "../discord.ts";
 import { User } from "./User.ts";
-import { Message, SendMessage } from "./Message.ts";
+import { Message, SendMessageOptions } from "./Message.ts";
 import { SnowflakeBase } from "./Base.ts";
 
 export class GroupDMChannel<
@@ -48,7 +48,7 @@ export class GroupDMChannel<
     await this.client.rest.triggerTypingIndicator(this.id);
   }
 
-  async sendMessage(data: SendMessage) {
+  async sendMessage(data: SendMessageOptions) {
     return this.client.sendMessage(this.id, data);
   }
 

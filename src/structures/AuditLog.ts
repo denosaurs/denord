@@ -4,7 +4,6 @@ import type { Client } from "../Client.ts";
 import type { Integration } from "./Integration.ts";
 import { inverseMap } from "../utils/utils.ts";
 import { parseWebhook, Webhook } from "./Webhook.ts";
-import { Role } from "./Role.ts";
 import { PermissionOverwrite } from "./GuildChannel.ts";
 
 export interface AuditLog {
@@ -223,8 +222,8 @@ export interface ChangeKey {
   explicitContentFilter: number;
   defaultMessageNotifications: number;
   vanityUrlCode: string;
-  roleAdd: Role[];
-  roleRemove: Role[];
+  roleAdd: Pick<role.Role, "id" | "name">[];
+  roleRemove: Pick<role.Role, "id" | "name">[];
   pruneDeleteDays: number;
   widgetEnabled: boolean;
   widgetChannelId: Snowflake;
@@ -277,13 +276,13 @@ export type Change = SpecificChange<keyof ChangeKey>;
 
 export function parseAuditLog(
   client: Client,
-  auditLog: auditLog.AuditLog,
+  {audit_log_entries, integrations, users, webhooks}: auditLog.AuditLog,
 ): AuditLog {
   return {
-    users: auditLog.users.map((user) => new User(client, user)),
-    entries: auditLog.audit_log_entries.map((entry) => parseEntry(entry)),
-    integrations: auditLog.integrations,
-    webhooks: auditLog.webhooks.map((webhook) => parseWebhook(client, webhook)),
+    users: users.map((user) => new User(client, user)),
+    entries: audit_log_entries.map((entry) => parseEntry(entry)),
+    integrations,
+    webhooks: webhooks.map((webhook) => parseWebhook(client, webhook)),
   };
 }
 
@@ -332,27 +331,17 @@ function parseEntry(entry: auditLog.Entry): Entry {
 
   return {
     targetId: entry.target_id,
-    changes: entry.changes,
+    changes: entry.changes?.map(change => {
+      return {
+        key: changeKeyMap[change.key],
+        newValue: change.new_value,
+        oldValue: change.old_value,
+      } as Change;
+    }),
     userId: entry.user_id,
     id: entry.id,
     actionType: actionTypeMap[entry.action_type],
     extra: extra,
     reason: entry.reason,
   };
-}
-
-function parseChanges(change: auditLog.Change): Change {
-  let newChange = {
-    key: changeKeyMap[change.key],
-  };
-
-  switch (change.key) {
-    case "$add":
-      newChange.newValue = change.new_value;
-      break;
-    case "$remove":
-      break;
-  }
-
-  return newChange;
 }

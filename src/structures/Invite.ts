@@ -4,10 +4,10 @@ import type { Client } from "../Client.ts";
 
 export interface Invite {
   code: string;
-  guild: "";
-  channel: "";
+  guildId: Snowflake;
+  channelId: Snowflake;
   inviter?: User;
-  targetUser?: User;
+  targetUserId?: Snowflake;
   targetUserType?: "stream";
   approximatePresenceCount?: number;
   approximateMemberCount?: number;
@@ -23,7 +23,7 @@ export interface Metadata {
 
 export interface InviteCreate
   extends
-    Pick<Invite, "code" | "inviter" | "targetUser" | "targetUserType">,
+    Pick<Invite, "code" | "inviter" | "targetUserId" | "targetUserType">,
     Metadata {
   guildId: Snowflake;
   channelId: Snowflake;
@@ -46,10 +46,10 @@ export function parseInvite(
 ): Invite {
   return {
     code,
-    guild: "",
-    channel: "",
+    guildId: guild?.id!,
+    channelId: channel.id!,
     inviter: inviter && new User(client, inviter),
-    targetUser: target_user && new User(client, target_user),
+    targetUserId: target_user?.id,
     targetUserType: target_user_type && "stream",
     approximateMemberCount: approximate_member_count,
     approximatePresenceCount: approximate_presence_count,

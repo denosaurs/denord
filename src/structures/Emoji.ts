@@ -2,7 +2,7 @@ import type { emoji, Snowflake } from "../discord.ts";
 import { User } from "./User.ts";
 import type { Client } from "../Client.ts";
 
-export interface Emoji {
+export interface BaseEmoji {
   id: Snowflake | null;
   name: string | null;
   roles?: Snowflake[];
@@ -13,10 +13,17 @@ export interface Emoji {
   available?: boolean;
 }
 
-export interface GuildEmoji extends Emoji {
+interface idEmoji extends BaseEmoji {
   id: Snowflake;
+}
+
+interface nameEmoji extends BaseEmoji {
   name: string;
 }
+
+export type Emoji = idEmoji | nameEmoji;
+
+export type GuildEmoji = idEmoji & nameEmoji;
 
 export function parseEmoji(client: Client, emoji: emoji.GuildEmoji): GuildEmoji;
 export function parseEmoji(client: Client, emoji: emoji.Emoji): Emoji;

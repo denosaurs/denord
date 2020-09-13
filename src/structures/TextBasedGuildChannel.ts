@@ -7,7 +7,7 @@ import type { AwaitMessagesOptions, Client } from "../Client.ts";
 import type { channel, Snowflake } from "../discord.ts";
 import { TextChannel } from "./TextChannel.ts";
 import { NewsChannel } from "./NewsChannel.ts";
-import { Message, SendMessage } from "./Message.ts";
+import { Message, SendMessageOptions } from "./Message.ts";
 import { parseInvite } from "./Invite.ts";
 
 export interface EditOptions {
@@ -77,7 +77,7 @@ export abstract class TextBasedGuildChannel<
     await this.client.rest.triggerTypingIndicator(this.id);
   }
 
-  async sendMessage(data: SendMessage) {
+  async sendMessage(data: SendMessageOptions) {
     return this.client.sendMessage(this.id, data);
   }
 

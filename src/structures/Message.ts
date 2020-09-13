@@ -5,33 +5,18 @@ import { User } from "./User.ts";
 import { GuildMember } from "./GuildMember.ts";
 import { Embed, parseEmbed, unparseEmbed } from "./Embed.ts";
 
-export interface BaseSendMessage {
+export interface SendMessage {
   tts?: boolean;
   allowedMentions?: message.AllowedMentions;
-}
-
-interface SendMessageContent extends BaseSendMessage {
-  content: string;
+  content?: string;
   file?: File;
   embed?: Embed;
 }
 
-interface SendMessageFile extends BaseSendMessage {
-  content?: string;
-  file: File;
-  embed?: Embed;
-}
-
-interface SendMessageEmbed extends BaseSendMessage {
-  content?: string;
-  file?: File;
-  embed: Embed;
-}
-
-export type SendMessage =
-  | SendMessageContent
-  | SendMessageFile
-  | SendMessageEmbed;
+export type SendMessageOptions =
+  | SendMessage & Required<Pick<SendMessage, "content">>
+  | SendMessage & Required<Pick<SendMessage, "file">>
+  | SendMessage & Required<Pick<SendMessage, "embed">>;
 
 const messageTypeMap = {
   0: "normal",
