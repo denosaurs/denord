@@ -46,7 +46,7 @@ export class ShardManager extends EventEmitter<ValueToTupleValue<RawEvents>> {
       });
 
       worker.onmessage = (msg) => {
-        const event = msg.data as { name: string; data: any };
+        const event = msg.data as { name: string; data: unknown };
 
         switch (event.name) {
           case "EVENT": {
@@ -91,6 +91,7 @@ export class ShardManager extends EventEmitter<ValueToTupleValue<RawEvents>> {
               case "VOICE_SERVER_UPDATE":
               case "WEBHOOKS_UPDATE":
                 // TODO(@qu4k): find a way to remove the any cast
+                // deno-lint-ignore no-explicit-any
                 this.emit(payload.t, payload.d as any);
                 break;
               default:

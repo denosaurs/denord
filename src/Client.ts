@@ -113,10 +113,24 @@ export type Events = {
   messageDelete: [TextBasedChannel, Message | UnknownMessage];
   messageDeleteBulk: [TextBasedChannel, Map<Snowflake, Message | Snowflake>];
 
-  messageReactionAdd: [TextBasedChannel, Message | Snowflake, Pick<Emoji, "id" | "name" | "animated">, User];
-  messageReactionRemove: [TextBasedChannel, Message | Snowflake, Pick<Emoji, "id" | "name" | "animated">, User];
+  messageReactionAdd: [
+    TextBasedChannel,
+    Message | Snowflake,
+    Pick<Emoji, "id" | "name" | "animated">,
+    User,
+  ];
+  messageReactionRemove: [
+    TextBasedChannel,
+    Message | Snowflake,
+    Pick<Emoji, "id" | "name" | "animated">,
+    User,
+  ];
   messageReactionRemoveAll: [TextBasedChannel, Message | Snowflake];
-  messageReactionRemoveEmoji: [TextBasedChannel, Message | Snowflake, Pick<Emoji, "id" | "name" | "animated">];
+  messageReactionRemoveEmoji: [
+    TextBasedChannel,
+    Message | Snowflake,
+    Pick<Emoji, "id" | "name" | "animated">,
+  ];
 
   presenceUpdate: [GatewayGuild | undefined, Presence | undefined, Presence];
   typingStart: [User | Snowflake, Snowflake, Snowflake | undefined];
@@ -917,7 +931,7 @@ export class Client extends EventEmitter<Events> {
       embed = unparseEmbed(data.embed);
     }
 
-    let convertedData: message.Create = {
+    let convertedData: message.BaseCreate = {
       content: data.content,
       tts: data.tts,
       embed,
@@ -931,7 +945,10 @@ export class Client extends EventEmitter<Events> {
       };
     }
 
-    const message = await this.rest.createMessage(channelId, convertedData);
+    const message = await this.rest.createMessage(
+      channelId,
+      convertedData as message.Create,
+    );
 
     return new Message(this, message);
   }

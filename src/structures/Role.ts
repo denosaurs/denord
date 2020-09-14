@@ -75,7 +75,7 @@ export class Role<T extends role.Role = role.Role> extends SnowflakeBase<T> {
     await this.client.rest.deleteGuildRole(this.guildId, this.id, reason);
   }
 
-  async edit(options: {}, reason?: string) {
+  async edit(options: Record<string, unknown>, reason?: string) {
     const role = await this.client.rest.modifyGuildRole(
       this.guildId,
       this.id,
