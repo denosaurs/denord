@@ -39,7 +39,7 @@ interface CreateChannel {
   topic?: string;
   bitrate?: number;
   userLimit?: number;
-  slowMode?: number;
+  slowmode?: number;
   position?: number;
   permissionOverwrites?: PermissionOverwrite[];
   parentId?: Snowflake;
@@ -259,7 +259,7 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
       topic: options.topic,
       bitrate: options.bitrate,
       user_limit: options.userLimit,
-      rate_limit_per_user: options.slowMode,
+      rate_limit_per_user: options.slowmode,
       position: options.position,
       permission_overwrites: permissionOverwrites,
       parent_id: options.parentId,

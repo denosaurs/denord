@@ -3,7 +3,7 @@ import type { channel, Snowflake } from "../discord.ts";
 import {
   GuildChannel,
   PermissionOverwrite,
-  unparsePermissionOverwrite,
+  unparseEditPermissionOverwrite,
 } from "./GuildChannel.ts";
 
 export class StoreChannel<T extends channel.StoreChannel = channel.StoreChannel>
@@ -24,23 +24,11 @@ export class StoreChannel<T extends channel.StoreChannel = channel.StoreChannel>
     permissionOverwrites?: PermissionOverwrite[] | null;
     parentId: Snowflake | null;
   }, reason?: string) {
-    const permissionOverwrites =
-      options.permissionOverwrites?.map(({ permissions, id, type }) => {
-        const { allow, deny } = unparsePermissionOverwrite(permissions);
-
-        return {
-          id,
-          type,
-          allow,
-          deny,
-        };
-      }) ?? (options.permissionOverwrites as undefined | null);
-
     const channel = await this.client.rest.modifyChannel(this.id, {
       name: options.name,
       position: options.position,
       nsfw: options.nsfw,
-      permission_overwrites: permissionOverwrites,
+      permission_overwrites: unparseEditPermissionOverwrite(options.permissionOverwrites),
       parent_id: options.parentId,
     }, reason);
 

@@ -6,18 +6,27 @@ import { parseWebhook } from "./Webhook.ts";
 export class TextChannel<T extends channel.TextChannel = channel.TextChannel>
   extends TextBasedGuildChannel<T> {
   type = "text";
-  slowMode: number;
+  slowmode: number;
 
   constructor(client: Client, data: T) {
     super(client, data);
 
-    this.slowMode = data.rate_limit_per_user;
+    this.slowmode = data.rate_limit_per_user;
   }
 
-  async edit(options: EditOptions & { type?: "text" }): Promise<TextChannel>;
-  async edit(options: EditOptions & { type: "news" }): Promise<NewsChannel>;
-  async edit(options: EditOptions): Promise<TextChannel | NewsChannel> {
-    return super.edit(options);
+  async edit(
+    options: EditOptions & { type?: "text" },
+    reason?: string,
+  ): Promise<TextChannel>;
+  async edit(
+    options: EditOptions & { type: "news" },
+    reason?: string,
+  ): Promise<NewsChannel>;
+  async edit(
+    options: EditOptions,
+    reason?: string,
+  ): Promise<TextChannel | NewsChannel> {
+    return super.edit(options, reason);
   }
 
   async delete(reason?: string) {

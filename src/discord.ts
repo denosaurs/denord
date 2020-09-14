@@ -8,14 +8,11 @@ export type ISO8601 = string;
 export namespace presence {
   export interface Presence {
     user: Pick<user.PublicUser, "id"> & Partial<user.PublicUser>;
-    roles?: Snowflake[];
     game?: Activity | null;
     guild_id?: Snowflake;
     status?: Exclude<ActiveStatus, "invisible">;
     activities?: Activity[];
     client_status?: ClientStatus;
-    premium_since?: string | null;
-    nick?: string | null;
   }
 
   export interface Activity {
@@ -856,7 +853,7 @@ export namespace integration {
     enable_emoticons?: boolean;
     expire_behavior: 0 | 1;
     expire_grace_period: number;
-    user: user.PublicUser;
+    user?: user.PublicUser;
     account: Account;
     synced_at: ISO8601;
   }
@@ -1130,7 +1127,6 @@ export namespace user {
     verified: boolean;
     email: string | null;
     flags?: number;
-    phone?: string | null;
     premium_type?: 0 | 1 | 2;
   }
 

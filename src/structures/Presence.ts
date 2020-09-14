@@ -5,14 +5,11 @@ import { inverseMap } from "../utils/utils.ts";
 
 export interface Presence {
   userId: Snowflake;
-  roles?: Snowflake[];
   game?: Activity | null;
   guildId?: Snowflake;
   status?: Exclude<presence.ActiveStatus, "invisible">;
   activities?: Activity[];
   clientStatus?: ClientStatus;
-  premiumSince?: number | null;
-  nickname?: string | null;
 }
 
 interface ClientStatus {
@@ -66,10 +63,8 @@ export function parsePresence(
   {
     user,
     guild_id,
-    premium_since,
     client_status,
     game,
-    nick,
     activities,
     ...presence
   }: presence.Presence,
@@ -81,10 +76,6 @@ export function parsePresence(
     guildId: guild_id,
     activities: activities?.map((activity) => parseActivity(client, activity)),
     clientStatus: client_status,
-    premiumSince: premium_since
-      ? Date.parse(premium_since)
-      : (premium_since as null | undefined),
-    nickname: nick,
   };
 }
 
@@ -95,7 +86,7 @@ function parseActivity(
 ): Activity {
   const newFlags = flags ?? 0;
 
-  let parsedFlags = {} as Record<keyof typeof flagsMap, boolean>;
+  const parsedFlags = {} as Record<keyof typeof flagsMap, boolean>;
 
   for (const [key, val] of Object.entries(flagsMap)) {
     parsedFlags[key as keyof typeof flagsMap] = ((newFlags & val) === val);

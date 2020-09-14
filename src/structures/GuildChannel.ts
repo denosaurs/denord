@@ -55,6 +55,19 @@ export function unparsePermissionOverwrite(
   };
 }
 
+export function unparseEditPermissionOverwrite(permissionOverwrites?: PermissionOverwrite[] | null) {
+  return permissionOverwrites?.map(({ permissions, id, type }) => {
+    const { allow, deny } = unparsePermissionOverwrite(permissions);
+
+    return {
+      id,
+      type,
+      allow,
+      deny,
+    };
+  }) ?? (permissionOverwrites as undefined | null);
+}
+
 export abstract class GuildChannel<T extends channel.GuildChannel>
   extends SnowflakeBase<T> {
   name: string;

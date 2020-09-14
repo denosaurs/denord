@@ -6,7 +6,7 @@ import { DMChannel } from "./DMChannel.ts";
 
 const flagsMap = {
   "discordEmployee": 0x00001,
-  "discordPartner": 0x00002,
+  "partneredServerOwner": 0x00002,
   "hypeSquadEvents": 0x00004,
   "bugHunterLevel1": 0x00008,
   "houseBravery": 0x00040,
@@ -17,7 +17,7 @@ const flagsMap = {
   "system": 0x01000,
   "bugHunterLevel2": 0x04000,
   "verifiedBot": 0x10000,
-  "verifiedBotDeveloper": 0x20000,
+  "earlyVerifiedBotDeveloper": 0x20000,
 } as const;
 
 export class User<T extends user.PublicUser = user.PublicUser>
@@ -90,7 +90,6 @@ export class PrivateUser<T extends user.PrivateUser = user.PrivateUser>
   flags = {} as Record<keyof typeof flagsMap, boolean>;
   locale: string;
   mfaEnabled: boolean;
-  phone?: string | null;
   verified: boolean;
   premiumType: 0 | 1 | 2;
 
@@ -100,7 +99,6 @@ export class PrivateUser<T extends user.PrivateUser = user.PrivateUser>
     this.email = data.email;
     this.locale = data.locale;
     this.mfaEnabled = data.mfa_enabled;
-    this.phone = data.phone;
     this.verified = data.verified;
     this.premiumType = data.premium_type ?? 0;
 

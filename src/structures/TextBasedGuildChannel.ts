@@ -1,7 +1,7 @@
 import {
   GuildChannel,
   PermissionOverwrite,
-  unparsePermissionOverwrite,
+  unparseEditPermissionOverwrite,
 } from "./GuildChannel.ts";
 import type { AwaitMessagesOptions, Client } from "../Client.ts";
 import type { channel, Snowflake } from "../discord.ts";
@@ -15,7 +15,7 @@ export interface EditOptions {
   position?: number | null;
   topic?: string | null;
   nsfw?: boolean | null;
-  slowMode?: number | null;
+  slowmode?: number | null;
   permissionOverwrites?: PermissionOverwrite[] | null;
   parentId?: Snowflake | null;
 }
@@ -42,26 +42,14 @@ export abstract class TextBasedGuildChannel<
     options: EditOptions,
     reason?: string,
   ): Promise<TextChannel | NewsChannel> {
-    const permissionOverwrites =
-      options.permissionOverwrites?.map(({ permissions, id, type }) => {
-        const { allow, deny } = unparsePermissionOverwrite(permissions);
-
-        return {
-          id,
-          type,
-          allow,
-          deny,
-        };
-      }) ?? (options.permissionOverwrites as undefined | null);
-
     const channel = await this.client.rest.modifyChannel(this.id, {
       name: options.name,
       type: options.type ? (options.type === "text" ? 0 : 5) : undefined,
       position: options.position,
       topic: options.topic,
       nsfw: options.nsfw,
-      rate_limit_per_user: options.slowMode,
-      permission_overwrites: permissionOverwrites,
+      rate_limit_per_user: options.slowmode,
+      permission_overwrites: unparseEditPermissionOverwrite(options.permissionOverwrites),
       parent_id: options.parentId,
     }, reason);
 

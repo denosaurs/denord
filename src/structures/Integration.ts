@@ -12,7 +12,7 @@ export interface Integration {
   enableEmoticons?: boolean;
   expireBehavior: 0 | 1;
   expireGracePeriod: number;
-  user: User;
+  user?: User;
   account: Account;
   syncedAt: number;
 }
@@ -36,7 +36,7 @@ export function parseIntegration(
     enableEmoticons: integration.enable_emoticons,
     expireBehavior: integration.expire_behavior,
     expireGracePeriod: integration.expire_grace_period,
-    user: new User(client, integration.user),
+    user: integration.user && new User(client, integration.user),
     account: integration.account,
     syncedAt: Date.parse(integration.synced_at),
   };
