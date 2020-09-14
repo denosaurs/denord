@@ -4,7 +4,7 @@ import type { Client } from "../Client.ts";
 import type { Integration } from "./Integration.ts";
 import { inverseMap } from "../utils/utils.ts";
 import { parseWebhook, Webhook } from "./Webhook.ts";
-import { PermissionOverwrite } from "./GuildChannel.ts";
+import type { PermissionOverwrite } from "./GuildChannel.ts";
 
 export interface AuditLog {
   webhooks: Webhook[];
@@ -276,7 +276,7 @@ export type Change = SpecificChange<keyof ChangeKey>;
 
 export function parseAuditLog(
   client: Client,
-  {audit_log_entries, integrations, users, webhooks}: auditLog.AuditLog,
+  { audit_log_entries, integrations, users, webhooks }: auditLog.AuditLog,
 ): AuditLog {
   return {
     users: users.map((user) => new User(client, user)),
@@ -298,7 +298,7 @@ function parseEntry(entry: auditLog.Entry): Entry {
           id: entry.options.id,
           type: entry.options.type,
           roleName: entry.options.role_name,
-        };
+        } as ChannelOverwriteMember | ChannelOverwriteRole;
         break;
       case 21:
         extra = {
@@ -331,17 +331,17 @@ function parseEntry(entry: auditLog.Entry): Entry {
 
   return {
     targetId: entry.target_id,
-    changes: entry.changes?.map(change => {
+    changes: entry.changes?.map((change) => {
       return {
         key: changeKeyMap[change.key],
         newValue: change.new_value,
         oldValue: change.old_value,
-      } as Change;
+      };
     }),
     userId: entry.user_id,
     id: entry.id,
     actionType: actionTypeMap[entry.action_type],
     extra: extra,
     reason: entry.reason,
-  };
+  } as Entry;
 }

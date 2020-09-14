@@ -13,7 +13,7 @@ class Shard {
   heartbeat!: number;
   sessionId!: string;
   seq: number | null = null;
-  ACKed: boolean = false;
+  ACKed = false;
   beatInterval!: number;
   shardN: number;
   maxShards: number;
@@ -24,7 +24,7 @@ class Shard {
     this.intents = intents;
   }
 
-  private send(data: any) {
+  private send(data: unknown) {
     this.socket.send(JSON.stringify(data));
   }
 
@@ -89,6 +89,7 @@ class Shard {
             this.ACKed = true;
             break;
           default:
+            // deno-lint-ignore ban-ts-comment
             // @ts-ignore
             throw new Error(`${self.name}: unexpected op: ${payload}`);
         }
@@ -124,6 +125,7 @@ class Shard {
             throw new Error("You are not using enough shards");
 
           default:
+            // deno-lint-ignore ban-ts-comment
             // @ts-ignore
             throw new Error(`${self.name}: Unexpected opcode ${msg.code}`);
         }
@@ -175,6 +177,7 @@ class Shard {
       });
     } else {
       throw new Error(
+        // deno-lint-ignore ban-ts-comment
         // @ts-ignore
         `${self.name}: Expected HELLO, received ${firstPayload.op}`,
       );
@@ -201,8 +204,38 @@ class Shard {
 
 let shard: Shard;
 
+type ShardData =
+  | ShardDataInit
+  | ShardDataToken
+  | ShardDataGuildRequestMember
+  | ShardDataStatusUpdate;
+
+interface ShardDataInit {
+  name: "INIT";
+  data: {
+    shardN: number;
+    maxShards: number;
+    intents: number;
+  };
+}
+
+interface ShardDataToken {
+  name: "CONNECT";
+  data: string;
+}
+
+interface ShardDataGuildRequestMember {
+  name: "GUILD_REQUEST_MEMBER";
+  data: gateway.GuildRequestMembers;
+}
+
+interface ShardDataStatusUpdate {
+  name: "STATUS_UPDATE";
+  data: gateway.StatusUpdate;
+}
+
 self.onmessage = async (msg: MessageEvent) => {
-  const event = msg.data as { name: string; data: any };
+  const event = msg.data as ShardData;
   switch (event.name) {
     case "INIT":
       shard = new Shard(

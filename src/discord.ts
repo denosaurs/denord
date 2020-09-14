@@ -1,6 +1,10 @@
 export type Snowflake = string;
 export type ISO8601 = string;
 
+// TODO: when deno-lint will support ignores for a specific rule in a whole file
+// delete all "// deno-lint-ignore no-namespace"
+
+// deno-lint-ignore no-namespace
 export namespace presence {
   export interface Presence {
     user: Pick<user.PublicUser, "id"> & Partial<user.PublicUser>;
@@ -68,6 +72,7 @@ export namespace presence {
     | "offline";
 }
 
+// deno-lint-ignore no-namespace
 export namespace auditLog {
   export interface AuditLog {
     webhooks: webhook.Webhook[];
@@ -280,6 +285,7 @@ export namespace auditLog {
   }
 }
 
+// deno-lint-ignore no-namespace
 export namespace channel {
   export interface BaseChannel {
     id: Snowflake;
@@ -475,6 +481,7 @@ export namespace channel {
   }
 }
 
+// deno-lint-ignore no-namespace
 export namespace embed {
   export interface Embed {
     title?: string;
@@ -537,6 +544,7 @@ export namespace embed {
   }
 }
 
+// deno-lint-ignore no-namespace
 export namespace emoji {
   export interface BaseEmoji {
     id: Snowflake | null;
@@ -573,6 +581,7 @@ export namespace emoji {
   }
 }
 
+// deno-lint-ignore no-namespace
 export namespace guild {
   export interface BaseGuild {
     id: Snowflake;
@@ -689,7 +698,8 @@ export namespace guild {
     default_message_notifications?: DefaultMessageNotifications;
     explicit_content_filter?: ExplicitContentFilter;
     roles?: role.Role[];
-    channels?: (Partial<channel.GuildChannels> & Pick<channel.GuildChannels, "name">)[];
+    channels?:
+      (Partial<channel.GuildChannels> & Pick<channel.GuildChannels, "name">)[];
     afk_channel_id?: Snowflake;
     afk_timeout?: number;
     system_channel_id?: Snowflake;
@@ -795,6 +805,7 @@ export namespace guild {
   }
 }
 
+// deno-lint-ignore no-namespace
 export namespace guildMember {
   export interface GuildMember {
     user: user.PublicUser;
@@ -833,6 +844,7 @@ export namespace guildMember {
   }
 }
 
+// deno-lint-ignore no-namespace
 export namespace integration {
   export interface Integration {
     id: Snowflake;
@@ -864,6 +876,7 @@ export namespace integration {
   >;
 }
 
+// deno-lint-ignore no-namespace
 export namespace invite {
   export interface Invite {
     code: string;
@@ -914,6 +927,7 @@ export namespace invite {
   }
 }
 
+// deno-lint-ignore no-namespace
 export namespace message {
   export interface Message {
     id: Snowflake;
@@ -1001,7 +1015,7 @@ export namespace message {
     guild_id?: Snowflake;
   }
 
-  interface BaseCreate {
+  export interface BaseCreate {
     content?: string;
     nonce?: number | string;
     tts?: boolean;
@@ -1012,9 +1026,9 @@ export namespace message {
   }
 
   export type Create =
-    | BaseCreate & Required<Pick<BaseCreate, "content">>
+    | BaseCreate & Required<Pick<BaseCreate, "embed">>
     | BaseCreate & Required<Pick<BaseCreate, "file">>
-    | BaseCreate & Required<Pick<BaseCreate, "embed">>;
+    | BaseCreate & Required<Pick<BaseCreate, "content">>;
 
   export interface Edit {
     content?: string;
@@ -1043,6 +1057,7 @@ export namespace message {
   export type ReactionRemoveEmojiEvent = Omit<ReactionRemoveEvent, "user_id">;
 }
 
+// deno-lint-ignore no-namespace
 export namespace richPresence {
   export interface RichPresence {
     state: string;
@@ -1063,6 +1078,7 @@ export namespace richPresence {
   }
 }
 
+// deno-lint-ignore no-namespace
 export namespace role {
   export interface Role {
     id: Snowflake;
@@ -1096,6 +1112,7 @@ export namespace role {
   }
 }
 
+// deno-lint-ignore no-namespace
 export namespace user {
   export interface PublicUser {
     id: Snowflake;
@@ -1138,6 +1155,7 @@ export namespace user {
   }
 }
 
+// deno-lint-ignore no-namespace
 export namespace voice {
   export interface State {
     guild_id?: Snowflake;
@@ -1170,6 +1188,7 @@ export namespace voice {
   }
 }
 
+// deno-lint-ignore no-namespace
 export namespace webhook {
   export interface Webhook {
     id: Snowflake;
@@ -1207,6 +1226,7 @@ export namespace webhook {
   }
 }
 
+// deno-lint-ignore no-namespace
 export namespace gateway {
   export interface Gateway {
     url: string;

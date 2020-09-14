@@ -1,15 +1,22 @@
 import { equal, EventEmitter } from "../deps.ts";
 import { ShardManager } from "./gateway/ShardManager.ts";
 import { RestClient } from "./rest/RestClient.ts";
-import type { channel, guild, message, role, Snowflake } from "./discord.ts";
-import { embed, presence, webhook } from "./discord.ts";
+import type {
+  channel,
+  embed,
+  guild,
+  message,
+  presence,
+  role,
+  Snowflake,
+  webhook,
+} from "./discord.ts";
 import { PrivateUser, User } from "./structures/User.ts";
 import { GatewayGuild, RestGuild } from "./structures/Guild.ts";
 import { GuildMember } from "./structures/GuildMember.ts";
 import { VoiceChannel } from "./structures/VoiceChannel.ts";
 import { DMChannel } from "./structures/DMChannel.ts";
-import { TextChannel } from "./structures/TextChannel.ts";
-import { NewsChannel } from "./structures/NewsChannel.ts";
+import { NewsChannel, TextChannel } from "./structures/TextNewsChannel.ts";
 import { CategoryChannel } from "./structures/CategoryChannel.ts";
 import { StoreChannel } from "./structures/StoreChannel.ts";
 import { GroupDMChannel } from "./structures/GroupDMChannel.ts";
@@ -113,10 +120,24 @@ export type Events = {
   messageDelete: [TextBasedChannel, Message | UnknownMessage];
   messageDeleteBulk: [TextBasedChannel, Map<Snowflake, Message | Snowflake>];
 
-  messageReactionAdd: [TextBasedChannel, Message | Snowflake, Pick<Emoji, "id" | "name" | "animated">, User];
-  messageReactionRemove: [TextBasedChannel, Message | Snowflake, Pick<Emoji, "id" | "name" | "animated">, User];
+  messageReactionAdd: [
+    TextBasedChannel,
+    Message | Snowflake,
+    Pick<Emoji, "id" | "name" | "animated">,
+    User,
+  ];
+  messageReactionRemove: [
+    TextBasedChannel,
+    Message | Snowflake,
+    Pick<Emoji, "id" | "name" | "animated">,
+    User,
+  ];
   messageReactionRemoveAll: [TextBasedChannel, Message | Snowflake];
-  messageReactionRemoveEmoji: [TextBasedChannel, Message | Snowflake, Pick<Emoji, "id" | "name" | "animated">];
+  messageReactionRemoveEmoji: [
+    TextBasedChannel,
+    Message | Snowflake,
+    Pick<Emoji, "id" | "name" | "animated">,
+  ];
 
   presenceUpdate: [GatewayGuild | undefined, Presence | undefined, Presence];
   typingStart: [User | Snowflake, Snowflake, Snowflake | undefined];
@@ -917,7 +938,7 @@ export class Client extends EventEmitter<Events> {
       embed = unparseEmbed(data.embed);
     }
 
-    let convertedData: message.Create = {
+    let convertedData: message.BaseCreate = {
       content: data.content,
       tts: data.tts,
       embed,
@@ -931,7 +952,10 @@ export class Client extends EventEmitter<Events> {
       };
     }
 
-    const message = await this.rest.createMessage(channelId, convertedData);
+    const message = await this.rest.createMessage(
+      channelId,
+      convertedData as message.Create,
+    );
 
     return new Message(this, message);
   }

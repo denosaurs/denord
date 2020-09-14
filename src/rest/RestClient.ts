@@ -24,7 +24,7 @@ export class RestClient {
     this.bot = bot ?? true;
   }
 
-  private async request(
+  private async request<D, T>(
     endpoint: string,
     {
       method,
@@ -33,7 +33,9 @@ export class RestClient {
       reason,
     }: {
       method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+      // deno-lint-ignore no-explicit-any
       data?: any;
+      // deno-lint-ignore no-explicit-any
       params?: any;
       reason?: string;
     },
@@ -58,10 +60,10 @@ export class RestClient {
         if (data.file) {
           const { file, payload_json } = data;
 
-          data = new FormData();
-          data.append("file", file, file.name);
-          data.append("payload_json", payload_json);
-          body = data;
+          const form = new FormData();
+          form.append("file", file, file.name);
+          form.append("payload_json", payload_json);
+          body = form;
         } else {
           headers.set("Content-Type", "application/json");
           body = JSON.stringify(data);
@@ -1111,7 +1113,7 @@ export class RestClient {
   async executeSlackCompatibleWebhook(
     webhookId: Discord.Snowflake,
     webhookToken: string,
-    data: any,
+    data: unknown,
     params: Discord.webhook.ExecuteParams,
   ): Promise<void> {
     await this.request(`webhooks/${webhookId}/${webhookToken}/slack$`, {
@@ -1124,7 +1126,7 @@ export class RestClient {
   async executeGitHubCompatibleWebhook(
     webhookId: Discord.Snowflake,
     webhookToken: string,
-    data: any,
+    data: unknown,
     params: Discord.webhook.ExecuteParams,
   ): Promise<void> {
     await this.request(`webhooks/${webhookId}/${webhookToken}/github`, {

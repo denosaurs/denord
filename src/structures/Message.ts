@@ -1,5 +1,5 @@
 import { SnowflakeBase } from "./Base.ts";
-import { Client } from "../Client.ts";
+import type { Client } from "../Client.ts";
 import type { message, Snowflake } from "../discord.ts";
 import { User } from "./User.ts";
 import { GuildMember } from "./GuildMember.ts";
