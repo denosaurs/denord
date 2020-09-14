@@ -1,15 +1,23 @@
 import { equal, EventEmitter } from "../deps.ts";
 import { ShardManager } from "./gateway/ShardManager.ts";
 import { RestClient } from "./rest/RestClient.ts";
-import type { channel, guild, message, role, Snowflake } from "./discord.ts";
-import { embed, presence, webhook } from "./discord.ts";
+import type {
+  channel,
+  embed,
+  guild,
+  message,
+  presence,
+  role,
+  Snowflake,
+  webhook,
+} from "./discord.ts";
 import { PrivateUser, User } from "./structures/User.ts";
 import { GatewayGuild, RestGuild } from "./structures/Guild.ts";
 import { GuildMember } from "./structures/GuildMember.ts";
 import { VoiceChannel } from "./structures/VoiceChannel.ts";
 import { DMChannel } from "./structures/DMChannel.ts";
-import { TextChannel } from "./structures/TextChannel.ts";
-import { NewsChannel } from "./structures/NewsChannel.ts";
+import { NewsChannel, TextChannel } from "./structures/TextNewsChannel.ts";
+//import { NewsChannel } from "./structures/NewsChannel.ts";
 import { CategoryChannel } from "./structures/CategoryChannel.ts";
 import { StoreChannel } from "./structures/StoreChannel.ts";
 import { GroupDMChannel } from "./structures/GroupDMChannel.ts";

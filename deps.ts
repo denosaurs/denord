@@ -1,6 +1,10 @@
 export {
   connectWebSocket,
   isWebSocketCloseEvent,
+  // depsbot-ignore
+} from "https://deno.land/std@0.68.0/ws/mod.ts";
+
+export type {
   WebSocket,
   // depsbot-ignore
 } from "https://deno.land/std@0.68.0/ws/mod.ts";

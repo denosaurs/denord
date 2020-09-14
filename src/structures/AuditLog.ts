@@ -4,7 +4,7 @@ import type { Client } from "../Client.ts";
 import type { Integration } from "./Integration.ts";
 import { inverseMap } from "../utils/utils.ts";
 import { parseWebhook, Webhook } from "./Webhook.ts";
-import { PermissionOverwrite } from "./GuildChannel.ts";
+import type { PermissionOverwrite } from "./GuildChannel.ts";
 
 export interface AuditLog {
   webhooks: Webhook[];
