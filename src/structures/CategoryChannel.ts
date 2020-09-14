@@ -23,7 +23,9 @@ export class CategoryChannel<
     const channel = await this.client.rest.modifyChannel(this.id, {
       name: options.name,
       position: options.position,
-      permission_overwrites: unparseEditPermissionOverwrite(options.permissionOverwrites),
+      permission_overwrites: unparseEditPermissionOverwrite(
+        options.permissionOverwrites,
+      ),
     }, reason);
 
     return new CategoryChannel(this.client, channel as channel.CategoryChannel);

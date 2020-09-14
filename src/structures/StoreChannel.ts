@@ -28,7 +28,9 @@ export class StoreChannel<T extends channel.StoreChannel = channel.StoreChannel>
       name: options.name,
       position: options.position,
       nsfw: options.nsfw,
-      permission_overwrites: unparseEditPermissionOverwrite(options.permissionOverwrites),
+      permission_overwrites: unparseEditPermissionOverwrite(
+        options.permissionOverwrites,
+      ),
       parent_id: options.parentId,
     }, reason);
 

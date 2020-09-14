@@ -55,7 +55,9 @@ export function unparsePermissionOverwrite(
   };
 }
 
-export function unparseEditPermissionOverwrite(permissionOverwrites?: PermissionOverwrite[] | null) {
+export function unparseEditPermissionOverwrite(
+  permissionOverwrites?: PermissionOverwrite[] | null,
+) {
   return permissionOverwrites?.map(({ permissions, id, type }) => {
     const { allow, deny } = unparsePermissionOverwrite(permissions);
 

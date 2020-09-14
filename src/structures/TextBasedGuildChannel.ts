@@ -49,7 +49,9 @@ export abstract class TextBasedGuildChannel<
       topic: options.topic,
       nsfw: options.nsfw,
       rate_limit_per_user: options.slowmode,
-      permission_overwrites: unparseEditPermissionOverwrite(options.permissionOverwrites),
+      permission_overwrites: unparseEditPermissionOverwrite(
+        options.permissionOverwrites,
+      ),
       parent_id: options.parentId,
     }, reason);
 
