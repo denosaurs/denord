@@ -17,7 +17,6 @@ import { GuildMember } from "./structures/GuildMember.ts";
 import { VoiceChannel } from "./structures/VoiceChannel.ts";
 import { DMChannel } from "./structures/DMChannel.ts";
 import { NewsChannel, TextChannel } from "./structures/TextNewsChannel.ts";
-//import { NewsChannel } from "./structures/NewsChannel.ts";
 import { CategoryChannel } from "./structures/CategoryChannel.ts";
 import { StoreChannel } from "./structures/StoreChannel.ts";
 import { GroupDMChannel } from "./structures/GroupDMChannel.ts";

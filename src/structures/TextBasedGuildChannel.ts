@@ -6,7 +6,6 @@ import {
 import type { AwaitMessagesOptions, Client } from "../Client.ts";
 import type { channel, Snowflake } from "../discord.ts";
 import { NewsChannel, TextChannel } from "./TextNewsChannel.ts";
-//import { NewsChannel } from "./NewsChannel.ts";
 import { Message, SendMessageOptions } from "./Message.ts";
 import { parseInvite } from "./Invite.ts";
 

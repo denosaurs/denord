@@ -16,7 +16,6 @@ import { inverseActionType, parseAuditLog } from "./AuditLog.ts";
 import { Integration, parseIntegration } from "./Integration.ts";
 import { GuildEmoji, parseEmoji } from "./Emoji.ts";
 import type { StoreChannel } from "./StoreChannel.ts";
-//import type { NewsChannel } from "./NewsChannel.ts";
 import type { CategoryChannel } from "./CategoryChannel.ts";
 import type { VoiceChannel } from "./VoiceChannel.ts";
 import type { NewsChannel, TextChannel } from "./TextNewsChannel.ts";
