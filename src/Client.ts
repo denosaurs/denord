@@ -516,55 +516,37 @@ export class Client extends EventEmitter<Events> {
         case "MESSAGE_REACTION_ADD": {
           let message;
           let channel: TextBasedChannel;
+          let channelMap: Map<string, unknown>;
           const user = this.users.get(e.data.user_id)!;
           if (e.data.guild_id) {
             channel = this.guildChannels.get(
               e.data.channel_id,
             )! as TextBasedGuildChannels;
-            message = channel.messages.get(e.data.message_id);
-            if (message) {
-              const previousReaction = message.reactions.get(
-                e.data.emoji.id ?? e.data.emoji.name!,
-              );
-              if (previousReaction) {
-                message.reactions.set(e.data.emoji.id ?? e.data.emoji.name!, {
-                  count: ++previousReaction.count,
-                  emoji: e.data.emoji,
-                  me: e.data.user_id === this.user!.id || previousReaction.me,
-                });
-              } else {
-                message.reactions.set(e.data.emoji.id ?? e.data.emoji.name!, {
-                  count: 0,
-                  emoji: e.data.emoji,
-                  me: e.data.user_id === this.user!.id,
-                });
-              }
-              channel.messages.set(message.id, message);
-              this.guildChannels.set(channel.id, channel);
-            }
+            channelMap = this.guildChannels;
           } else {
             channel = this.dmChannels.get(e.data.channel_id)!;
-            message = channel.messages.get(e.data.message_id);
-            if (message) {
-              const previousReaction = message.reactions.get(
-                e.data.emoji.id ?? e.data.emoji.name!,
-              );
-              if (previousReaction) {
-                message.reactions.set(e.data.emoji.id ?? e.data.emoji.name!, {
-                  count: ++previousReaction.count,
-                  emoji: e.data.emoji,
-                  me: e.data.user_id === this.user!.id || previousReaction.me,
-                });
-              } else {
-                message.reactions.set(e.data.emoji.id ?? e.data.emoji.name!, {
-                  count: 0,
-                  emoji: e.data.emoji,
-                  me: e.data.user_id === this.user!.id,
-                });
-              }
-              channel.messages.set(message.id, message);
-              this.dmChannels.set(channel.id, channel);
+            channelMap = this.dmChannels;
+          }
+          message = channel.messages.get(e.data.message_id);
+          if (message) {
+            const previousReaction = message.reactions.get(
+              e.data.emoji.id ?? e.data.emoji.name!,
+            );
+            if (previousReaction) {
+              message.reactions.set(e.data.emoji.id ?? e.data.emoji.name!, {
+                count: ++previousReaction.count,
+                emoji: e.data.emoji,
+                me: e.data.user_id === this.user!.id || previousReaction.me,
+              });
+            } else {
+              message.reactions.set(e.data.emoji.id ?? e.data.emoji.name!, {
+                count: 0,
+                emoji: e.data.emoji,
+                me: e.data.user_id === this.user!.id,
+              });
             }
+            channel.messages.set(message.id, message);
+            channelMap.set(channel.id, channel);
           }
           this.emit(
             "messageReactionAdd",
