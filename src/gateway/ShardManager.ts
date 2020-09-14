@@ -20,6 +20,25 @@ type ValueToTupleValue<T> = {
   [K in keyof T]: [T[K]];
 };
 
+type ShardEvent =
+  | ShardSpecificEvent
+  | ShardCloseEvent
+  | ShardConnectNextEvent;
+
+interface ShardSpecificEvent {
+  name: "EVENT";
+  data: gateway.SpecificEvent;
+}
+
+interface ShardCloseEvent {
+  name: "CLOSE";
+}
+
+interface ShardConnectNextEvent {
+  name: "CONNECT_NEXT";
+  data: unknown;
+}
+
 /**
  * A shard manager that manages all shards that are used to connect to the discord gateway
  */
@@ -46,11 +65,11 @@ export class ShardManager extends EventEmitter<ValueToTupleValue<RawEvents>> {
       });
 
       worker.onmessage = (msg) => {
-        const event = msg.data as { name: string; data: unknown };
+        const event = msg.data as ShardEvent;
 
         switch (event.name) {
           case "EVENT": {
-            const payload = event.data as gateway.SpecificEvent;
+            const payload = event.data;
 
             switch (payload.t) {
               case "READY":
