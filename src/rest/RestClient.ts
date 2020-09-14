@@ -139,13 +139,11 @@ export class RestClient {
           throw new HTTPError(res.status, "Unexpected response");
       }
     };
-    if (!this.buckets[endpoint]) {
-      this.buckets[endpoint] = new TaskQueue({
-        resetAfter: 500,
-        limit: 1,
-        remaining: 1,
-      });
-    }
+    this.buckets[endpoint] ||= new TaskQueue({
+      resetAfter: 500,
+      limit: 1,
+      remaining: 1,
+    });
     return this.buckets[endpoint].push(task);
   }
 

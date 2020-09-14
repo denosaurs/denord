@@ -73,14 +73,10 @@ export class User<T extends user.PublicUser = user.PublicUser>
   }
 
   async getDM() {
-    if (this.client.dmChannels.has(this.id)) {
-      return this.client.dmChannels.get(this.id);
-    } else {
-      return new DMChannel(
-        this.client,
-        await this.client.rest.createDM({ recipient_id: this.id }),
-      );
-    }
+    return this.client.dmChannels.get(this.id) ?? new DMChannel(
+      this.client,
+      await this.client.rest.createDM({ recipient_id: this.id }),
+    );
   }
 }
 
