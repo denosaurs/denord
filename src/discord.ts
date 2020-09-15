@@ -17,7 +17,7 @@ export namespace presence {
 
   export interface Activity {
     name: string;
-    type: 0 | 1 | 2 | 4;
+    type: 0 | 1 | 2 | 4 | 5;
     url?: string | null;
     created_at: number;
     timestamps?: Timestamps;
