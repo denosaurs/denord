@@ -776,20 +776,22 @@ export class Client extends EventEmitter<Events> {
               }
             }
           } else {
-            channel = this.dmChannels.get(e.data.channel_id)!;
-            message = channel.messages.get(e.data.message_id);
-            if (message) {
-              const previousReaction = message.reactions.get(
-                e.data.emoji.id ?? e.data.emoji.name!,
-              )!;
-              message.reactions.set(e.data.emoji.id ?? e.data.emoji.name!, {
-                count: --previousReaction.count,
-                emoji: e.data.emoji,
-                me: e.data.user_id !== this.user!.id && previousReaction.me,
-              });
-              message.reactions.delete(e.data.emoji.id ?? e.data.emoji.name!);
-              channel.messages.set(message.id, message);
-              this.dmChannels.set(channel.id, channel);
+            channel = this.dmChannels.get(e.data.channel_id);
+            if (channel) {
+              message = channel.messages.get(e.data.message_id);
+              if (message) {
+                const previousReaction = message.reactions.get(
+                  e.data.emoji.id ?? e.data.emoji.name!,
+                )!;
+                message.reactions.set(e.data.emoji.id ?? e.data.emoji.name!, {
+                  count: --previousReaction.count,
+                  emoji: e.data.emoji,
+                  me: e.data.user_id !== this.user!.id && previousReaction.me,
+                });
+                message.reactions.delete(e.data.emoji.id ?? e.data.emoji.name!);
+                channel.messages.set(message.id, message);
+                this.dmChannels.set(channel.id, channel);
+              }
             }
           }
           this.emit(
