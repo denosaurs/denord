@@ -157,7 +157,7 @@ export class Message<T extends message.Message = message.Message>
     }
   }
 
-  async delete(reason?: string) {
+  async delete(reason?: string): Promise<void> {
     await this.client.rest.deleteMessage(
       this.channelId,
       this.id,
@@ -169,7 +169,7 @@ export class Message<T extends message.Message = message.Message>
     content?: string;
     embed?: Embed;
     suppressEmbeds?: boolean;
-  }) {
+  }): Promise<Message> {
     let flags = 0;
 
     for (const [key, val] of Object.entries(this.flags)) {
@@ -198,19 +198,19 @@ export class Message<T extends message.Message = message.Message>
     return new Message(this.client, message);
   }
 
-  async pin() {
+  async pin(): Promise<void> {
     await this.client.rest.addPinnedChannelMessage(this.channelId, this.id);
   }
 
-  async unpin() {
+  async unpin(): Promise<void> {
     await this.client.rest.deletePinnedChannelMessage(this.channelId, this.id);
   }
 
-  async addReaction(emoji: string) {
+  async addReaction(emoji: string): Promise<void> {
     await this.client.rest.createReaction(this.channelId, this.id, emoji);
   }
 
-  async removeReaction(emoji: string, userId?: Snowflake) {
+  async removeReaction(emoji: string, userId?: Snowflake): Promise<void> {
     if (userId) {
       await this.client.rest.deleteUserReaction(
         this.channelId,
@@ -223,7 +223,7 @@ export class Message<T extends message.Message = message.Message>
     }
   }
 
-  async removeAllReactions(emoji?: string) {
+  async removeAllReactions(emoji?: string): Promise<void> {
     if (emoji) {
       await this.client.rest.deleteAllReactionsForEmoji(
         this.channelId,
@@ -235,7 +235,9 @@ export class Message<T extends message.Message = message.Message>
     }
   }
 
-  async crosspost() {
-    await this.client.rest.crosspostMessage(this.channelId, this.id);
+  async crosspost(): Promise<Message> {
+    const message = await this.client.rest.crosspostMessage(this.channelId, this.id);
+
+    return new Message(this.client, message);
   }
 }

@@ -12,7 +12,7 @@ import { Role } from "./Role.ts";
 import { GuildMember } from "./GuildMember.ts";
 import type { PermissionOverwrite } from "./GuildChannel.ts";
 import { unparsePermissionOverwrite } from "./GuildChannel.ts";
-import { inverseActionType, parseAuditLog } from "./AuditLog.ts";
+import { AuditLog, inverseActionType, parseAuditLog } from "./AuditLog.ts";
 import { Integration, parseIntegration } from "./Integration.ts";
 import { GuildEmoji, parseEmoji } from "./Emoji.ts";
 import type { StoreChannel } from "./StoreChannel.ts";
@@ -21,8 +21,8 @@ import type { VoiceChannel } from "./VoiceChannel.ts";
 import type { NewsChannel, TextChannel } from "./TextNewsChannel.ts";
 import { parseState, State } from "./VoiceState.ts";
 import { parsePresence, Presence } from "./Presence.ts";
-import { parseInvite, parseMetadataInvite } from "./Invite.ts";
-import { parseWebhook } from "./Webhook.ts";
+import { MetadataInvite, parseMetadataInvite } from "./Invite.ts";
+import { parseWebhook, Webhook } from "./Webhook.ts";
 
 const channelTypeMap = {
   "text": 0,
@@ -79,6 +79,11 @@ const featuresMap = {
   "BANNER": "banner",
   "PUBLIC_DISABLED": "publicDisabled",
 } as const;
+
+export interface Widget {
+  enabled: boolean,
+  channelId: Snowflake | null,
+}
 
 abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
   name: string;
@@ -161,11 +166,11 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     this.maxVideoChannelUsers = data.max_video_channel_users;
   }
 
-  get shardNumber() {
+  get shardNumber(): number {
     return (+this.id / (2 ** 22)) % this.client.gateway.shardAmount;
   }
 
-  async delete() {
+  async delete(): Promise<void> {
     await this.client.rest.deleteGuild(this.id);
   }
 
@@ -185,7 +190,7 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     rulesChannelId?: Snowflake | null;
     publicUpdatesChannelId?: Snowflake | null;
     preferredLocale?: string | null;
-  }, reason?: string) {
+  }, reason?: string): Promise<RestGuild> {
     const guild = await this.client.rest.modifyGuild(this.id, {
       name: options.name,
       region: options.region,
@@ -269,11 +274,11 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     return this.client.newChannelSwitch(channel) as GuildChannels;
   }
 
-  async editChannelsPositions(options: channel.GuildPosition[]) {
+  async editChannelsPositions(options: channel.GuildPosition[]): Promise<void> {
     await this.client.rest.modifyGuildChannelPositions(this.id, options);
   }
 
-  async unban(userId: Snowflake, reason?: string) {
+  async unban(userId: Snowflake, reason?: string): Promise<void> {
     await this.client.rest.removeGuildBan(this.id, userId, reason);
   }
 
@@ -282,7 +287,7 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     image: string,
     roles: Snowflake[] = [],
     reason?: string,
-  ) {
+  ): Promise<GuildEmoji> {
     const emoji = await this.client.rest.createGuildEmoji(this.id, {
       name,
       image,
@@ -295,7 +300,7 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
   async modifyEmoji(emojiId: string, options: {
     name?: string;
     roles?: Snowflake[] | null;
-  } = {}, reason?: string) {
+  } = {}, reason?: string): Promise<GuildEmoji> {
     const emoji = await this.client.rest.modifyGuildEmoji(
       this.id,
       emojiId,
@@ -306,11 +311,11 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     return parseEmoji(this.client, emoji);
   }
 
-  async deleteEmoji(emojiId: string, reason?: string) {
+  async deleteEmoji(emojiId: string, reason?: string): Promise<void> {
     await this.client.rest.deleteGuildEmoji(this.id, emojiId, reason);
   }
 
-  async createRole(options: role.Create = {}, reason?: string) {
+  async createRole(options: role.Create = {}, reason?: string): Promise<Role> {
     const role = await this.client.rest.createGuildRole(
       this.id,
       options,
@@ -320,7 +325,7 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     return new Role(this.client, role, this.id);
   }
 
-  async editRolesPositions(options: role.ModifyPosition[]) {
+  async editRolesPositions(options: role.ModifyPosition[]): Promise<void> {
     await this.client.rest.modifyGuildRolePositions(this.id, options);
   }
 
@@ -329,7 +334,7 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     actionType: keyof typeof inverseActionType;
     before: Snowflake;
     limit: number;
-  }) {
+  }): Promise<AuditLog> {
     return parseAuditLog(
       this.client,
       await this.client.rest.getGuildAuditLog(this.id, {
@@ -368,7 +373,7 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     return prune.pruned;
   }
 
-  async getIntegrations() {
+  async getIntegrations(): Promise<Integration[]> {
     const integrations = await this.client.rest.getGuildIntegrations(this.id);
 
     return integrations.map((integration) =>
@@ -376,14 +381,14 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     );
   }
 
-  async addIntegration(integrationId: Snowflake, type: string) {
+  async addIntegration(integrationId: Snowflake, type: string): Promise<void> {
     await this.client.rest.createGuildIntegration(this.id, {
       id: integrationId,
       type,
     });
   }
 
-  async syncIntegration(integrationId: Snowflake) {
+  async syncIntegration(integrationId: Snowflake): Promise<void> {
     await this.client.rest.syncGuildIntegration(this.id, integrationId);
   }
 
@@ -393,7 +398,7 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
       Integration,
       "expireBehavior" | "expireGracePeriod" | "enableEmoticons"
     >,
-  ) {
+  ): Promise<void> {
     await this.client.rest.modifyGuildIntegration(this.id, integrationId, {
       expire_behavior: options.expireBehavior,
       expire_grace_period: options.expireGracePeriod,
@@ -401,25 +406,32 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     });
   }
 
-  async removeIntegration(integrationId: Snowflake) {
+  async removeIntegration(integrationId: Snowflake): Promise<void> {
     await this.client.rest.deleteGuildIntegration(this.id, integrationId);
   }
 
-  async getWidget() {
-    return this.client.rest.getGuildWidget(this.id);
+  async getWidget(): Promise<Widget> {
+    const widget = await this.client.rest.getGuildWidget(this.id);
+
+    return {
+      enabled: widget.enabled,
+      channelId: widget.channel_id,
+    }
   }
 
-  async editWidget(options: {
-    enabled?: boolean;
-    channelId?: Snowflake | null;
-  }) {
-    return this.client.rest.modifyGuildWidget(this.id, {
+  async editWidget(options: Partial<Widget>): Promise<Widget> {
+    const widget = await this.client.rest.modifyGuildWidget(this.id, {
       enabled: options.enabled,
       channel_id: options.channelId,
     });
+
+    return {
+      enabled: widget.enabled,
+      channelId: widget.channel_id,
+    }
   }
 
-  async leave() {
+  async leave(): Promise<void> {
     await this.client.rest.leaveGuild(this.id);
   }
 
@@ -427,26 +439,22 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     userId: Snowflake,
     accessToken: string,
     options: Omit<guildMember.Add, "access_token"> = {},
-  ) {
-    await this.client.rest.addGuildMember(this.id, userId, {
+  ): Promise<GuildMember> {
+    const member = await this.client.rest.addGuildMember(this.id, userId, {
       access_token: accessToken,
       ...options,
     });
+
+    return new GuildMember(this.client, member, this.id);
   }
 
-  async getInvites() {
+  async getInvites(): Promise<MetadataInvite[]> {
     const invites = await this.client.rest.getGuildInvites(this.id);
 
     return invites.map((invite) => parseMetadataInvite(this.client, invite));
   }
 
-  async deleteInvite(code: string, reason?: string) {
-    const invite = await this.client.rest.deleteInvite(code, reason);
-
-    return parseInvite(this.client, invite);
-  }
-
-  async getWebhooks() {
+  async getWebhooks(): Promise<Webhook[]> {
     const webhooks = await this.client.rest.getGuildWebhooks(this.id);
 
     return webhooks.map((webhook) => parseWebhook(this.client, webhook));
@@ -455,7 +463,7 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
   iconURL(options: {
     format?: ImageFormat;
     size?: ImageSize;
-  } = {}) {
+  } = {}): string | null {
     return this.icon
       ? imageURLFormatter(`icons/${this.id}/${this.icon}`, options)
       : null;
@@ -464,7 +472,7 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
   bannerURL(options: {
     format?: Exclude<ImageFormat, "gif">;
     size?: ImageSize;
-  } = {}) {
+  } = {}): string | null {
     return this.banner
       ? imageURLFormatter(`icons/${this.id}/${this.banner}`, options)
       : null;
@@ -473,7 +481,7 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
   splashURL(options: {
     format?: Exclude<ImageFormat, "gif">;
     size?: ImageSize;
-  } = {}) {
+  } = {}): string | null {
     return this.splash
       ? imageURLFormatter(`icons/${this.id}/${this.splash}`, options)
       : null;
@@ -482,7 +490,7 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
   discoverySplashURL(options: {
     format?: Exclude<ImageFormat, "gif">;
     size?: ImageSize;
-  } = {}) {
+  } = {}): string | null {
     return this.discoverySplash
       ? imageURLFormatter(`icons/${this.id}/${this.discoverySplash}`, options)
       : null;

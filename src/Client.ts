@@ -31,11 +31,12 @@ import {
   unparseActivity,
 } from "./structures/Presence.ts";
 import {
+  Invite,
   InviteCreate,
   parseInvite,
   parseMetadata,
 } from "./structures/Invite.ts";
-import { ExecuteWebhook, parseWebhook } from "./structures/Webhook.ts";
+import { ExecuteWebhook, parseWebhook, Webhook } from "./structures/Webhook.ts";
 import { parseState, State } from "./structures/VoiceState.ts";
 
 interface AwaitMessage {
@@ -938,7 +939,7 @@ export class Client extends EventEmitter<Events> {
     });
   }
 
-  async connect(token: string) {
+  async connect(token: string): Promise<void> {
     this.rest.token = token;
     await this.gateway.connect(token);
     this.emit("ready", undefined);
@@ -955,7 +956,7 @@ export class Client extends EventEmitter<Events> {
     afkChannelId?: Snowflake;
     afkTimeout?: number;
     systemChannelId?: Snowflake;
-  } = {}) {
+  } = {}): Promise<RestGuild> {
     const guild = await this.rest.createGuild({
       name,
       region: options.region,
@@ -976,21 +977,27 @@ export class Client extends EventEmitter<Events> {
     return new RestGuild(this, guild);
   }
 
-  async getGuildPreview(guildId: Snowflake) {
+  async getGuildPreview(guildId: Snowflake): Promise<guild.Preview> {
     return await this.rest.getGuildPreview(guildId);
   }
 
-  async getInvite(code: string) {
+  async getInvite(code: string): Promise<Invite> {
     return parseInvite(this, await this.rest.getInvite(code));
   }
 
-  async getUser(userId: Snowflake) {
+  async deleteInvite(code: string, reason?: string): Promise<Invite> {
+    const invite = await this.rest.deleteInvite(code, reason);
+
+    return parseInvite(this, invite);
+  }
+
+  async getUser(userId: Snowflake): Promise<User> {
     const user = new User(this, await this.rest.getUser(userId));
     this.users.set(user.id, user);
     return user;
   }
 
-  async getWebhook(webhookId: Snowflake, token?: string) {
+  async getWebhook(webhookId: Snowflake, token?: string): Promise<Webhook> {
     let webhook;
     if (token) {
       webhook = await this.rest.getWebhookWithToken(webhookId, token);
@@ -1009,7 +1016,7 @@ export class Client extends EventEmitter<Events> {
     },
     token?: string,
     reason?: string,
-  ) {
+  ): Promise<Webhook> {
     let webhook;
     if (token) {
       webhook = await this.rest.modifyWebhookWithToken(webhookId, token, {
@@ -1027,7 +1034,7 @@ export class Client extends EventEmitter<Events> {
     return parseWebhook(this, webhook);
   }
 
-  async deleteWebhook(webhookId: Snowflake, token?: string, reason?: string) {
+  async deleteWebhook(webhookId: Snowflake, token?: string, reason?: string): Promise<void> {
     if (token) {
       await this.rest.deleteWebhookWithToken(webhookId, token, reason);
     } else {
@@ -1097,7 +1104,7 @@ export class Client extends EventEmitter<Events> {
       userIds?: Snowflake | Snowflake[];
       nonce?: string;
     },
-  ) {
+  ): void {
     this.gateway.guildRequestMember(shardNumber, {
       guild_id: guildIds,
       query: options.query,
@@ -1113,7 +1120,7 @@ export class Client extends EventEmitter<Events> {
     game: Activity | null;
     status: presence.ActiveStatus;
     afk: boolean;
-  }) {
+  }): void {
     this.gateway.statusUpdate(shardNumber, {
       since: data.since,
       game: data.game && unparseActivity(data.game),
@@ -1143,7 +1150,7 @@ export class Client extends EventEmitter<Events> {
     }
   }
 
-  async sendMessage(channelId: Snowflake, data: SendMessageOptions) {
+  async sendMessage(channelId: Snowflake, data: SendMessageOptions): Promise<Message> {
     let embed;
     if (data.embed) {
       embed = unparseEmbed(data.embed);

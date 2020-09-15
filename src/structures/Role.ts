@@ -67,15 +67,15 @@ export class Role<T extends role.Role = role.Role> extends SnowflakeBase<T> {
     this.position = data.position;
   }
 
-  get mention() {
+  get mention(): string {
     return `<@&${this.id}>`;
   }
 
-  async delete(reason?: string) {
+  async delete(reason?: string): Promise<void> {
     await this.client.rest.deleteGuildRole(this.guildId, this.id, reason);
   }
 
-  async edit(options: Record<string, unknown>, reason?: string) {
+  async edit(options: Record<string, unknown>, reason?: string): Promise<Role> {
     const role = await this.client.rest.modifyGuildRole(
       this.guildId,
       this.id,
@@ -86,7 +86,7 @@ export class Role<T extends role.Role = role.Role> extends SnowflakeBase<T> {
     return new Role(this.client, role, this.guildId);
   }
 
-  async moveTo(index: number) {
+  async moveTo(index: number): Promise<void> {
     await this.client.rest.modifyGuildRolePositions(this.id, [{
       id: this.id,
       position: index,

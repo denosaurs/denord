@@ -5,7 +5,7 @@ import {
   PermissionOverwrite,
   unparsePermissionOverwrite,
 } from "./GuildChannel.ts";
-import { parseInvite } from "./Invite.ts";
+import { Invite, parseInvite } from "./Invite.ts";
 
 export class VoiceChannel<T extends channel.VoiceChannel = channel.VoiceChannel>
   extends GuildChannel<T> {
@@ -27,7 +27,7 @@ export class VoiceChannel<T extends channel.VoiceChannel = channel.VoiceChannel>
     userLimit?: number | null;
     permissionOverwrites?: PermissionOverwrite[] | null;
     parentId: Snowflake | null;
-  }, reason?: string) {
+  }, reason?: string): Promise<VoiceChannel> {
     const permissionOverwrites =
       options.permissionOverwrites?.map(({ permissions, id, type }) => {
         const { allow, deny } = unparsePermissionOverwrite(permissions);
@@ -52,7 +52,7 @@ export class VoiceChannel<T extends channel.VoiceChannel = channel.VoiceChannel>
     return new VoiceChannel(this.client, channel as channel.VoiceChannel);
   }
 
-  async delete(reason?: string) {
+  async delete(reason?: string): Promise<VoiceChannel> {
     const channel = await this.client.rest.deleteChannel(
       this.id,
       reason,
@@ -60,7 +60,7 @@ export class VoiceChannel<T extends channel.VoiceChannel = channel.VoiceChannel>
     return new VoiceChannel(this.client, channel);
   }
 
-  async getInvites() {
+  async getInvites(): Promise<Invite[]> {
     const invites = await this.client.rest.getChannelInvites(this.id);
 
     return invites.map((invite) => parseInvite(this.client, invite));

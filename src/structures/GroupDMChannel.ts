@@ -33,38 +33,38 @@ export class GroupDMChannel<
     this.ownerId = data.owner_id;
   }
 
-  async addRecipient(userId: Snowflake, accessToken: Snowflake, nick?: string) {
+  async addRecipient(userId: Snowflake, accessToken: Snowflake, nick?: string): Promise<void> {
     await this.client.rest.groupDMAddRecipient(this.id, userId, {
       access_token: accessToken,
       nick,
     });
   }
 
-  async removeRecipient(userId: Snowflake) {
+  async removeRecipient(userId: Snowflake): Promise<void> {
     await this.client.rest.groupDMRemoveRecipient(this.id, userId);
   }
 
-  async startTyping() {
+  async startTyping(): Promise<void> {
     await this.client.rest.triggerTypingIndicator(this.id);
   }
 
-  async sendMessage(data: SendMessageOptions) {
+  sendMessage(data: SendMessageOptions): Promise<Message> {
     return this.client.sendMessage(this.id, data);
   }
 
-  async getPins() {
+  async getPins(): Promise<Message[]> {
     const messages = await this.client.rest.getPinnedMessages(this.id);
     return messages.map((message) => new Message(this.client, message));
   }
 
-  async delete() {
+  async delete(): Promise<GroupDMChannel> {
     const channel = await this.client.rest.deleteChannel(
       this.id,
     ) as channel.GroupDMChannel;
     return new GroupDMChannel(this.client, channel);
   }
 
-  async awaitMessages(
+  awaitMessages(
     filter: (msg: Message) => boolean,
     options: AwaitMessagesOptions,
   ): Promise<Message[]> {

@@ -7,7 +7,7 @@ import type { AwaitMessagesOptions, Client } from "../Client.ts";
 import type { channel, Snowflake } from "../discord.ts";
 import { NewsChannel, TextChannel } from "./TextNewsChannel.ts";
 import { Message, SendMessageOptions } from "./Message.ts";
-import { parseInvite } from "./Invite.ts";
+import { Invite, parseInvite } from "./Invite.ts";
 
 export interface EditOptions {
   name?: string;
@@ -62,26 +62,26 @@ export abstract class TextBasedGuildChannel<
     }
   }
 
-  async startTyping() {
+  async startTyping(): Promise<void> {
     await this.client.rest.triggerTypingIndicator(this.id);
   }
 
-  async sendMessage(data: SendMessageOptions) {
+  async sendMessage(data: SendMessageOptions): Promise<Message> {
     return this.client.sendMessage(this.id, data);
   }
 
-  async getPins() {
+  async getPins(): Promise<Message[]> {
     const messages = await this.client.rest.getPinnedMessages(this.id);
     return messages.map((message) => new Message(this.client, message));
   }
 
-  async bulkDeleteMessages(messageIds: Snowflake[], reason?: string) {
+  async bulkDeleteMessages(messageIds: Snowflake[], reason?: string): Promise<void> {
     await this.client.rest.bulkDeleteMessages(this.id, {
       messages: messageIds,
     }, reason);
   }
 
-  async getInvites() {
+  async getInvites(): Promise<Invite[]> {
     const invites = await this.client.rest.getChannelInvites(this.id);
 
     return invites.map((invite) => parseInvite(this.client, invite));

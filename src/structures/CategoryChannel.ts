@@ -19,7 +19,7 @@ export class CategoryChannel<
     name?: string;
     position?: number | null;
     permissionOverwrites?: PermissionOverwrite[] | null;
-  }, reason?: string) {
+  }, reason?: string): Promise<CategoryChannel> {
     const channel = await this.client.rest.modifyChannel(this.id, {
       name: options.name,
       position: options.position,

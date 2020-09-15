@@ -21,7 +21,7 @@ export abstract class SnowflakeBase<T extends { id: Snowflake }>
     this.id = data.id;
   }
 
-  get createdAt() {
+  get createdAt(): number {
     return (+this.id / (2 ** 22)) + 1420070400000;
   }
 }

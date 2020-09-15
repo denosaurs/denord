@@ -486,12 +486,12 @@ export class RestClient {
     guildId: Discord.Snowflake,
     data: Discord.emoji.Create,
     reason?: string,
-  ): Promise<Discord.emoji.Emoji> {
+  ): Promise<Discord.emoji.GuildEmoji> {
     return this.request(`guilds/${guildId}/emojis`, {
       method: "POST",
       data,
       reason,
-    }) as Promise<Discord.emoji.Emoji>;
+    }) as Promise<Discord.emoji.GuildEmoji>;
   }
 
   async modifyGuildEmoji(
@@ -499,12 +499,12 @@ export class RestClient {
     emojiId: Discord.Snowflake,
     data: Discord.emoji.Modify,
     reason?: string,
-  ): Promise<Discord.emoji.Emoji> {
+  ): Promise<Discord.emoji.GuildEmoji> {
     return this.request(`guilds/${guildId}/emojis/${emojiId}`, {
       method: "PATCH",
       data,
       reason,
-    }) as Promise<Discord.emoji.Emoji>;
+    }) as Promise<Discord.emoji.GuildEmoji>;
   }
 
   async deleteGuildEmoji(

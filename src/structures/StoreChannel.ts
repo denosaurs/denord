@@ -23,7 +23,7 @@ export class StoreChannel<T extends channel.StoreChannel = channel.StoreChannel>
     nsfw?: boolean | null;
     permissionOverwrites?: PermissionOverwrite[] | null;
     parentId: Snowflake | null;
-  }, reason?: string) {
+  }, reason?: string): Promise<StoreChannel> {
     const channel = await this.client.rest.modifyChannel(this.id, {
       name: options.name,
       position: options.position,
@@ -37,7 +37,7 @@ export class StoreChannel<T extends channel.StoreChannel = channel.StoreChannel>
     return new StoreChannel(this.client, channel as channel.StoreChannel);
   }
 
-  async delete(reason?: string) {
+  async delete(reason?: string): Promise<StoreChannel> {
     const channel = await this.client.rest.deleteChannel(
       this.id,
       reason,

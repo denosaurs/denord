@@ -22,27 +22,27 @@ export class DMChannel<T extends channel.DMChannel = channel.DMChannel>
       : undefined;
   }
 
-  async startTyping() {
+  async startTyping(): Promise<void> {
     await this.client.rest.triggerTypingIndicator(this.id);
   }
 
-  async sendMessage(data: SendMessageOptions) {
+  sendMessage(data: SendMessageOptions): Promise<Message> {
     return this.client.sendMessage(this.id, data);
   }
 
-  async getPins() {
+  async getPins(): Promise<Message[]> {
     const messages = await this.client.rest.getPinnedMessages(this.id);
     return messages.map((message) => new Message(this.client, message));
   }
 
-  async delete() {
+  async delete(): Promise<DMChannel> {
     const channel = await this.client.rest.deleteChannel(
       this.id,
     ) as channel.DMChannel;
     return new DMChannel(this.client, channel);
   }
 
-  async awaitMessages(
+  awaitMessages(
     filter: (message: Message) => boolean,
     options: AwaitMessagesOptions,
   ): Promise<Message[]> {

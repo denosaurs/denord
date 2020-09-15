@@ -35,11 +35,11 @@ export class GuildMember<
     this.mute = data.mute;
   }
 
-  async ban(options: guild.CreateBan) {
+  async ban(options: guild.CreateBan): Promise<void> {
     await this.client.rest.createGuildBan(this.guildId, this.user.id, options);
   }
 
-  async kick(reason?: string) {
+  async kick(reason?: string): Promise<void> {
     await this.client.rest.removeGuildMember(
       this.guildId,
       this.user.id,
@@ -47,7 +47,7 @@ export class GuildMember<
     );
   }
 
-  async edit(options: guildMember.Modify, reason?: string) {
+  async edit(options: guildMember.Modify, reason?: string): Promise<GuildMember> {
     const member = await this.client.rest.modifyGuildMember(
       this.guildId,
       this.user.id,
@@ -57,7 +57,7 @@ export class GuildMember<
     return new GuildMember(this.client, member, this.guildId);
   }
 
-  async editCurrentNick(nickname: string | null) {
+  async editCurrentNick(nickname: string | null): Promise<GuildMember> {
     const nick = await this.client.rest.modifyCurrentUserNick(
       this.guildId,
       { nick: nickname },
@@ -68,7 +68,7 @@ export class GuildMember<
     }, this.guildId);
   }
 
-  async addRole(roleId: Snowflake, reason?: string) {
+  async addRole(roleId: Snowflake, reason?: string): Promise<void> {
     await this.client.rest.addGuildMemberRole(
       this.guildId,
       this.user.id,
@@ -77,7 +77,7 @@ export class GuildMember<
     );
   }
 
-  async removeRole(roleId: Snowflake, reason?: string) {
+  async removeRole(roleId: Snowflake, reason?: string): Promise<void> {
     await this.client.rest.removeGuildMemberRole(
       this.guildId,
       this.user.id,

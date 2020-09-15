@@ -44,19 +44,19 @@ export class User<T extends user.PublicUser = user.PublicUser>
     }
   }
 
-  get tag() {
+  get tag(): string {
     return `${this.username}#${this.discriminator}`;
   }
 
-  get mention() {
+  get mention(): string {
     return `<@${this.id}>`;
   }
 
-  get defaultAvatar() {
+  get defaultAvatar(): number {
     return +this.discriminator % 5;
   }
 
-  defaultAvatarURL(size?: ImageSize) {
+  defaultAvatarURL(size?: ImageSize): string {
     return imageURLFormatter(`embed/avatars/${this.defaultAvatar}`, {
       format: "png",
       size,
@@ -66,14 +66,14 @@ export class User<T extends user.PublicUser = user.PublicUser>
   avatarURL(options: {
     format?: ImageFormat;
     size?: ImageSize;
-  } = {}) {
+  } = {}): string {
     return this.avatar
       ? imageURLFormatter(`avatars/${this.id}/${this.avatar}`, options)
       : this.defaultAvatarURL(options.size);
   }
 
-  async getDM() {
-    return this.client.dmChannels.get(this.id) ?? new DMChannel(
+  async getDM(): Promise<DMChannel> {
+    return (this.client.dmChannels.get(this.id) as DMChannel | undefined) ?? new DMChannel(
       this.client,
       await this.client.rest.createDM({ recipient_id: this.id }),
     );
@@ -104,7 +104,7 @@ export class PrivateUser<T extends user.PrivateUser = user.PrivateUser>
     }
   }
 
-  async edit(options: user.Modify) {
+  async edit(options: user.Modify): Promise<PrivateUser> {
     const user = await this.client.rest.modifyCurrentUser(options);
 
     return new PrivateUser(this.client, user);

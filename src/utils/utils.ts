@@ -9,7 +9,7 @@ export function imageURLFormatter(
     format?: ImageFormat;
     size?: ImageSize;
   } = {},
-) {
+): string {
   return `${URLs.CDN}${endpoint}.${format ??
     (endpoint.includes("_a") ? "gif" : "jpg")}${size ? `?size=${size}` : ""}`;
 }

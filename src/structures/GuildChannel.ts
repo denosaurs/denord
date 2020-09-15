@@ -2,6 +2,7 @@ import type { channel, Snowflake } from "../discord.ts";
 import type { Client } from "../Client.ts";
 import { permissionMap } from "./Role.ts";
 import { SnowflakeBase } from "./Base.ts";
+import { Invite, parseInvite } from "./Invite.ts";
 
 export interface PermissionOverwrite {
   id: Snowflake;
@@ -9,14 +10,11 @@ export interface PermissionOverwrite {
   permissions: Record<keyof typeof permissionMap, boolean | undefined>;
 }
 
-function parsePermissionOverwrite(allow: string, deny: string) {
+function parsePermissionOverwrite(allow: string, deny: string): Record<keyof typeof permissionMap, boolean | undefined> {
   const bAllow = BigInt(allow);
   const bDeny = BigInt(deny);
 
-  const permissions = {} as Record<
-    keyof typeof permissionMap,
-    boolean | undefined
-  >;
+  const permissions = {} as Record<keyof typeof permissionMap, boolean | undefined>;
 
   for (const [key, val] of Object.entries(permissionMap)) {
     const bVal = BigInt(val);
@@ -34,7 +32,7 @@ function parsePermissionOverwrite(allow: string, deny: string) {
 
 export function unparsePermissionOverwrite(
   permissions: Record<keyof typeof permissionMap, boolean | undefined>,
-) {
+): { allow: string; deny: string; } {
   let allow = 0n;
   let deny = 0n;
 
@@ -57,7 +55,7 @@ export function unparsePermissionOverwrite(
 
 export function unparseEditPermissionOverwrite(
   permissionOverwrites?: PermissionOverwrite[] | null,
-) {
+): channel.OverwriteSend[] | undefined | null {
   return permissionOverwrites?.map(({ permissions, id, type }) => {
     const { allow, deny } = unparsePermissionOverwrite(permissions);
 
@@ -94,7 +92,7 @@ export abstract class GuildChannel<T extends channel.GuildChannel>
     }));
   }
 
-  async editPermissions(overwrite: PermissionOverwrite, reason?: string) {
+  async editPermissions(overwrite: PermissionOverwrite, reason?: string): Promise<void> {
     const { allow, deny } = unparsePermissionOverwrite(overwrite.permissions);
 
     await this.client.rest.editChannelPermissions(
@@ -109,7 +107,7 @@ export abstract class GuildChannel<T extends channel.GuildChannel>
     );
   }
 
-  async deletePermissions(overwriteId: Snowflake, reason?: string) {
+  async deletePermissions(overwriteId: Snowflake, reason?: string): Promise<void> {
     await this.client.rest.deleteChannelPermission(
       this.id,
       overwriteId,
@@ -124,13 +122,15 @@ export abstract class GuildChannel<T extends channel.GuildChannel>
     unique?: boolean;
     targetUser?: Snowflake;
     targetUserType?: 1;
-  } = {}, reason?: string) {
-    return await this.client.rest.createChannelInvite(this.id, {
+  } = {}, reason?: string): Promise<Invite> {
+    const invite = await this.client.rest.createChannelInvite(this.id, {
       max_age: options.maxAge,
       max_uses: options.maxAge,
       unique: options.unique,
       target_user: options.targetUser,
       target_user_type: options.targetUserType,
     }, reason);
+
+    return parseInvite(this.client, invite);
   }
 }
