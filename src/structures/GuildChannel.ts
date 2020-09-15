@@ -20,9 +20,9 @@ function parsePermissionOverwrite(allow: string, deny: string) {
 
   for (const [key, val] of Object.entries(permissionMap)) {
     const bVal = BigInt(val);
-    if ((bAllow & bVal) == bVal) {
+    if ((bAllow & bVal) === bVal) {
       permissions[key as keyof typeof permissionMap] = true;
-    } else if ((bDeny & bVal) == bVal) {
+    } else if ((bDeny & bVal) === bVal) {
       permissions[key as keyof typeof permissionMap] = false;
     } else {
       permissions[key as keyof typeof permissionMap] = undefined;
