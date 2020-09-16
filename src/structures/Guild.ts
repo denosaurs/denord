@@ -151,7 +151,10 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
    * An object of flags the system channel the guild can have.
    * If the system channel has a flag, that flag is set to true.
    */
-  systemChannelFlags = {} as Record<typeof systemChannelFlags[keyof typeof systemChannelFlags], boolean>;
+  systemChannelFlags = {} as Record<
+    typeof systemChannelFlags[keyof typeof systemChannelFlags],
+    boolean
+  >;
   /** The id of the channel in which rules for the guild are described. Null if none is set. */
   rulesChannelId: Snowflake | null;
   /**
@@ -218,11 +221,14 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     this.systemChannelId = data.system_channel_id;
 
     for (const [key, val] of Object.entries(systemChannelFlags)) {
-      this.systemChannelFlags[val] = ((data.system_channel_flags & +key) === +key);
+      this.systemChannelFlags[val] =
+        ((data.system_channel_flags & +key) === +key);
     }
 
     this.rulesChannelId = data.rules_channel_id;
-    this.maxPresences = data.max_presences === null ? 25000 : data.max_presences;
+    this.maxPresences = data.max_presences === null
+      ? 25000
+      : data.max_presences;
     this.maxMembers = data.max_members;
 
     this.vanityURLCode = data.vanity_url_code;
@@ -423,7 +429,8 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
       this.client,
       await this.client.rest.getGuildAuditLog(this.id, {
         user_id: options.userId,
-        action_type: options.actionType && inverseActionType[options.actionType],
+        action_type: options.actionType &&
+          inverseActionType[options.actionType],
         before: options.before,
         limit: options.limit,
       }),
@@ -641,10 +648,13 @@ export class GatewayGuild<T extends guild.GatewayGuild = guild.GatewayGuild>
     this.memberCount = data.member_count;
     this.voiceStates = new Map(
       data.voice_states.map(
-        (state) => [state.user_id, parseState({
-          ...state,
-          guild_id: data.id,
-        }, client)],
+        (state) => [
+          state.user_id,
+          parseState({
+            ...state,
+            guild_id: data.id,
+          }, client),
+        ],
       ),
     );
     this.members = new Map(
