@@ -53,20 +53,30 @@ const flagsMap = {
 
 export class Message<T extends message.Message = message.Message>
   extends SnowflakeBase<T> {
+  /** The id of the channel this message was sent in. */
   channelId: Snowflake;
+  /** The id of the guild if the message was sent in a guild channel. */
   guildId?: Snowflake;
+  /** The author of the message. */
   author: User;
+  /** Whether or not this message was made by a webhook. */
   byWebhook: boolean;
+  /** The member associated to the author, if the message was sent in a guild channel. */
   member?: GuildMember;
+  /** The content of the message. */
   content: string;
+  /** The unix timestamp of when the message was last edited. Null if it hasn't been edited. */
   editedAt: number | null;
+  /** Whether or not this message has Text-To-speech enabled. */
   tts: boolean;
+  /** The mentions of the message. */
   mentions: {
     everyone: boolean;
     users: User[];
     roles: Snowflake[];
     channels?: Snowflake[];
   };
+  /** An array of attachments in the message. */
   attachments: {
     id: Snowflake;
     filename: string;
@@ -76,14 +86,20 @@ export class Message<T extends message.Message = message.Message>
     height: number | null;
     width: number | null;
   }[];
+  /** An array of embeds in the message. */
   embeds: Embed[];
+  /** A map of reactions in the message, primarily indexed by id, else by name. */
   reactions: Map<Snowflake | string, message.Reaction>;
+  /** Whether or not this message is pinned in the channel. */
   pinned: boolean;
+  /** The type of message. */
   type: typeof messageTypeMap[keyof typeof messageTypeMap];
+  /** sent with Rich Presence-related chat embeds. */
   activity?: {
     type: typeof activityTypeMap[keyof typeof activityTypeMap];
     partyId?: string;
   };
+  /** sent with Rich Presence-related chat embeds. */
   application?: {
     id: Snowflake;
     coverImage?: string;
@@ -91,11 +107,19 @@ export class Message<T extends message.Message = message.Message>
     icon: string | null;
     name: string;
   };
+  /**
+   * The reference of the message. Available if the message is crossposted or
+   * if the message type is channelPinnedMessage.
+   */
   reference?: {
     messageId?: Snowflake;
     channelId: Snowflake;
     guildId?: Snowflake;
   };
+  /**
+   * An object of flags the message can have.
+   * If the message has a flag, that flag is set to true.
+   */
   flags = {} as Record<keyof typeof flagsMap, boolean>;
 
   constructor(client: Client, data: T) {
@@ -157,6 +181,7 @@ export class Message<T extends message.Message = message.Message>
     }
   }
 
+  /** Deletes the message. */
   async delete(reason?: string): Promise<void> {
     await this.client.rest.deleteMessage(
       this.channelId,
@@ -165,6 +190,7 @@ export class Message<T extends message.Message = message.Message>
     );
   }
 
+  /** Edits the message. */
   async edit(options: {
     content?: string;
     embed?: Embed;
@@ -198,18 +224,25 @@ export class Message<T extends message.Message = message.Message>
     return new Message(this.client, message);
   }
 
+  /** Pins the message. */
   async pin(): Promise<void> {
     await this.client.rest.addPinnedChannelMessage(this.channelId, this.id);
   }
 
+  /** Unpins the message. */
   async unpin(): Promise<void> {
     await this.client.rest.deletePinnedChannelMessage(this.channelId, this.id);
   }
 
+  /** Adds a reaction to the message. */
   async addReaction(emoji: string): Promise<void> {
     await this.client.rest.createReaction(this.channelId, this.id, emoji);
   }
 
+  /**
+   * Removes a reaction from the message. If user is not specified,
+   * the current user's message is removed.
+   */
   async removeReaction(emoji: string, userId?: Snowflake): Promise<void> {
     if (userId) {
       await this.client.rest.deleteUserReaction(
@@ -223,6 +256,10 @@ export class Message<T extends message.Message = message.Message>
     }
   }
 
+  /**
+   * Removes all reactions from a message. If emoji is passed,
+   * all reactions with that emoji are removed.
+   */
   async removeAllReactions(emoji?: string): Promise<void> {
     if (emoji) {
       await this.client.rest.deleteAllReactionsForEmoji(
@@ -235,8 +272,12 @@ export class Message<T extends message.Message = message.Message>
     }
   }
 
+  /** Crossposts this message if it was sent in a news channel. */
   async crosspost(): Promise<Message> {
-    const message = await this.client.rest.crosspostMessage(this.channelId, this.id);
+    const message = await this.client.rest.crosspostMessage(
+      this.channelId,
+      this.id,
+    );
 
     return new Message(this.client, message);
   }

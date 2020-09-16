@@ -170,16 +170,21 @@ export class Client extends EventEmitter<Events> {
   gateway: ShardManager;
   rest = new RestClient();
 
+  /** A map of cached guild channels, indexed by their id. */
   guildChannels = new Map<Snowflake, GuildChannels>();
+  /** A map of cached (group) dm channels, indexed by their id. */
   dmChannels = new Map<Snowflake, DMChannels>();
+  /** A map of cached guilds, indexed by their id. */
   guilds = new Map<Snowflake, GatewayGuild>();
+  /** A map of cached users, indexed by their id. */
   users = new Map<Snowflake, User>();
 
+  /** The current user. Is unset only before a shardReady event. */
   user?: PrivateUser;
 
   constructor(
-    shardAmount: number = 1,
     intents: Record<keyof typeof intentsMap, boolean> | number | boolean = true,
+    shardAmount: number = 1,
   ) {
     super();
 
@@ -939,12 +944,17 @@ export class Client extends EventEmitter<Events> {
     });
   }
 
+  /**
+   * Connects the client to the gateway and sets the token for the rest client.
+   * Resolves once all shards are connected.
+   */
   async connect(token: string): Promise<void> {
     this.rest.token = token;
     await this.gateway.connect(token);
     this.emit("ready", undefined);
   }
 
+  /** Creates a new guild. */
   async createGuild(name: string, options: {
     region?: string;
     icon?: string;
@@ -977,26 +987,31 @@ export class Client extends EventEmitter<Events> {
     return new RestGuild(this, guild);
   }
 
+  /** Fetches the preview of the given guild id. */
   async getGuildPreview(guildId: Snowflake): Promise<guild.Preview> {
     return await this.rest.getGuildPreview(guildId);
   }
 
+  /** Fetches the invite of the given invite code. */
   async getInvite(code: string): Promise<Invite> {
     return parseInvite(this, await this.rest.getInvite(code));
   }
 
+  /** Deletes an invite. */
   async deleteInvite(code: string, reason?: string): Promise<Invite> {
     const invite = await this.rest.deleteInvite(code, reason);
 
     return parseInvite(this, invite);
   }
 
+  /** Fetches an user with given id. */
   async getUser(userId: Snowflake): Promise<User> {
     const user = new User(this, await this.rest.getUser(userId));
     this.users.set(user.id, user);
     return user;
   }
 
+  /** Fetches a webhook with given id. */
   async getWebhook(webhookId: Snowflake, token?: string): Promise<Webhook> {
     let webhook;
     if (token) {
@@ -1007,6 +1022,7 @@ export class Client extends EventEmitter<Events> {
     return parseWebhook(this, webhook);
   }
 
+  /** Edits a webhook. */
   async editWebhook(
     webhookId: Snowflake,
     options: {
@@ -1034,7 +1050,12 @@ export class Client extends EventEmitter<Events> {
     return parseWebhook(this, webhook);
   }
 
-  async deleteWebhook(webhookId: Snowflake, token?: string, reason?: string): Promise<void> {
+  /** Deletes a webhook. */
+  async deleteWebhook(
+    webhookId: Snowflake,
+    token?: string,
+    reason?: string,
+  ): Promise<void> {
     if (token) {
       await this.rest.deleteWebhookWithToken(webhookId, token, reason);
     } else {
@@ -1042,6 +1063,7 @@ export class Client extends EventEmitter<Events> {
     }
   }
 
+  /** Executes a webhook. */
   async executeWebhook(
     webhookId: Snowflake,
     token: string,
@@ -1094,6 +1116,7 @@ export class Client extends EventEmitter<Events> {
     }
   }
 
+  /** Requests guild members. These then will be received through the guildMembersChunk event. */
   requestGuildMembers(
     shardNumber: number,
     guildIds: Snowflake | Snowflake[],
@@ -1115,6 +1138,7 @@ export class Client extends EventEmitter<Events> {
     });
   }
 
+  /** Updates the current user's status. */
   statusUpdate(shardNumber: number, data: {
     since: number | null;
     game: Activity | null;
@@ -1150,7 +1174,10 @@ export class Client extends EventEmitter<Events> {
     }
   }
 
-  async sendMessage(channelId: Snowflake, data: SendMessageOptions): Promise<Message> {
+  async sendMessage(
+    channelId: Snowflake,
+    data: SendMessageOptions,
+  ): Promise<Message> {
     let embed;
     if (data.embed) {
       embed = unparseEmbed(data.embed);

@@ -8,7 +8,9 @@ import {
 
 export class StoreChannel<T extends channel.StoreChannel = channel.StoreChannel>
   extends GuildChannel<T> {
+  /** The type of this channel. */
   type = "store";
+  /** Whether or not the channel is Not Safe For Work. */
   nsfw: boolean;
 
   constructor(client: Client, data: T) {
@@ -17,6 +19,12 @@ export class StoreChannel<T extends channel.StoreChannel = channel.StoreChannel>
     this.nsfw = data.nsfw;
   }
 
+  /** The string that mentions the channel. */
+  get mention(): string {
+    return `<#${this.id}>`;
+  }
+
+  /** Edits this channel. Returns a new instance. */
   async edit(options: {
     name?: string;
     position?: number | null;
@@ -37,6 +45,7 @@ export class StoreChannel<T extends channel.StoreChannel = channel.StoreChannel>
     return new StoreChannel(this.client, channel as channel.StoreChannel);
   }
 
+  /** Deletes the channel. Returns a new instance. */
   async delete(reason?: string): Promise<StoreChannel> {
     const channel = await this.client.rest.deleteChannel(
       this.id,

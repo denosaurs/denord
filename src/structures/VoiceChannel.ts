@@ -9,8 +9,11 @@ import { Invite, parseInvite } from "./Invite.ts";
 
 export class VoiceChannel<T extends channel.VoiceChannel = channel.VoiceChannel>
   extends GuildChannel<T> {
+  /** The type of this channel. */
   type = "voice";
+  /** The bitrate for this channel. */
   bitrate: number;
+  /** The maximum amount of users that can be in this channel. */
   userLimit: number;
 
   constructor(client: Client, data: T) {
@@ -20,6 +23,7 @@ export class VoiceChannel<T extends channel.VoiceChannel = channel.VoiceChannel>
     this.userLimit = data.user_limit;
   }
 
+  /** Edits this channel. Returns a new instance. */
   async edit(options: {
     name?: string;
     position?: number | null;
@@ -52,6 +56,7 @@ export class VoiceChannel<T extends channel.VoiceChannel = channel.VoiceChannel>
     return new VoiceChannel(this.client, channel as channel.VoiceChannel);
   }
 
+  /** Deletes the channel. Returns a new instance. */
   async delete(reason?: string): Promise<VoiceChannel> {
     const channel = await this.client.rest.deleteChannel(
       this.id,
@@ -60,6 +65,7 @@ export class VoiceChannel<T extends channel.VoiceChannel = channel.VoiceChannel>
     return new VoiceChannel(this.client, channel);
   }
 
+  /** Fetches the invites for this channel. */
   async getInvites(): Promise<Invite[]> {
     const invites = await this.client.rest.getChannelInvites(this.id);
 

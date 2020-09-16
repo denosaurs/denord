@@ -10,11 +10,17 @@ export interface PermissionOverwrite {
   permissions: Record<keyof typeof permissionMap, boolean | undefined>;
 }
 
-function parsePermissionOverwrite(allow: string, deny: string): Record<keyof typeof permissionMap, boolean | undefined> {
+function parsePermissionOverwrite(
+  allow: string,
+  deny: string,
+): Record<keyof typeof permissionMap, boolean | undefined> {
   const bAllow = BigInt(allow);
   const bDeny = BigInt(deny);
 
-  const permissions = {} as Record<keyof typeof permissionMap, boolean | undefined>;
+  const permissions = {} as Record<
+    keyof typeof permissionMap,
+    boolean | undefined
+  >;
 
   for (const [key, val] of Object.entries(permissionMap)) {
     const bVal = BigInt(val);
@@ -32,7 +38,7 @@ function parsePermissionOverwrite(allow: string, deny: string): Record<keyof typ
 
 export function unparsePermissionOverwrite(
   permissions: Record<keyof typeof permissionMap, boolean | undefined>,
-): { allow: string; deny: string; } {
+): { allow: string; deny: string } {
   let allow = 0n;
   let deny = 0n;
 
@@ -70,10 +76,15 @@ export function unparseEditPermissionOverwrite(
 
 export abstract class GuildChannel<T extends channel.GuildChannel>
   extends SnowflakeBase<T> {
+  /** The name of the channel. */
   name: string;
+  /** The position of the channel. */
   position: number;
+  /** The id of the parent channel. Null if no parent is set. */
   parentId: Snowflake | null;
+  /** The id of the guild this channel is it. */
   guildId: Snowflake;
+  /** An array of permission overwrites. */
   permissionOverwrites: PermissionOverwrite[];
 
   protected constructor(client: Client, data: T) {
@@ -92,7 +103,11 @@ export abstract class GuildChannel<T extends channel.GuildChannel>
     }));
   }
 
-  async editPermissions(overwrite: PermissionOverwrite, reason?: string): Promise<void> {
+  /** Edits the permission overwrites. */
+  async editPermissions(
+    overwrite: PermissionOverwrite,
+    reason?: string,
+  ): Promise<void> {
     const { allow, deny } = unparsePermissionOverwrite(overwrite.permissions);
 
     await this.client.rest.editChannelPermissions(
@@ -107,7 +122,11 @@ export abstract class GuildChannel<T extends channel.GuildChannel>
     );
   }
 
-  async deletePermissions(overwriteId: Snowflake, reason?: string): Promise<void> {
+  /** Deletes a permission overwrite. */
+  async deletePermissions(
+    overwriteId: Snowflake,
+    reason?: string,
+  ): Promise<void> {
     await this.client.rest.deleteChannelPermission(
       this.id,
       overwriteId,
@@ -115,6 +134,7 @@ export abstract class GuildChannel<T extends channel.GuildChannel>
     );
   }
 
+  /** Creates an invite to this channel. */
   async createInvite(options: {
     maxAge?: number;
     maxUses?: number;

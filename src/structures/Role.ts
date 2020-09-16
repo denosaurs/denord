@@ -37,13 +37,24 @@ export const permissionMap = {
 } as const;
 
 export class Role<T extends role.Role = role.Role> extends SnowflakeBase<T> {
+  /** The name of the role. */
   name: string;
+  /** The color of the role. */
   color: number;
+  /** Whether or not the role is separated in the member list. */
   hoist: boolean;
+  /** Whether or not the role is controlled by an integration. */
   managed: boolean;
+  /** Whether or not the role can be mentioned. */
   mentionable: boolean;
+  /**
+   * An object of permissions the role can have.
+   * If the role has a permission, that permission is set to true.
+   */
   permissions = {} as Record<keyof typeof permissionMap, boolean>;
+  /** The position of the role in the role list. */
   position: number;
+  /** The id of the guild this role belongs to. */
   guildId: Snowflake;
 
   constructor(client: Client, data: T, guildId: Snowflake) {
@@ -67,14 +78,17 @@ export class Role<T extends role.Role = role.Role> extends SnowflakeBase<T> {
     this.position = data.position;
   }
 
+  /** The string that mentions the role. */
   get mention(): string {
     return `<@&${this.id}>`;
   }
 
+  /** Deletes the role. */
   async delete(reason?: string): Promise<void> {
     await this.client.rest.deleteGuildRole(this.guildId, this.id, reason);
   }
 
+  /** Edits the role. */
   async edit(options: Record<string, unknown>, reason?: string): Promise<Role> {
     const role = await this.client.rest.modifyGuildRole(
       this.guildId,
@@ -86,6 +100,7 @@ export class Role<T extends role.Role = role.Role> extends SnowflakeBase<T> {
     return new Role(this.client, role, this.guildId);
   }
 
+  /** Moves the role. */
   async moveTo(index: number): Promise<void> {
     await this.client.rest.modifyGuildRolePositions(this.id, [{
       id: this.id,
