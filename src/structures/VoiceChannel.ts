@@ -5,12 +5,15 @@ import {
   PermissionOverwrite,
   unparsePermissionOverwrite,
 } from "./GuildChannel.ts";
-import { parseInvite } from "./Invite.ts";
+import { Invite, parseInvite } from "./Invite.ts";
 
 export class VoiceChannel<T extends channel.VoiceChannel = channel.VoiceChannel>
   extends GuildChannel<T> {
+  /** The type of this channel. */
   type = "voice";
+  /** The bitrate for this channel. */
   bitrate: number;
+  /** The maximum amount of users that can be in this channel. */
   userLimit: number;
 
   constructor(client: Client, data: T) {
@@ -20,6 +23,7 @@ export class VoiceChannel<T extends channel.VoiceChannel = channel.VoiceChannel>
     this.userLimit = data.user_limit;
   }
 
+  /** Edits this channel. Returns a new instance. */
   async edit(options: {
     name?: string;
     position?: number | null;
@@ -27,7 +31,7 @@ export class VoiceChannel<T extends channel.VoiceChannel = channel.VoiceChannel>
     userLimit?: number | null;
     permissionOverwrites?: PermissionOverwrite[] | null;
     parentId: Snowflake | null;
-  }, reason?: string) {
+  }, reason?: string): Promise<VoiceChannel> {
     const permissionOverwrites =
       options.permissionOverwrites?.map(({ permissions, id, type }) => {
         const { allow, deny } = unparsePermissionOverwrite(permissions);
@@ -52,7 +56,8 @@ export class VoiceChannel<T extends channel.VoiceChannel = channel.VoiceChannel>
     return new VoiceChannel(this.client, channel as channel.VoiceChannel);
   }
 
-  async delete(reason?: string) {
+  /** Deletes the channel. Returns a new instance. */
+  async delete(reason?: string): Promise<VoiceChannel> {
     const channel = await this.client.rest.deleteChannel(
       this.id,
       reason,
@@ -60,7 +65,8 @@ export class VoiceChannel<T extends channel.VoiceChannel = channel.VoiceChannel>
     return new VoiceChannel(this.client, channel);
   }
 
-  async getInvites() {
+  /** Fetches the invites for this channel. */
+  async getInvites(): Promise<Invite[]> {
     const invites = await this.client.rest.getChannelInvites(this.id);
 
     return invites.map((invite) => parseInvite(this.client, invite));

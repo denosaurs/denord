@@ -6,10 +6,18 @@ import { SnowflakeBase } from "./Base.ts";
 
 export class DMChannel<T extends channel.DMChannel = channel.DMChannel>
   extends SnowflakeBase<T> {
+  /** The type of this channel. */
   type = "dm";
+  /** The id of the newest message.
+   * Is null if there are no messages in the channel.
+   * It may point to an nonexisting message.
+   */
   lastMessageId: Snowflake | null;
+  /** The recipient for this dm channel. */
   recipient: User;
+  /** The unix timestamp of the newest pinned message. */
   lastPinTimestamp?: number;
+  /** A map used to cache messages in this channel, indexed by their id. */
   messages = new Map<Snowflake, Message>();
 
   constructor(client: Client, data: T) {
@@ -22,27 +30,32 @@ export class DMChannel<T extends channel.DMChannel = channel.DMChannel>
       : undefined;
   }
 
-  async startTyping() {
+  /** Starts the typing indicator. */
+  async startTyping(): Promise<void> {
     await this.client.rest.triggerTypingIndicator(this.id);
   }
 
-  async sendMessage(data: SendMessageOptions) {
+  /** Sends a new message to this channel. */
+  sendMessage(data: SendMessageOptions): Promise<Message> {
     return this.client.sendMessage(this.id, data);
   }
 
-  async getPins() {
+  /** Fetches the pinned messages of this channel. */
+  async getPins(): Promise<Message[]> {
     const messages = await this.client.rest.getPinnedMessages(this.id);
     return messages.map((message) => new Message(this.client, message));
   }
 
-  async delete() {
+  /** Deletes this channel. */
+  async delete(): Promise<DMChannel> {
     const channel = await this.client.rest.deleteChannel(
       this.id,
     ) as channel.DMChannel;
     return new DMChannel(this.client, channel);
   }
 
-  async awaitMessages(
+  /** Awaits for messages that fit the bounds given by the parameters. */
+  awaitMessages(
     filter: (message: Message) => boolean,
     options: AwaitMessagesOptions,
   ): Promise<Message[]> {

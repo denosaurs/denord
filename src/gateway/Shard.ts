@@ -8,7 +8,7 @@ import { URLs } from "../utils/utils.ts";
 
 class Shard {
   token!: string;
-  intents: number | undefined;
+  intents: number;
   socket!: WebSocket;
   heartbeat!: number;
   sessionId!: string;
@@ -18,7 +18,7 @@ class Shard {
   shardN: number;
   maxShards: number;
 
-  constructor(shardN: number, maxShards: number, intents?: number) {
+  constructor(shardN: number, maxShards: number, intents: number) {
     this.shardN = shardN;
     this.maxShards = maxShards;
     this.intents = intents;

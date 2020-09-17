@@ -45,6 +45,7 @@ const typeMap = {
   1: "streaming",
   2: "listening",
   4: "custom",
+  5: "competing",
 } as const;
 
 const inverseTypeMap = inverseMap(typeMap);

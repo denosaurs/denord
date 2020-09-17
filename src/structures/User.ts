@@ -22,11 +22,20 @@ const flagsMap = {
 
 export class User<T extends user.PublicUser = user.PublicUser>
   extends SnowflakeBase<T> {
+  /** The username of the user. */
   username: string;
+  /** The discriminator of the user. */
   discriminator: string;
+  /** The avatar hash of the user. Null if the user doesn't have an avatar. */
   avatar: string | null;
+  /** Whether or not this user is a bot. */
   bot: boolean;
+  /** Whether or not this user is an Official Discord System user. */
   system: boolean;
+  /**
+   * An object of plubic flags the user can have.
+   * If the user has a plubic flag, that plubic flag is set to true.
+   */
   publicFlags = {} as Record<keyof typeof flagsMap, boolean>;
 
   constructor(client: Client, data: T) {
@@ -44,49 +53,65 @@ export class User<T extends user.PublicUser = user.PublicUser>
     }
   }
 
-  get tag() {
+  /** The tag (username#discrimintor) of the user. */
+  get tag(): string {
     return `${this.username}#${this.discriminator}`;
   }
 
-  get mention() {
+  /** The string that mentions the user. */
+  get mention(): string {
     return `<@${this.id}>`;
   }
 
-  get defaultAvatar() {
+  /** The default avatar identifier. */
+  get defaultAvatar(): number {
     return +this.discriminator % 5;
   }
 
-  defaultAvatarURL(size?: ImageSize) {
+  /** Returns the url for the default avatar. */
+  defaultAvatarURL(size?: ImageSize): string {
     return imageURLFormatter(`embed/avatars/${this.defaultAvatar}`, {
       format: "png",
       size,
     });
   }
 
+  /** Returns the url for the avatar. Returns the default avatar url if the user doesn't have an avatar. */
   avatarURL(options: {
     format?: ImageFormat;
     size?: ImageSize;
-  } = {}) {
+  } = {}): string {
     return this.avatar
       ? imageURLFormatter(`avatars/${this.id}/${this.avatar}`, options)
       : this.defaultAvatarURL(options.size);
   }
 
-  async getDM() {
-    return this.client.dmChannels.get(this.id) ?? new DMChannel(
-      this.client,
-      await this.client.rest.createDM({ recipient_id: this.id }),
-    );
+  /** Gets the dm channel for this user. */
+  async getDM(): Promise<DMChannel> {
+    return (this.client.dmChannels.get(this.id) as DMChannel | undefined) ??
+      new DMChannel(
+        this.client,
+        await this.client.rest.createDM({ recipient_id: this.id }),
+      );
   }
 }
 
 export class PrivateUser<T extends user.PrivateUser = user.PrivateUser>
   extends User<T> {
+  /** The email for this user. Null if no email is set. */
   email: string | null;
+  /**
+   * An object of flags the user can have.
+   * If the user has a flag, that flag is set to true.
+   */
   flags = {} as Record<keyof typeof flagsMap, boolean>;
+  /** The locale for this user. */
   locale: string;
+  /** Whether or not this user has MFA enabled. */
   mfaEnabled: boolean;
+  /** Whether or not this user is verified. */
   verified: boolean;
+  /** The level of nitro the user has. */
   premiumType: 0 | 1 | 2;
 
   constructor(client: Client, data: T) {
@@ -104,7 +129,8 @@ export class PrivateUser<T extends user.PrivateUser = user.PrivateUser>
     }
   }
 
-  async edit(options: user.Modify) {
+  /** Edits the user. Returns a new instance. */
+  async edit(options: user.Modify): Promise<PrivateUser> {
     const user = await this.client.rest.modifyCurrentUser(options);
 
     return new PrivateUser(this.client, user);

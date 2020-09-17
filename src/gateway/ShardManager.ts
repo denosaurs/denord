@@ -51,7 +51,7 @@ export class ShardManager extends EventEmitter<ValueToTupleValue<RawEvents>> {
    * @param shardAmount - The amount of shards to use
    * @param intents - The intents to use when connecting
    */
-  constructor(shardAmount: number, intents?: number) {
+  constructor(shardAmount: number, intents: number) {
     super();
 
     this.shardAmount = shardAmount;

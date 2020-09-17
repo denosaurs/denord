@@ -12,7 +12,7 @@ import { Role } from "./Role.ts";
 import { GuildMember } from "./GuildMember.ts";
 import type { PermissionOverwrite } from "./GuildChannel.ts";
 import { unparsePermissionOverwrite } from "./GuildChannel.ts";
-import { inverseActionType, parseAuditLog } from "./AuditLog.ts";
+import { AuditLog, inverseActionType, parseAuditLog } from "./AuditLog.ts";
 import { Integration, parseIntegration } from "./Integration.ts";
 import { GuildEmoji, parseEmoji } from "./Emoji.ts";
 import type { StoreChannel } from "./StoreChannel.ts";
@@ -21,8 +21,8 @@ import type { VoiceChannel } from "./VoiceChannel.ts";
 import type { NewsChannel, TextChannel } from "./TextNewsChannel.ts";
 import { parseState, State } from "./VoiceState.ts";
 import { parsePresence, Presence } from "./Presence.ts";
-import { parseInvite, parseMetadataInvite } from "./Invite.ts";
-import { parseWebhook } from "./Webhook.ts";
+import { MetadataInvite, parseMetadataInvite } from "./Invite.ts";
+import { parseWebhook, Webhook } from "./Webhook.ts";
 
 const channelTypeMap = {
   "text": 0,
@@ -80,40 +80,113 @@ const featuresMap = {
   "PUBLIC_DISABLED": "publicDisabled",
 } as const;
 
+export interface Widget {
+  enabled: boolean;
+  channelId: Snowflake | null;
+}
+
+const systemChannelFlags = {
+  1: "suppressJoinNotifications",
+  2: "suppressBoostNotifications",
+} as const;
+
 abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
+  /** The name of the guild. */
   name: string;
+  /** The icon hash of the guild. Null if no icon is set. */
   icon: string | null;
+  /** The splash hash of the guild. Null if no splash is set. */
   splash: string | null;
+  /** The discovery splash hash of the guild. Null if no discovery splash is set. */
   discoverySplash: string | null;
+  /** The id of the owner of the guild. */
   ownerId: Snowflake;
+  /** The region the server for this guild is located in. */
   region: string;
+  /** The id for the voice AFK channel. Null if not set. */
   afkChannelId: Snowflake | null;
+  /** The duration someone is moved to the AFK channel since they have been AFK. */
   afkTimeout: number;
+  /** The level of verification the guild is set to for users to be able to join. */
   verificationLevel: guild.VerificationLevel;
+  /** Whether or not notification for all messages is enabled. */
   defaultNotifyAllMessages: boolean;
+  /** The level at which explicit messages are deleted. */
   explicitContentFilter: guild.ExplicitContentFilter;
+  /** A map of all roles in a guild, indexed by their id. */
   roles: Map<Snowflake, Role>;
+  /** A map of all emojis in a guild, indexed by their id. */
   emojis: Map<Snowflake, GuildEmoji>;
+  /**
+   * An object of features the guild can have.
+   * If the guild has a feature, that feature is set to true.
+   */
   features = {} as Record<
     typeof featuresMap[keyof typeof featuresMap],
     boolean
   >;
+  /** Whether or not the guild requires MFA enabled for moderation. */
   requiresMFA: boolean;
+  /**
+   * The id of the application that made this guild.
+   * Null if the guild wasn't made by an application.
+   */
   applicationId: Snowflake | null;
+  /**
+   * Whether or not the widget for this guild is enabled.
+   * Only passed in RESTGuild and on guildUpdate event.
+   * If the guild was updated & cached, then it is also in the cached guild instance.
+   */
   widgetEnabled?: boolean;
+  /**
+   * The id for the channel the widget uses for this guild.
+   * Null if widget is not enabled.
+   * Only passed in RESTGuild and on guildUpdate event.
+   * If the guild was updated & cached, then it is also in the cached guild instance.
+   */
   widgetChannelId?: Snowflake | null;
+  /** The id of the channel in which system messages are sent in. Null if none is set. */
   systemChannelId: Snowflake | null;
-  systemChannelFlags: number;
+  /**
+   * An object of flags the system channel the guild can have.
+   * If the system channel has a flag, that flag is set to true.
+   */
+  systemChannelFlags = {} as Record<
+    typeof systemChannelFlags[keyof typeof systemChannelFlags],
+    boolean
+  >;
+  /** The id of the channel in which rules for the guild are described. Null if none is set. */
   rulesChannelId: Snowflake | null;
-  maxPresences?: number | null;
+  /**
+   * the maximum number of presences for the guild.
+   * Only passed in RESTGuild and on guildUpdate event.
+   * If the guild was updated & cached, then it is also in the cached guild instance.
+   */
+  maxPresences?: number;
+  /**
+   * the maximum number of members that can be in the guild.
+   * Only passed in RESTGuild and on guildUpdate event.
+   * If the guild was updated & cached, then it is also in the cached guild instance.
+   */
   maxMembers?: number;
+  /** The vanity url code for the guild. Null if there is no vanity url code. */
   vanityURLCode: string | null;
+  /** The description for the guild. Null if there is no description. */
   description: string | null;
+  /** The banner hash of the guild. Null if no discovery banner is set. */
   banner: string | null;
+  /** The boost level this guild has. */
   boostLevel: 0 | 1 | 2 | 3;
+  /** The amount of members have boosted this guild. */
   boostCount?: number;
+  /** The preferred locale for this guild. */
   preferredLocale: string;
+  /**
+   * The id of the channel in which moderators receive updates from discord.
+   * Null if none is set.
+   */
   publicUpdatesChannelId: Snowflake | null;
+  /** The maximum amount of users that can be in a video channel. */
   maxVideoChannelUsers?: number;
 
   protected constructor(client: Client, data: T) {
@@ -146,9 +219,16 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     this.widgetEnabled = data.widget_enabled;
     this.widgetChannelId = data.widget_channel_id;
     this.systemChannelId = data.system_channel_id;
-    this.systemChannelFlags = data.system_channel_flags;
+
+    for (const [key, val] of Object.entries(systemChannelFlags)) {
+      this.systemChannelFlags[val] =
+        ((data.system_channel_flags & +key) === +key);
+    }
+
     this.rulesChannelId = data.rules_channel_id;
-    this.maxPresences = data.max_presences;
+    this.maxPresences = data.max_presences === null
+      ? 25000
+      : data.max_presences;
     this.maxMembers = data.max_members;
 
     this.vanityURLCode = data.vanity_url_code;
@@ -161,14 +241,20 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     this.maxVideoChannelUsers = data.max_video_channel_users;
   }
 
-  get shardNumber() {
+  /** The number of the shard this guild belongs to. */
+  get shardNumber(): number {
     return (+this.id / (2 ** 22)) % this.client.gateway.shardAmount;
   }
 
-  async delete() {
+  /** Deletes this guild. */
+  async delete(): Promise<void> {
     await this.client.rest.deleteGuild(this.id);
   }
 
+  /**
+   * Deletes this guild.
+   * Returns a RestGuild, even if the current instance is an instance of GatewayGuild.
+   */
   async edit(options: {
     name?: string;
     region?: string | null;
@@ -185,7 +271,7 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     rulesChannelId?: Snowflake | null;
     publicUpdatesChannelId?: Snowflake | null;
     preferredLocale?: string | null;
-  }, reason?: string) {
+  }, reason?: string): Promise<RestGuild> {
     const guild = await this.client.rest.modifyGuild(this.id, {
       name: options.name,
       region: options.region,
@@ -210,6 +296,7 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     return new RestGuild(this.client, guild);
   }
 
+  /** Creates a new channel. */
   async createChannel(
     name: string,
     options?: CreateChannel & { type?: "text" },
@@ -269,20 +356,23 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     return this.client.newChannelSwitch(channel) as GuildChannels;
   }
 
-  async editChannelsPositions(options: channel.GuildPosition[]) {
+  /** Edits the position of channels. */
+  async editChannelsPositions(options: channel.GuildPosition[]): Promise<void> {
     await this.client.rest.modifyGuildChannelPositions(this.id, options);
   }
 
-  async unban(userId: Snowflake, reason?: string) {
+  /** Unbans a user. */
+  async unban(userId: Snowflake, reason?: string): Promise<void> {
     await this.client.rest.removeGuildBan(this.id, userId, reason);
   }
 
+  /** Creates a new emoji. */
   async createEmoji(
     name: string,
     image: string,
     roles: Snowflake[] = [],
     reason?: string,
-  ) {
+  ): Promise<GuildEmoji> {
     const emoji = await this.client.rest.createGuildEmoji(this.id, {
       name,
       image,
@@ -292,10 +382,11 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     return parseEmoji(this.client, emoji);
   }
 
+  /** Edits an emoji. */
   async modifyEmoji(emojiId: string, options: {
     name?: string;
     roles?: Snowflake[] | null;
-  } = {}, reason?: string) {
+  } = {}, reason?: string): Promise<GuildEmoji> {
     const emoji = await this.client.rest.modifyGuildEmoji(
       this.id,
       emojiId,
@@ -306,11 +397,13 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     return parseEmoji(this.client, emoji);
   }
 
-  async deleteEmoji(emojiId: string, reason?: string) {
+  /** Deletes an emoji. */
+  async deleteEmoji(emojiId: string, reason?: string): Promise<void> {
     await this.client.rest.deleteGuildEmoji(this.id, emojiId, reason);
   }
 
-  async createRole(options: role.Create = {}, reason?: string) {
+  /** Creates a new role. */
+  async createRole(options: role.Create = {}, reason?: string): Promise<Role> {
     const role = await this.client.rest.createGuildRole(
       this.id,
       options,
@@ -320,27 +413,35 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     return new Role(this.client, role, this.id);
   }
 
-  async editRolesPositions(options: role.ModifyPosition[]) {
+  /** Edits the position of roles. */
+  async editRolesPositions(options: role.ModifyPosition[]): Promise<void> {
     await this.client.rest.modifyGuildRolePositions(this.id, options);
   }
 
+  /** Fetches the audit log. */
   async getAuditLog(options: {
-    userId: Snowflake;
-    actionType: keyof typeof inverseActionType;
-    before: Snowflake;
-    limit: number;
-  }) {
+    userId?: Snowflake;
+    actionType?: keyof typeof inverseActionType;
+    before?: Snowflake;
+    limit?: number;
+  } = {}): Promise<AuditLog> {
     return parseAuditLog(
       this.client,
       await this.client.rest.getGuildAuditLog(this.id, {
         user_id: options.userId,
-        action_type: inverseActionType[options.actionType],
+        action_type: options.actionType &&
+          inverseActionType[options.actionType],
         before: options.before,
         limit: options.limit,
       }),
     );
   }
 
+  /**
+   * Prunes members.
+   * If dry is set to true, it wont prune any members and return the amount of
+   * members that would have been pruned.
+   */
   async prune(
     options: Prune & { dry?: false },
     reason?: string,
@@ -368,7 +469,8 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     return prune.pruned;
   }
 
-  async getIntegrations() {
+  /** Fetches an array of integrations connected to this guild. */
+  async getIntegrations(): Promise<Integration[]> {
     const integrations = await this.client.rest.getGuildIntegrations(this.id);
 
     return integrations.map((integration) =>
@@ -376,24 +478,27 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     );
   }
 
-  async addIntegration(integrationId: Snowflake, type: string) {
+  /** Adds a new integration. */
+  async addIntegration(integrationId: Snowflake, type: string): Promise<void> {
     await this.client.rest.createGuildIntegration(this.id, {
       id: integrationId,
       type,
     });
   }
 
-  async syncIntegration(integrationId: Snowflake) {
+  /** Sync an integration. */
+  async syncIntegration(integrationId: Snowflake): Promise<void> {
     await this.client.rest.syncGuildIntegration(this.id, integrationId);
   }
 
+  /** Edits an integration. */
   async editIntegration(
     integrationId: Snowflake,
     options: Pick<
       Integration,
       "expireBehavior" | "expireGracePeriod" | "enableEmoticons"
     >,
-  ) {
+  ): Promise<void> {
     await this.client.rest.modifyGuildIntegration(this.id, integrationId, {
       expire_behavior: options.expireBehavior,
       expire_grace_period: options.expireGracePeriod,
@@ -401,88 +506,102 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     });
   }
 
-  async removeIntegration(integrationId: Snowflake) {
+  /** Removes an integration from this guild. */
+  async removeIntegration(integrationId: Snowflake): Promise<void> {
     await this.client.rest.deleteGuildIntegration(this.id, integrationId);
   }
 
-  async getWidget() {
-    return this.client.rest.getGuildWidget(this.id);
+  /** Fetches the widget for this guild. */
+  async getWidget(): Promise<Widget> {
+    const widget = await this.client.rest.getGuildWidget(this.id);
+
+    return {
+      enabled: widget.enabled,
+      channelId: widget.channel_id,
+    };
   }
 
-  async editWidget(options: {
-    enabled?: boolean;
-    channelId?: Snowflake | null;
-  }) {
-    return this.client.rest.modifyGuildWidget(this.id, {
+  /** Edits the widget for this guild. */
+  async editWidget(options: Partial<Widget>): Promise<Widget> {
+    const widget = await this.client.rest.modifyGuildWidget(this.id, {
       enabled: options.enabled,
       channel_id: options.channelId,
     });
+
+    return {
+      enabled: widget.enabled,
+      channelId: widget.channel_id,
+    };
   }
 
-  async leave() {
+  /** Leave the guild. */
+  async leave(): Promise<void> {
     await this.client.rest.leaveGuild(this.id);
   }
 
+  /** Add a new member to the guild. */
   async addMember(
     userId: Snowflake,
     accessToken: string,
     options: Omit<guildMember.Add, "access_token"> = {},
-  ) {
-    await this.client.rest.addGuildMember(this.id, userId, {
+  ): Promise<GuildMember> {
+    const member = await this.client.rest.addGuildMember(this.id, userId, {
       access_token: accessToken,
       ...options,
     });
+
+    return new GuildMember(this.client, member, this.id);
   }
 
-  async getInvites() {
+  /** Fetches an array of all invites for this guild. */
+  async getInvites(): Promise<MetadataInvite[]> {
     const invites = await this.client.rest.getGuildInvites(this.id);
 
     return invites.map((invite) => parseMetadataInvite(this.client, invite));
   }
 
-  async deleteInvite(code: string, reason?: string) {
-    const invite = await this.client.rest.deleteInvite(code, reason);
-
-    return parseInvite(this.client, invite);
-  }
-
-  async getWebhooks() {
+  /** Fetches an array of all webhooks in this guild. */
+  async getWebhooks(): Promise<Webhook[]> {
     const webhooks = await this.client.rest.getGuildWebhooks(this.id);
 
     return webhooks.map((webhook) => parseWebhook(this.client, webhook));
   }
 
+  /** Returns the url for the guild icon. Null if no icon is set. */
   iconURL(options: {
     format?: ImageFormat;
     size?: ImageSize;
-  } = {}) {
+  } = {}): string | null {
     return this.icon
       ? imageURLFormatter(`icons/${this.id}/${this.icon}`, options)
       : null;
   }
 
+  /** Returns the url for the guild banner. Null if no banner is set. */
   bannerURL(options: {
     format?: Exclude<ImageFormat, "gif">;
     size?: ImageSize;
-  } = {}) {
+  } = {}): string | null {
     return this.banner
       ? imageURLFormatter(`icons/${this.id}/${this.banner}`, options)
       : null;
   }
 
+  /** Returns the url for the guild splash. Null if no splash is set. */
   splashURL(options: {
     format?: Exclude<ImageFormat, "gif">;
     size?: ImageSize;
-  } = {}) {
+  } = {}): string | null {
     return this.splash
       ? imageURLFormatter(`icons/${this.id}/${this.splash}`, options)
       : null;
   }
 
+  /** Returns the url for the guild discovery splash. Null if no discovery splash is set. */
   discoverySplashURL(options: {
     format?: Exclude<ImageFormat, "gif">;
     size?: ImageSize;
-  } = {}) {
+  } = {}): string | null {
     return this.discoverySplash
       ? imageURLFormatter(`icons/${this.id}/${this.discoverySplash}`, options)
       : null;
@@ -493,7 +612,7 @@ export class RestGuild<T extends guild.RESTGuild = guild.RESTGuild>
   extends BaseGuild<T> {
   widgetEnabled!: boolean;
   widgetChannelId!: Snowflake | null;
-  maxPresences!: number | null;
+  maxPresences!: number;
   maxMembers!: number;
 
   constructor(client: Client, data: T) {
@@ -503,13 +622,21 @@ export class RestGuild<T extends guild.RESTGuild = guild.RESTGuild>
 
 export class GatewayGuild<T extends guild.GatewayGuild = guild.GatewayGuild>
   extends BaseGuild<T> {
+  /** The unix timestamp the current user joined the guild. */
   joinedAt: number;
+  /** Whether or not this guild is large. */
   large: boolean;
+  /** Whether or not this guild is unavailable. */
   unavailable: boolean;
+  /** The amount of members in this guild. */
   memberCount: number;
+  /** A map of voice states in this guild, indexed by user id. */
   voiceStates: Map<Snowflake, State>;
+  /** A map of members in this guild, indexed by their user id. */
   members: Map<Snowflake, GuildMember>;
+  /** A map of channels in this guild, indexed by their id. */
   channels: Map<Snowflake, GuildChannels>;
+  /** A map of presences in this guild, indexed by by user id. */
   presences: Map<Snowflake, Presence>;
 
   constructor(client: Client, data: T) {
@@ -521,7 +648,13 @@ export class GatewayGuild<T extends guild.GatewayGuild = guild.GatewayGuild>
     this.memberCount = data.member_count;
     this.voiceStates = new Map(
       data.voice_states.map(
-        (state) => [state.user_id, parseState(state, client)],
+        (state) => [
+          state.user_id,
+          parseState({
+            ...state,
+            guild_id: data.id,
+          }, client),
+        ],
       ),
     );
     this.members = new Map(
