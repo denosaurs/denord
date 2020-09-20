@@ -10,7 +10,7 @@ export interface PermissionOverwrite {
   permissions: Record<keyof typeof permissionMap, boolean | undefined>;
 }
 
-function parsePermissionOverwrite(
+export function parsePermissionOverwritePermissions(
   allow: string,
   deny: string,
 ): Record<keyof typeof permissionMap, boolean | undefined> {
@@ -99,7 +99,7 @@ export abstract class GuildChannel<T extends channel.GuildChannel>
     ) => ({
       id,
       type,
-      permissions: parsePermissionOverwrite(allow_new, deny_new),
+      permissions: parsePermissionOverwritePermissions(allow_new, deny_new),
     }));
   }
 

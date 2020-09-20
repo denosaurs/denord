@@ -5,6 +5,7 @@ import type { Integration } from "./Integration.ts";
 import { inverseMap } from "../utils/utils.ts";
 import { parseWebhook, Webhook } from "./Webhook.ts";
 import type { PermissionOverwrite } from "./GuildChannel.ts";
+import { parsePermissionOverwritePermissions } from "./GuildChannel.ts";
 
 export interface AuditLog {
   webhooks: Webhook[];
@@ -77,7 +78,7 @@ const changeKeyMap = {
   bitrate: "bitrate",
   permission_overwrites: "permissionOverwrites",
   nsfw: "nsfw",
-  application_id: "application_id",
+  application_id: "applicationId",
   rate_limit_per_user: "rateLimitPerUser",
   permissions: "permissions",
   permissions_new: "permissionsNew",
@@ -233,7 +234,7 @@ export interface ChangeKey {
   bitrate: number;
   permissionOverwrites: PermissionOverwrite[];
   nsfw: boolean;
-  application_id: Snowflake;
+  applicationId: Snowflake;
   rateLimitPerUser: number;
   permissions: number;
   permissionsNew: string;
@@ -332,11 +333,27 @@ function parseEntry(entry: auditLog.Entry): Entry {
   return {
     targetId: entry.target_id,
     changes: entry.changes?.map((change) => {
-      return {
-        key: changeKeyMap[change.key],
-        newValue: change.new_value,
-        oldValue: change.old_value,
-      };
+      if (change.key === "permission_overwrites") {
+        return {
+          key: changeKeyMap[change.key],
+          newValue: change.new_value?.map((value => ({
+            id: value.id,
+            type: value.type,
+            permissions: parsePermissionOverwritePermissions(value.allow_new, value.deny_new)
+          }))),
+          oldValue: change.old_value?.map((value => ({
+            id: value.id,
+            type: value.type,
+            permissions: parsePermissionOverwritePermissions(value.allow_new, value.deny_new)
+          }))),
+        };
+      } else {
+        return {
+          key: changeKeyMap[change.key],
+          newValue: change.new_value,
+          oldValue: change.old_value,
+        };
+      }
     }),
     userId: entry.user_id,
     id: entry.id,

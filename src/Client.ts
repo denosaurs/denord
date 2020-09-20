@@ -40,9 +40,9 @@ import { ExecuteWebhook, parseWebhook, Webhook } from "./structures/Webhook.ts";
 import { parseState, State } from "./structures/VoiceState.ts";
 
 interface AwaitMessage {
-  time?: number; // in milliseconds
-  max?: number; // integer
-  maxProcessed?: number; // integer
+  time?: number;
+  max?: number;
+  maxProcessed?: number;
 }
 
 export type AwaitMessagesOptions =
@@ -939,7 +939,7 @@ export class Client extends EventEmitter<Events> {
           break;
         }
         case "VOICE_SERVER_UPDATE":
-          break; // TODO
+          break;
       }
     });
   }
