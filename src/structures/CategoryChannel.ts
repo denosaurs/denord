@@ -10,7 +10,7 @@ export class CategoryChannel<
   T extends channel.CategoryChannel = channel.CategoryChannel,
 > extends GuildChannel<T> {
   /** The type of this channel. */
-  type = "category";
+  type = "category" as const;
 
   constructor(client: Client, data: T) {
     super(client, data);

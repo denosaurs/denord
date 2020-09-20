@@ -9,7 +9,7 @@ export class GroupDMChannel<
   T extends channel.GroupDMChannel = channel.GroupDMChannel,
 > extends SnowflakeBase<T> {
   /** The type of this channel. */
-  type = "groupDM";
+  type = "groupDM" as const;
   /** The id of the newest message.
    * Is null if there are no messages in the channel.
    * It may point to an nonexisting message.

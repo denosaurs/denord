@@ -280,12 +280,12 @@ export class Client extends EventEmitter<Events> {
         case "CHANNEL_CREATE": {
           const channel = this.newChannelSwitch(e.data);
           if (channel.type === "dm" || channel.type === "groupDM") {
-            this.dmChannels.set(channel.id, channel as DMChannels);
+            this.dmChannels.set(channel.id, channel);
           } else {
-            this.guildChannels.set(channel.id, channel as GuildChannels);
+            this.guildChannels.set(channel.id, channel);
 
-            const guild = this.guilds.get((channel as GuildChannels).guildId)!;
-            guild.channels.set(channel.id, channel as GuildChannels);
+            const guild = this.guilds.get(channel.guildId)!;
+            guild.channels.set(channel.id, channel);
             this.guilds.set(guild.id, guild);
           }
           this.emit("channelCreate", channel);
@@ -296,7 +296,7 @@ export class Client extends EventEmitter<Events> {
           const newChannel = this.newChannelSwitch(e.data);
           if (newChannel.type === "dm" || newChannel.type === "groupDM") {
             oldChannel = this.dmChannels.get(e.data.id);
-            this.dmChannels.set(newChannel.id, newChannel as DMChannels);
+            this.dmChannels.set(newChannel.id, newChannel);
           } else {
             oldChannel = this.guildChannels.get(e.data.id);
             this.guildChannels.set(newChannel.id, newChannel as GuildChannels);
@@ -317,7 +317,7 @@ export class Client extends EventEmitter<Events> {
           } else {
             this.guildChannels.delete(channel.id);
 
-            const guild = this.guilds.get((channel as GuildChannels).guildId)!;
+            const guild = this.guilds.get(channel.guildId)!;
             guild.channels.delete(channel.id);
             this.guilds.set(guild.id, guild);
           }
@@ -346,10 +346,8 @@ export class Client extends EventEmitter<Events> {
               channel.lastPinTimestamp = timestamp;
               this.guildChannels.set(channel.id, channel);
 
-              const guild = this.guilds.get(
-                (channel as GuildChannels).guildId,
-              )!;
-              guild.channels.set(channel.id, channel as GuildChannels);
+              const guild = this.guilds.get(channel.guildId)!;
+              guild.channels.set(channel.id, channel);
               this.guilds.set(guild.id, guild);
             }
           }

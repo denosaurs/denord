@@ -7,7 +7,7 @@ import { SnowflakeBase } from "./Base.ts";
 export class DMChannel<T extends channel.DMChannel = channel.DMChannel>
   extends SnowflakeBase<T> {
   /** The type of this channel. */
-  type = "dm";
+  type = "dm" as const;
   /** The id of the newest message.
    * Is null if there are no messages in the channel.
    * It may point to an nonexisting message.

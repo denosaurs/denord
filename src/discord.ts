@@ -466,7 +466,7 @@ export namespace channel {
   export interface DeleteBulkEvent {
     ids: Snowflake[];
     channel_id: Snowflake;
-    guild_id: Snowflake;
+    guild_id?: Snowflake;
   }
 
   export interface TypingStartEvent {

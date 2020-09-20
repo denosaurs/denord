@@ -9,7 +9,7 @@ import {
 export class StoreChannel<T extends channel.StoreChannel = channel.StoreChannel>
   extends GuildChannel<T> {
   /** The type of this channel. */
-  type = "store";
+  type = "store" as const;
   /** Whether or not the channel is Not Safe For Work. */
   nsfw: boolean;
 

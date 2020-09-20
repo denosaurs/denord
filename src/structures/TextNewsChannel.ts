@@ -6,7 +6,7 @@ import { parseWebhook, Webhook } from "./Webhook.ts";
 export class TextChannel<T extends channel.TextChannel = channel.TextChannel>
   extends TextBasedGuildChannel<T> {
   /** The type of this channel. */
-  type = "text";
+  type = "text" as const;
   /** The amount of seconds a user has to wait before sending another message. */
   slowmode: number;
 
@@ -71,7 +71,7 @@ export class TextChannel<T extends channel.TextChannel = channel.TextChannel>
 export class NewsChannel<T extends channel.NewsChannel = channel.NewsChannel>
   extends TextBasedGuildChannel<T> {
   /** The type of this channel. */
-  type = "news";
+  type = "news" as const;
 
   constructor(client: Client, data: T) {
     super(client, data);
