@@ -336,16 +336,26 @@ function parseEntry(entry: auditLog.Entry): Entry {
       if (change.key === "permission_overwrites") {
         return {
           key: changeKeyMap[change.key],
-          newValue: change.new_value?.map((value => ({
-            id: value.id,
-            type: value.type,
-            permissions: parsePermissionOverwritePermissions(value.allow_new, value.deny_new)
-          }))),
-          oldValue: change.old_value?.map((value => ({
-            id: value.id,
-            type: value.type,
-            permissions: parsePermissionOverwritePermissions(value.allow_new, value.deny_new)
-          }))),
+          newValue: change.new_value?.map(
+            ((value) => ({
+              id: value.id,
+              type: value.type,
+              permissions: parsePermissionOverwritePermissions(
+                value.allow_new,
+                value.deny_new,
+              ),
+            })),
+          ),
+          oldValue: change.old_value?.map(
+            ((value) => ({
+              id: value.id,
+              type: value.type,
+              permissions: parsePermissionOverwritePermissions(
+                value.allow_new,
+                value.deny_new,
+              ),
+            })),
+          ),
         };
       } else {
         return {
