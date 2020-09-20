@@ -1317,7 +1317,9 @@ export namespace gateway {
     INVITE_DELETE: invite.DeleteEvent;
 
     MESSAGE_CREATE: message.Message;
-    MESSAGE_UPDATE: message.Message;
+    MESSAGE_UPDATE:
+      & Partial<message.Message>
+      & Pick<message.Message, "id" | "channel_id">;
     MESSAGE_DELETE: message.DeleteEvent;
     MESSAGE_DELETE_BULK: channel.DeleteBulkEvent;
     MESSAGE_REACTION_ADD: message.ReactionAddEvent;

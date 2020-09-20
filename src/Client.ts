@@ -131,7 +131,12 @@ export type Events = {
   inviteDelete: [Snowflake, Snowflake | undefined, string];
 
   messageCreate: [TextBasedChannel | undefined, Message];
-  messageUpdate: [TextBasedChannel | undefined, Message | undefined, Message];
+  messageUpdate: [
+    TextBasedChannel | undefined,
+    Message | undefined,
+    | Message
+    | Partial<message.Message> & Pick<message.Message, "id" | "channel_id">,
+  ]; //TODO
   messageDelete: [TextBasedChannel | undefined, Message | UnknownMessage];
   messageDeleteBulk: [
     TextBasedChannel | undefined,
@@ -568,7 +573,7 @@ export class Client extends EventEmitter<Events> {
         }
         case "MESSAGE_UPDATE": {
           let oldMessage;
-          const newMessage = new Message(this, e.data);
+          let newMessage;
           let channel: TextBasedChannel | undefined;
           if (e.data.guild_id) {
             channel = this.guildChannels.get(
@@ -576,27 +581,41 @@ export class Client extends EventEmitter<Events> {
             ) as TextBasedGuildChannels | undefined;
 
             if (channel) {
-              oldMessage = channel.messages.get(newMessage.id);
-              channel.messages.set(newMessage.id, newMessage);
-              this.guildChannels.set(channel.id, channel);
+              oldMessage = channel.messages.get(e.data.id);
 
-              const guild = this.guilds.get(channel.guildId);
+              if (oldMessage) {
+                newMessage = new Message(this, {
+                  ...oldMessage.raw,
+                  ...e.data,
+                });
+                channel.messages.set(e.data.id, newMessage);
+                this.guildChannels.set(channel.id, channel);
 
-              if (guild) {
-                guild.channels.set(channel.id, channel);
-                this.guilds.set(guild.id, guild);
+                const guild = this.guilds.get(channel.guildId);
+
+                if (guild) {
+                  guild.channels.set(channel.id, channel);
+                  this.guilds.set(guild.id, guild);
+                }
               }
             }
           } else {
             channel = this.dmChannels.get(e.data.channel_id);
 
             if (channel) {
-              oldMessage = channel.messages.get(newMessage.id);
-              channel.messages.set(newMessage.id, newMessage);
-              this.dmChannels.set(channel.id, channel);
+              oldMessage = channel.messages.get(e.data.id);
+
+              if (oldMessage) {
+                newMessage = new Message(this, {
+                  ...oldMessage.raw,
+                  ...e.data,
+                });
+                channel.messages.set(e.data.id, newMessage);
+                this.dmChannels.set(channel.id, channel);
+              }
             }
           }
-          this.emit("messageUpdate", channel, oldMessage, newMessage);
+          this.emit("messageUpdate", channel, oldMessage, newMessage || e.data);
           break;
         }
         case "MESSAGE_DELETE": {

@@ -33,8 +33,8 @@ export class User<T extends user.PublicUser = user.PublicUser>
   /** Whether or not this user is an Official Discord System user. */
   system: boolean;
   /**
-   * An object of plubic flags the user can have.
-   * If the user has a plubic flag, that plubic flag is set to true.
+   * An object of public flags the user can have.
+   * If the user has a public flag, that public flag is set to true.
    */
   publicFlags = {} as Record<keyof typeof flagsMap, boolean>;
 
@@ -60,7 +60,7 @@ export class User<T extends user.PublicUser = user.PublicUser>
 
   /** The string that mentions the user. */
   get mention(): string {
-    return `<@${this.id}>`;
+    return `<@!${this.id}>`;
   }
 
   /** The default avatar identifier. */
