@@ -128,7 +128,11 @@ export type Events = {
     ),
   ];
   guildMemberRemove: [GatewayGuild | Snowflake, User];
-  guildMembersChunk: [GatewayGuild | Snowflake, Map<Snowflake, GuildMember>, GuildMemberChunkInfo];
+  guildMembersChunk: [
+    GatewayGuild | Snowflake,
+    Map<Snowflake, GuildMember>,
+    GuildMemberChunkInfo,
+  ];
 
   guildRoleCreate: [GatewayGuild, Role];
   guildRoleUpdate: [GatewayGuild, Role, Role];
@@ -181,7 +185,6 @@ export type Events = {
 export class Client extends EventEmitter<Events> {
   gateway: ShardManager;
   rest = new RestClient();
-
   /** A map of cached guild channels, indexed by their id. */
   guildChannels = new Map<Snowflake, GuildChannels>();
   /** A map of cached (group) dm channels, indexed by their id. */
@@ -190,14 +193,19 @@ export class Client extends EventEmitter<Events> {
   guilds = new Map<Snowflake, GatewayGuild>();
   /** A map of cached users, indexed by their id. */
   users = new Map<Snowflake, User>();
-
   /** The current user. Is unset only before a shardReady event. */
   user?: PrivateUser;
 
-  constructor(
-    intents: Record<keyof typeof intentsMap, boolean> | number | boolean = true,
-    shardAmount: number = 1,
-  ) {
+  constructor({
+    intents,
+    shardAmount,
+  }: {
+    intents: Record<keyof typeof intentsMap, boolean> | number | boolean;
+    shardAmount: number;
+  } = {
+    intents: true,
+    shardAmount: 1,
+  }) {
     super();
 
     let newIntents = 0;
@@ -1201,6 +1209,7 @@ export class Client extends EventEmitter<Events> {
     }
   }
 
+  /** Sends a new message to the specified channel. */
   async sendMessage(
     channelId: Snowflake,
     data: SendMessageOptions,
