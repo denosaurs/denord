@@ -299,12 +299,10 @@ export class Client extends EventEmitter<Events> {
             this.dmChannels.set(newChannel.id, newChannel);
           } else {
             oldChannel = this.guildChannels.get(e.data.id);
-            this.guildChannels.set(newChannel.id, newChannel as GuildChannels);
+            this.guildChannels.set(newChannel.id, newChannel);
 
-            const guild = this.guilds.get(
-              (newChannel as GuildChannels).guildId,
-            )!;
-            guild.channels.set(newChannel.id, newChannel as GuildChannels);
+            const guild = this.guilds.get(newChannel.guildId)!;
+            guild.channels.set(newChannel.id, newChannel);
             this.guilds.set(guild.id, guild);
           }
           this.emit("channelUpdate", oldChannel, newChannel);
