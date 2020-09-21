@@ -80,6 +80,13 @@ const intentsMap = {
   directMessageTyping: 1 << 14,
 } as const;
 
+interface GuildMemberChunkInfo {
+  index: number;
+  amount: number;
+  notFound?: Snowflake[];
+  nonce?: string;
+}
+
 export type Events = {
   ready: [undefined];
   shardReady: [string];
@@ -121,7 +128,7 @@ export type Events = {
     ),
   ];
   guildMemberRemove: [GatewayGuild | Snowflake, User];
-  guildMembersChunk: [GatewayGuild | Snowflake, Map<Snowflake, GuildMember>];
+  guildMembersChunk: [GatewayGuild | Snowflake, Map<Snowflake, GuildMember>, GuildMemberChunkInfo];
 
   guildRoleCreate: [GatewayGuild, Role];
   guildRoleUpdate: [GatewayGuild, Role, Role];
@@ -945,12 +952,17 @@ export class Client extends EventEmitter<Events> {
                 guild.presences.set(
                   presence.user.id,
                   parsePresence(this, presence),
-                ); // TODO maybe emit presence update
+                );
               }
             }
             this.guilds.set(e.data.guild_id, guild);
           }
-          this.emit("guildMembersChunk", guild || e.data.guild_id, members); //TODO
+          this.emit("guildMembersChunk", guild || e.data.guild_id, members, {
+            index: e.data.chunk_index,
+            amount: e.data.chunk_count,
+            notFound: e.data.not_found,
+            nonce: e.data.nonce,
+          });
           break;
         }
         case "VOICE_SERVER_UPDATE":

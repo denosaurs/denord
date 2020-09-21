@@ -784,7 +784,7 @@ export namespace guild {
     members: guildMember.GuildMember[];
     chunk_index: number;
     chunk_count: number;
-    not_found?: [];
+    not_found?: Snowflake[];
     presences?: presence.Presence[];
     nonce?: string;
   }
