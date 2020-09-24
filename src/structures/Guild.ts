@@ -552,15 +552,13 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     userId: Snowflake,
     accessToken: string,
     options: Omit<guildMember.Add, "access_token"> = {},
-  ): Promise<GuildMember | void> {
+  ): Promise<GuildMember | undefined> {
     const member = await this.client.rest.addGuildMember(this.id, userId, {
       access_token: accessToken,
       ...options,
     });
 
-    if (member) {
-      return new GuildMember(this.client, member, this.id);
-    }
+    return member && new GuildMember(this.client, member, this.id);
   }
 
   /** Fetches an array of all invites for this guild. */
