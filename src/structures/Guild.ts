@@ -1,5 +1,9 @@
 import { SnowflakeBase } from "./Base.ts";
-import type { Client, GuildChannels } from "../Client.ts";
+import type {
+  Client,
+  GuildChannels,
+  RequestGuildMembersOptions,
+} from "../Client.ts";
 import type {
   channel,
   guild,
@@ -244,6 +248,10 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
   /** The number of the shard this guild belongs to. */
   get shardNumber(): number {
     return (+this.id / (2 ** 22)) % this.client.gateway.shardAmount;
+  }
+
+  requestGuildMembers(options: RequestGuildMembersOptions) {
+    this.client.requestGuildMembers(this.shardNumber, this.id, options);
   }
 
   /** Deletes this guild. */
@@ -544,13 +552,15 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     userId: Snowflake,
     accessToken: string,
     options: Omit<guildMember.Add, "access_token"> = {},
-  ): Promise<GuildMember> {
+  ): Promise<GuildMember | void> {
     const member = await this.client.rest.addGuildMember(this.id, userId, {
       access_token: accessToken,
       ...options,
     });
 
-    return new GuildMember(this.client, member, this.id);
+    if (member) {
+      return new GuildMember(this.client, member, this.id);
+    }
   }
 
   /** Fetches an array of all invites for this guild. */

@@ -182,6 +182,14 @@ export type Events = {
   webhookUpdate: [Snowflake, Snowflake];
 };
 
+export interface RequestGuildMembersOptions {
+  query?: string;
+  limit: number;
+  presences?: boolean;
+  userIds?: Snowflake | Snowflake[];
+  nonce?: string;
+}
+
 export class Client extends EventEmitter<Events> {
   gateway: ShardManager;
   rest = new RestClient();
@@ -1155,13 +1163,7 @@ export class Client extends EventEmitter<Events> {
   requestGuildMembers(
     shardNumber: number,
     guildIds: Snowflake | Snowflake[],
-    options: {
-      query?: string;
-      limit: number;
-      presences?: boolean;
-      userIds?: Snowflake | Snowflake[];
-      nonce?: string;
-    },
+    options: RequestGuildMembersOptions,
   ): void {
     this.gateway.guildRequestMember(shardNumber, {
       guild_id: guildIds,
