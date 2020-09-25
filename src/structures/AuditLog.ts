@@ -287,8 +287,9 @@ export function parseAuditLog(
   };
 }
 
+//TODO: remove all casts
 function parseEntry(entry: auditLog.Entry): Entry {
-  let extra;
+  let extra: Entry["extra"];
 
   if (entry.options) {
     switch (entry.action_type) {
