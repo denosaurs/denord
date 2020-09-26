@@ -282,3 +282,79 @@ export class Message<T extends message.Message = message.Message>
     return new Message(this.client, message);
   }
 }
+
+export type PartialEditedMessage = Partial<Omit<Message, "mentions"> & {
+  mentions?: Partial<Message["mentions"]>
+}> & Pick<Message, "id" | "channelId">;
+
+export function parsePartialMessage(
+  client: Client,
+  data: Partial<message.Message> & Pick<message.Message, "id" | "channel_id">,
+): PartialEditedMessage {
+  const partialMessage = {} as PartialEditedMessage;
+
+  partialMessage.channelId = data.channel_id;
+  partialMessage.guildId = data.guild_id;
+  if (data.author) {
+    partialMessage.author = new User(client, data.author);
+    partialMessage.member = data.member && new GuildMember(client, {
+      ...data.member,
+      user: data.author,
+    }, data.guild_id!);
+  }
+  partialMessage.content = data.content;
+  // timestamp
+  partialMessage.editedAt = data.edited_timestamp
+    ? Date.parse(data.edited_timestamp)
+    : null;
+  partialMessage.tts = data.tts;
+  partialMessage.mentions = {
+    everyone: data.mention_everyone,
+    users: data.mentions?.map((user) => new User(client, user)),
+    roles: data.mention_roles,
+    channels: data.mention_channels?.map((mention) => mention.id),
+  };
+  partialMessage.attachments = data.attachments?.map((
+    { proxy_url, ...attachment },
+  ) => ({
+    ...attachment,
+    proxyUrl: proxy_url,
+  }));
+  partialMessage.embeds = data.embeds?.map((embed) => parseEmbed(embed));
+  partialMessage.reactions = new Map(
+    data.reactions?.map(
+      (reaction) => [reaction.emoji.id ?? reaction.emoji.name!, reaction],
+    ) ?? [],
+  );
+  // nonce
+  partialMessage.pinned = data.pinned;
+  partialMessage.byWebhook = !!data.webhook_id;
+  partialMessage.type = data.type !== undefined
+    ? messageTypeMap[data.type]
+    : undefined;
+  partialMessage.activity = data.activity && {
+    type: activityTypeMap[data.activity.type],
+    partyId: data.activity.party_id,
+  };
+  partialMessage.application = data.application && {
+    id: data.application.id,
+    coverImage: data.application.cover_image,
+    description: data.application.description,
+    icon: data.application.icon,
+    name: data.application.name,
+  };
+  partialMessage.reference = data.message_reference && {
+    messageId: data.message_reference.message_id,
+    channelId: data.message_reference.channel_id,
+    guildId: data.message_reference.guild_id,
+  };
+
+  partialMessage.flags = {} as Record<keyof typeof flagsMap, boolean>;
+  const flags = data.flags ?? 0;
+  for (const [key, val] of Object.entries(flagsMap)) {
+    partialMessage.flags[key as keyof typeof flagsMap] =
+      ((flags & val) === val);
+  }
+
+  return partialMessage;
+}

@@ -1275,9 +1275,9 @@ export namespace gateway {
     RESUMED: undefined;
     RECONNECT: undefined;
 
-    CHANNEL_CREATE: channel.Channel;
-    CHANNEL_UPDATE: channel.Channel;
-    CHANNEL_DELETE: channel.Channel;
+    CHANNEL_CREATE: Exclude<channel.Channel, channel.GroupDMChannel>;
+    CHANNEL_UPDATE: Exclude<channel.Channel, channel.GroupDMChannel>;
+    CHANNEL_DELETE: Exclude<channel.Channel, channel.GroupDMChannel>;
     CHANNEL_PINS_UPDATE: channel.PinsUpdateEvent;
 
     GUILD_CREATE: guild.GatewayGuild;

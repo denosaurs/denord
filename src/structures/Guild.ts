@@ -32,14 +32,13 @@ const channelTypeMap = {
   "text": 0,
   "dm": 1,
   "voice": 2,
-  "groupDM": 3,
   "category": 4,
   "news": 5,
   "store": 6,
 } as const;
 
 interface CreateChannel {
-  type?: Exclude<keyof typeof channelTypeMap, "dm" | "groupDM">;
+  type?: Exclude<keyof typeof channelTypeMap, "dm">;
   topic?: string;
   bitrate?: number;
   userLimit?: number;

@@ -19,8 +19,12 @@ import { DMChannel } from "./structures/DMChannel.ts";
 import { NewsChannel, TextChannel } from "./structures/TextNewsChannel.ts";
 import { CategoryChannel } from "./structures/CategoryChannel.ts";
 import { StoreChannel } from "./structures/StoreChannel.ts";
-import { GroupDMChannel } from "./structures/GroupDMChannel.ts";
-import { Message, SendMessageOptions } from "./structures/Message.ts";
+import {
+  Message,
+  parsePartialMessage,
+  PartialEditedMessage,
+  SendMessageOptions,
+} from "./structures/Message.ts";
 import { unparseEmbed } from "./structures/Embed.ts";
 import { Emoji, GuildEmoji, parseEmoji } from "./structures/Emoji.ts";
 import { Role } from "./structures/Role.ts";
@@ -50,15 +54,14 @@ export type AwaitMessagesOptions =
   | AwaitMessage & Required<Pick<AwaitMessage, "max">>
   | AwaitMessage & Required<Pick<AwaitMessage, "maxProcessed">>;
 
-export type DMChannels = DMChannel | GroupDMChannel;
 export type TextBasedGuildChannels = TextChannel | NewsChannel;
-export type TextBasedChannel = DMChannels | TextBasedGuildChannels;
+export type TextBasedChannel = DMChannel | TextBasedGuildChannels;
 export type GuildChannels =
   | TextBasedGuildChannels
   | VoiceChannel
   | CategoryChannel
   | StoreChannel;
-export type Channel = DMChannels | GuildChannels;
+export type Channel = DMChannel | GuildChannels;
 
 type UnknownMessage = Pick<Message, "id" | "channelId" | "guildId">;
 
@@ -145,9 +148,8 @@ export type Events = {
   messageUpdate: [
     TextBasedChannel | undefined,
     Message | undefined,
-    | Message
-    | Partial<message.Message> & Pick<message.Message, "id" | "channel_id">,
-  ]; //TODO
+    Message | PartialEditedMessage,
+  ];
   messageDelete: [TextBasedChannel | undefined, Message | UnknownMessage];
   messageDeleteBulk: [
     TextBasedChannel | undefined,
@@ -196,7 +198,7 @@ export class Client extends EventEmitter<Events> {
   /** A map of cached guild channels, indexed by their id. */
   guildChannels = new Map<Snowflake, GuildChannels>();
   /** A map of cached (group) dm channels, indexed by their id. */
-  dmChannels = new Map<Snowflake, DMChannels>();
+  dmChannels = new Map<Snowflake, DMChannel>();
   /** A map of cached guilds, indexed by their id. */
   guilds = new Map<Snowflake, GatewayGuild>();
   /** A map of cached users, indexed by their id. */
@@ -302,7 +304,7 @@ export class Client extends EventEmitter<Events> {
 
         case "CHANNEL_CREATE": {
           const channel = this.newChannelSwitch(e.data);
-          if (channel.type === "dm" || channel.type === "groupDM") {
+          if (channel.type === "dm") {
             this.dmChannels.set(channel.id, channel);
           } else {
             this.guildChannels.set(channel.id, channel);
@@ -317,7 +319,7 @@ export class Client extends EventEmitter<Events> {
         case "CHANNEL_UPDATE": {
           let oldChannel: Channel | undefined;
           const newChannel = this.newChannelSwitch(e.data);
-          if (newChannel.type === "dm" || newChannel.type === "groupDM") {
+          if (newChannel.type === "dm") {
             oldChannel = this.dmChannels.get(e.data.id);
             this.dmChannels.set(newChannel.id, newChannel);
           } else {
@@ -333,7 +335,7 @@ export class Client extends EventEmitter<Events> {
         }
         case "CHANNEL_DELETE": {
           const channel = this.newChannelSwitch(e.data);
-          if (channel.type === "dm" || channel.type === "groupDM") {
+          if (channel.type === "dm") {
             this.dmChannels.delete(channel.id);
           } else {
             this.guildChannels.delete(channel.id);
@@ -634,7 +636,13 @@ export class Client extends EventEmitter<Events> {
               }
             }
           }
-          this.emit("messageUpdate", channel, oldMessage, newMessage || e.data);
+
+          this.emit(
+            "messageUpdate",
+            channel,
+            oldMessage,
+            newMessage || parsePartialMessage(this, e.data),
+          );
           break;
         }
         case "MESSAGE_DELETE": {
@@ -1192,7 +1200,7 @@ export class Client extends EventEmitter<Events> {
 
   // utils
 
-  newChannelSwitch(data: channel.Channel): Channel {
+  newChannelSwitch(data: Exclude<channel.Channel, channel.GroupDMChannel>): Channel {
     switch (data.type) {
       case 0:
         return new TextChannel(this, data);
@@ -1200,8 +1208,6 @@ export class Client extends EventEmitter<Events> {
         return new DMChannel(this, data);
       case 2:
         return new VoiceChannel(this, data);
-      case 3:
-        return new GroupDMChannel(this, data);
       case 4:
         return new CategoryChannel(this, data);
       case 5:
