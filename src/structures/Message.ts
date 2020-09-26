@@ -283,9 +283,13 @@ export class Message<T extends message.Message = message.Message>
   }
 }
 
-export type PartialEditedMessage = Partial<Omit<Message, "mentions"> & {
-  mentions?: Partial<Message["mentions"]>
-}> & Pick<Message, "id" | "channelId">;
+export type PartialEditedMessage =
+  & Partial<
+    Omit<Message, "mentions"> & {
+      mentions?: Partial<Message["mentions"]>;
+    }
+  >
+  & Pick<Message, "id" | "channelId">;
 
 export function parsePartialMessage(
   client: Client,

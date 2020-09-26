@@ -1200,7 +1200,9 @@ export class Client extends EventEmitter<Events> {
 
   // utils
 
-  newChannelSwitch(data: Exclude<channel.Channel, channel.GroupDMChannel>): Channel {
+  newChannelSwitch(
+    data: Exclude<channel.Channel, channel.GroupDMChannel>,
+  ): Channel {
     switch (data.type) {
       case 0:
         return new TextChannel(this, data);
