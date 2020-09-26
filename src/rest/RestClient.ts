@@ -24,7 +24,7 @@ export class RestClient {
     this.bot = bot ?? true;
   }
 
-  private async request(
+  private async request<T extends unknown>(
     endpoint: string,
     {
       method,
@@ -33,12 +33,14 @@ export class RestClient {
       reason,
     }: {
       method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+      // deno-lint-ignore no-explicit-any
       data?: any;
+      // deno-lint-ignore no-explicit-any
       params?: any;
       reason?: string;
     },
-  ): Promise<unknown> {
-    const task = async (): Promise<unknown> => {
+  ): Promise<T> {
+    const task = async (): Promise<T> => {
       const headers = new Headers({
         "User-Agent": "DiscordBot (https://github.com/denosaurs/denord, 0.0.1)",
         "X-RateLimit-Precision": "millisecond",
@@ -56,12 +58,12 @@ export class RestClient {
 
       if (data !== undefined) {
         if (data.file) {
-          let { file, ...otherData } = data;
+          const { file, payload_json } = data;
 
-          data = new FormData();
-          data.append("file", file, file.name);
-          data.append("payload_json", otherData);
-          body = data;
+          const form = new FormData();
+          form.append("file", file, file.name);
+          form.append("payload_json", payload_json);
+          body = form;
         } else {
           headers.set("Content-Type", "application/json");
           body = JSON.stringify(data);
@@ -102,7 +104,7 @@ export class RestClient {
           return res.json();
 
         case 204:
-          return;
+          return undefined as T;
 
         case 400:
         case 404:
@@ -137,14 +139,12 @@ export class RestClient {
           throw new HTTPError(res.status, "Unexpected response");
       }
     };
-    if (!this.buckets[endpoint]) {
-      this.buckets[endpoint] = new TaskQueue({
-        resetAfter: 500,
-        limit: 1,
-        remaining: 1,
-      });
-    }
-    return this.buckets[endpoint].push(task);
+    this.buckets[endpoint] ||= new TaskQueue({
+      resetAfter: 500,
+      limit: 1,
+      remaining: 1,
+    });
+    return this.buckets[endpoint].push(task) as T;
   }
 
   //region Audit Log
@@ -155,7 +155,7 @@ export class RestClient {
     return this.request(`guilds/${guildId}/audit-logs`, {
       method: "GET",
       params,
-    }) as Promise<Discord.auditLog.AuditLog>;
+    });
   }
 
   //endregion
@@ -166,7 +166,7 @@ export class RestClient {
   ): Promise<Discord.channel.Channel> {
     return this.request(`channels/${channelId}`, {
       method: "GET",
-    }) as Promise<Discord.channel.Channel>;
+    });
   }
 
   async modifyChannel(
@@ -178,7 +178,7 @@ export class RestClient {
       method: "PATCH",
       data,
       reason,
-    }) as Promise<Discord.channel.GuildChannels>;
+    });
   }
 
   async deleteChannel(
@@ -188,7 +188,7 @@ export class RestClient {
     return this.request(`channels/${channelId}`, {
       method: "DELETE",
       reason,
-    }) as Promise<Discord.channel.Channel>;
+    });
   }
 
   async getChannelMessages(
@@ -198,7 +198,7 @@ export class RestClient {
     return this.request(`channels/${channelId}/messages`, {
       method: "GET",
       params,
-    }) as Promise<Discord.message.Message[]>;
+    });
   }
 
   async getChannelMessage(
@@ -207,7 +207,7 @@ export class RestClient {
   ): Promise<Discord.message.Message> {
     return this.request(`channels/${channelId}/messages/${messageId}`, {
       method: "GET",
-    }) as Promise<Discord.message.Message>;
+    });
   }
 
   async createMessage(
@@ -217,7 +217,7 @@ export class RestClient {
     return this.request(`channels/${channelId}/messages`, {
       method: "POST",
       data,
-    }) as Promise<Discord.message.Message>;
+    });
   }
 
   async crosspostMessage(
@@ -229,7 +229,7 @@ export class RestClient {
       {
         method: "POST",
       },
-    ) as Promise<Discord.message.Message>;
+    );
   }
 
   async createReaction(
@@ -292,7 +292,7 @@ export class RestClient {
         method: "GET",
         params,
       },
-    ) as Promise<Discord.user.PublicUser[]>;
+    );
   }
 
   async deleteAllReactions(
@@ -330,7 +330,7 @@ export class RestClient {
     return this.request(`channels/${channelId}/messages/${messageId}`, {
       method: "PATCH",
       data,
-    }) as Promise<Discord.message.Message>;
+    });
   }
 
   async deleteMessage(
@@ -374,7 +374,7 @@ export class RestClient {
   ): Promise<Discord.invite.Invite[]> {
     return this.request(`channels/${channelId}/invites`, {
       method: "GET",
-    }) as Promise<Discord.invite.Invite[]>;
+    });
   }
 
   async createChannelInvite(
@@ -386,7 +386,7 @@ export class RestClient {
       method: "POST",
       data,
       reason,
-    }) as Promise<Discord.invite.Invite>;
+    });
   }
 
   async deleteChannelPermission(
@@ -407,7 +407,7 @@ export class RestClient {
     return this.request(`channels/${channelId}/followers`, {
       method: "POST",
       data,
-    }) as Promise<Discord.channel.FollowedChannel>;
+    });
   }
 
   async triggerTypingIndicator(channelId: Discord.Snowflake): Promise<void> {
@@ -421,7 +421,7 @@ export class RestClient {
   ): Promise<Discord.message.Message[]> {
     return this.request(`channels/${channelId}/pins`, {
       method: "GET",
-    }) as Promise<Discord.message.Message[]>;
+    });
   }
 
   async addPinnedChannelMessage(
@@ -470,7 +470,7 @@ export class RestClient {
   ): Promise<Discord.emoji.Emoji[]> {
     return this.request(`guilds/${guildId}/emojis`, {
       method: "GET",
-    }) as Promise<Discord.emoji.Emoji[]>;
+    });
   }
 
   async getGuildEmoji(
@@ -479,19 +479,19 @@ export class RestClient {
   ): Promise<Discord.emoji.Emoji> {
     return this.request(`guilds/${guildId}/emojis/${emojiId}`, {
       method: "GET",
-    }) as Promise<Discord.emoji.Emoji>;
+    });
   }
 
   async createGuildEmoji(
     guildId: Discord.Snowflake,
     data: Discord.emoji.Create,
     reason?: string,
-  ): Promise<Discord.emoji.Emoji> {
+  ): Promise<Discord.emoji.GuildEmoji> {
     return this.request(`guilds/${guildId}/emojis`, {
       method: "POST",
       data,
       reason,
-    }) as Promise<Discord.emoji.Emoji>;
+    });
   }
 
   async modifyGuildEmoji(
@@ -499,12 +499,12 @@ export class RestClient {
     emojiId: Discord.Snowflake,
     data: Discord.emoji.Modify,
     reason?: string,
-  ): Promise<Discord.emoji.Emoji> {
+  ): Promise<Discord.emoji.GuildEmoji> {
     return this.request(`guilds/${guildId}/emojis/${emojiId}`, {
       method: "PATCH",
       data,
       reason,
-    }) as Promise<Discord.emoji.Emoji>;
+    });
   }
 
   async deleteGuildEmoji(
@@ -527,7 +527,7 @@ export class RestClient {
     return this.request("guilds", {
       method: "POST",
       data,
-    }) as Promise<Discord.guild.RESTGuild>;
+    });
   }
 
   async getGuild(
@@ -537,7 +537,7 @@ export class RestClient {
     return this.request(`guilds/${guildId}`, {
       method: "GET",
       params,
-    }) as Promise<Discord.guild.RESTGuild>;
+    });
   }
 
   async getGuildPreview(
@@ -545,7 +545,7 @@ export class RestClient {
   ): Promise<Discord.guild.Preview> {
     return this.request(`guilds/${guildId}/preview`, {
       method: "GET",
-    }) as Promise<Discord.guild.Preview>;
+    });
   }
 
   async modifyGuild(
@@ -557,7 +557,7 @@ export class RestClient {
       method: "PATCH",
       data,
       reason,
-    }) as Promise<Discord.guild.RESTGuild>;
+    });
   }
 
   async deleteGuild(guildId: Discord.Snowflake): Promise<void> {
@@ -571,7 +571,7 @@ export class RestClient {
   ): Promise<Discord.channel.GuildChannels[]> {
     return this.request(`guilds/${guildId}/channels`, {
       method: "GET",
-    }) as Promise<Discord.channel.GuildChannels[]>;
+    });
   }
 
   async createGuildChannel(
@@ -583,7 +583,7 @@ export class RestClient {
       method: "POST",
       data,
       reason,
-    }) as Promise<Discord.channel.GuildChannels>;
+    });
   }
 
   async modifyGuildChannelPositions(
@@ -602,7 +602,7 @@ export class RestClient {
   ): Promise<Discord.guildMember.GuildMember> {
     return this.request(`guilds/${guildId}/members/${userId}`, {
       method: "GET",
-    }) as Promise<Discord.guildMember.GuildMember>;
+    });
   }
 
   async listGuildMembers(
@@ -612,18 +612,18 @@ export class RestClient {
     return this.request(`guilds/${guildId}/members`, {
       method: "GET",
       params,
-    }) as Promise<Discord.guildMember.GuildMember[]>;
+    });
   }
 
   async addGuildMember(
     guildId: Discord.Snowflake,
     userId: Discord.Snowflake,
     data: Discord.guildMember.Add,
-  ): Promise<Discord.guildMember.GuildMember> {
+  ): Promise<Discord.guildMember.GuildMember | undefined> {
     return this.request(`guilds/${guildId}/members/${userId}`, {
       method: "PUT",
       data,
-    }) as Promise<Discord.guildMember.GuildMember>;
+    });
   }
 
   async modifyGuildMember(
@@ -636,17 +636,17 @@ export class RestClient {
       method: "PATCH",
       data,
       reason,
-    }) as Promise<Discord.guildMember.GuildMember>;
+    });
   }
 
   async modifyCurrentUserNick(
     guildId: Discord.Snowflake,
     data: Discord.guildMember.ModifyCurrentNick,
-  ): Promise<Discord.guildMember.GuildMember> {
+  ): Promise<Discord.guildMember.ModifyCurrentNickResponse> {
     return this.request(`guilds/${guildId}/members/@me/nick`, {
       method: "PATCH",
       data,
-    }) as Promise<Discord.guildMember.GuildMember>;
+    });
   }
 
   async addGuildMemberRole(
@@ -687,7 +687,7 @@ export class RestClient {
   async getGuildBans(guildId: Discord.Snowflake): Promise<Discord.guild.Ban[]> {
     return this.request(`guilds/${guildId}/bans`, {
       method: "GET",
-    }) as Promise<Discord.guild.Ban[]>;
+    });
   }
 
   async getGuildBan(
@@ -696,7 +696,7 @@ export class RestClient {
   ): Promise<Discord.guild.Ban> {
     return this.request(`guilds/${guildId}/bans/${userId}`, {
       method: "GET",
-    }) as Promise<Discord.guild.Ban>;
+    });
   }
 
   async createGuildBan(
@@ -726,7 +726,7 @@ export class RestClient {
   ): Promise<Discord.role.Role[]> {
     return this.request(`guilds/${guildId}/roles`, {
       method: "GET",
-    }) as Promise<Discord.role.Role[]>;
+    });
   }
 
   async createGuildRole(
@@ -738,7 +738,7 @@ export class RestClient {
       method: "POST",
       data,
       reason,
-    }) as Promise<Discord.role.Role>;
+    });
   }
 
   async modifyGuildRolePositions(
@@ -748,7 +748,7 @@ export class RestClient {
     return this.request(`guilds/${guildId}/roles`, {
       method: "PATCH",
       data,
-    }) as Promise<Discord.role.Role[]>;
+    });
   }
 
   async modifyGuildRole(
@@ -761,7 +761,7 @@ export class RestClient {
       method: "PATCH",
       data,
       reason,
-    }) as Promise<Discord.role.Role>;
+    });
   }
 
   async deleteGuildRole(
@@ -778,11 +778,11 @@ export class RestClient {
   async getGuildPruneCount(
     guildId: Discord.Snowflake,
     params: Discord.guild.PruneCount,
-  ): Promise<Discord.guild.PruneData> {
+  ): Promise<Discord.guild.DryPruneData> {
     return this.request(`guilds/${guildId}/prune`, {
       method: "GET",
       params,
-    }) as Promise<Discord.guild.PruneData>;
+    });
   }
 
   async beginGuildPrune(
@@ -794,7 +794,7 @@ export class RestClient {
       method: "POST",
       data,
       reason,
-    }) as Promise<Discord.guild.PruneData>;
+    });
   }
 
   async getGuildVoiceRegions(
@@ -802,7 +802,7 @@ export class RestClient {
   ): Promise<Discord.voice.Region[]> {
     return this.request(`guilds/${guildId}/regions`, {
       method: "GET",
-    }) as Promise<Discord.voice.Region[]>;
+    });
   }
 
   async getGuildInvites(
@@ -810,7 +810,7 @@ export class RestClient {
   ): Promise<Discord.invite.MetadataInvite[]> {
     return this.request(`guilds/${guildId}/invites`, {
       method: "GET",
-    }) as Promise<Discord.invite.MetadataInvite[]>;
+    });
   }
 
   async getGuildIntegrations(
@@ -818,7 +818,7 @@ export class RestClient {
   ): Promise<Discord.integration.Integration[]> {
     return this.request(`guilds/${guildId}/integrations`, {
       method: "GET",
-    }) as Promise<Discord.integration.Integration[]>;
+    });
   }
 
   async createGuildIntegration(
@@ -865,7 +865,7 @@ export class RestClient {
   ): Promise<Discord.guild.Widget> {
     return this.request(`guilds/${guildId}/widget`, {
       method: "GET",
-    }) as Promise<Discord.guild.Widget>;
+    });
   }
 
   async modifyGuildWidget(
@@ -875,7 +875,7 @@ export class RestClient {
     return this.request(`guilds/${guildId}/widget`, {
       method: "PATCH",
       data,
-    }) as Promise<Discord.guild.Widget>;
+    });
   }
 
   async getGuildVanityURL(
@@ -883,7 +883,7 @@ export class RestClient {
   ): Promise<Discord.invite.VanityURL> {
     return this.request(`guilds/${guildId}/vanity-url`, {
       method: "GET",
-    }) as Promise<Discord.invite.VanityURL>;
+    });
   }
 
   //endregion
@@ -892,7 +892,7 @@ export class RestClient {
   async getInvite(inviteCode: string): Promise<Discord.invite.Invite> {
     return this.request(`invites/${inviteCode}`, {
       method: "GET",
-    }) as Promise<Discord.invite.Invite>;
+    });
   }
 
   async deleteInvite(
@@ -902,7 +902,7 @@ export class RestClient {
     return this.request(`invites/${inviteCode}`, {
       method: "DELETE",
       reason,
-    }) as Promise<Discord.invite.Invite>;
+    });
   }
 
   //endregion
@@ -911,13 +911,13 @@ export class RestClient {
   async getCurrentUser(): Promise<Discord.user.PrivateUser> {
     return this.request("users/@me", {
       method: "GET",
-    }) as Promise<Discord.user.PrivateUser>;
+    });
   }
 
   async getUser(userId: Discord.Snowflake): Promise<Discord.user.PublicUser> {
     return this.request(`users/${userId}`, {
       method: "GET",
-    }) as Promise<Discord.user.PublicUser>;
+    });
   }
 
   async modifyCurrentUser(
@@ -926,16 +926,16 @@ export class RestClient {
     return this.request("users/@me", {
       method: "PATCH",
       data,
-    }) as Promise<Discord.user.PrivateUser>;
+    });
   }
 
   async getCurrentUserGuilds(
     params: Discord.user.GetGuilds,
-  ): Promise<Discord.guild.RESTGuild[]> {
+  ): Promise<Discord.guild.CurrentUserGuild[]> {
     return this.request(`users/@me/guilds`, {
       method: "GET",
       params,
-    }) as Promise<Discord.guild.RESTGuild[]>;
+    });
   }
 
   async leaveGuild(guildId: Discord.Snowflake): Promise<void> {
@@ -947,7 +947,7 @@ export class RestClient {
   async getUserDMs(): Promise<Discord.channel.DMChannels[]> {
     return this.request("users/@me/channels", {
       method: "GET",
-    }) as Promise<Discord.channel.DMChannels[]>;
+    });
   }
 
   async createDM(
@@ -956,7 +956,7 @@ export class RestClient {
     return this.request("users/@me/channels", {
       method: "POST",
       data,
-    }) as Promise<Discord.channel.DMChannel>;
+    });
   }
 
   async createGroupDM(
@@ -965,13 +965,13 @@ export class RestClient {
     return this.request("users/@me/channels", {
       method: "POST",
       data,
-    }) as Promise<Discord.channel.GroupDMChannel>;
+    });
   }
 
   async getUserConnections(): Promise<Discord.user.Connection[]> {
     return this.request("users/@me/connections", {
       method: "GET",
-    }) as Promise<Discord.user.Connection[]>;
+    });
   }
 
   //endregion
@@ -980,7 +980,7 @@ export class RestClient {
   async listVoiceRegions(): Promise<Discord.voice.Region[]> {
     return this.request("voice/regions", {
       method: "GET",
-    }) as Promise<Discord.voice.Region[]>;
+    });
   }
 
   //endregion
@@ -995,7 +995,7 @@ export class RestClient {
       method: "POST",
       data,
       reason,
-    }) as Promise<Discord.webhook.Webhook>;
+    });
   }
 
   async getChannelWebhooks(
@@ -1003,7 +1003,7 @@ export class RestClient {
   ): Promise<Discord.webhook.Webhook[]> {
     return this.request(`channels/${channelId}/webhooks`, {
       method: "GET",
-    }) as Promise<Discord.webhook.Webhook[]>;
+    });
   }
 
   async getGuildWebhooks(
@@ -1011,7 +1011,7 @@ export class RestClient {
   ): Promise<Discord.webhook.Webhook[]> {
     return this.request(`guilds/${guildId}/webhooks`, {
       method: "GET",
-    }) as Promise<Discord.webhook.Webhook[]>;
+    });
   }
 
   async getWebhook(
@@ -1019,7 +1019,7 @@ export class RestClient {
   ): Promise<Discord.webhook.Webhook> {
     return this.request(`webhooks/${webhookId}`, {
       method: "GET",
-    }) as Promise<Discord.webhook.Webhook>;
+    });
   }
 
   async getWebhookWithToken(
@@ -1028,7 +1028,7 @@ export class RestClient {
   ): Promise<Discord.webhook.Webhook> {
     return this.request(`webhooks/${webhookId}/${webhookToken}`, {
       method: "GET",
-    }) as Promise<Discord.webhook.Webhook>;
+    });
   }
 
   async modifyWebhook(
@@ -1040,7 +1040,7 @@ export class RestClient {
       method: "PATCH",
       data,
       reason,
-    }) as Promise<Discord.webhook.Webhook>;
+    });
   }
 
   async modifyWebhookWithToken(
@@ -1053,7 +1053,7 @@ export class RestClient {
       method: "PATCH",
       data,
       reason,
-    }) as Promise<Discord.webhook.Webhook>;
+    });
   }
 
   async deleteWebhook(
@@ -1069,9 +1069,11 @@ export class RestClient {
   async deleteWebhookWithToken(
     webhookId: Discord.Snowflake,
     webhookToken: string,
+    reason?: string,
   ): Promise<void> {
     await this.request(`webhooks/${webhookId}/${webhookToken}`, {
       method: "DELETE",
+      reason,
     });
   }
 
@@ -1079,9 +1081,27 @@ export class RestClient {
     webhookId: Discord.Snowflake,
     webhookToken: string,
     data: Discord.webhook.ExecuteBody,
+    params: Discord.webhook.ExecuteParams & { wait: true },
+  ): Promise<Discord.message.Message>;
+  async executeWebhook(
+    webhookId: Discord.Snowflake,
+    webhookToken: string,
+    data: Discord.webhook.ExecuteBody,
+    params: Discord.webhook.ExecuteParams & { wait?: false },
+  ): Promise<undefined>;
+  async executeWebhook(
+    webhookId: Discord.Snowflake,
+    webhookToken: string,
+    data: Discord.webhook.ExecuteBody,
     params: Discord.webhook.ExecuteParams,
-  ): Promise<void> {
-    await this.request(`webhooks/${webhookId}/${webhookToken}`, {
+  ): Promise<void | Discord.message.Message>;
+  async executeWebhook(
+    webhookId: Discord.Snowflake,
+    webhookToken: string,
+    data: Discord.webhook.ExecuteBody,
+    params: Discord.webhook.ExecuteParams,
+  ): Promise<undefined | Discord.message.Message> {
+    return this.request(`webhooks/${webhookId}/${webhookToken}`, {
       method: "POST",
       data,
       params,
@@ -1091,7 +1111,7 @@ export class RestClient {
   async executeSlackCompatibleWebhook(
     webhookId: Discord.Snowflake,
     webhookToken: string,
-    data: any,
+    data: unknown,
     params: Discord.webhook.ExecuteParams,
   ): Promise<void> {
     await this.request(`webhooks/${webhookId}/${webhookToken}/slack$`, {
@@ -1104,7 +1124,7 @@ export class RestClient {
   async executeGitHubCompatibleWebhook(
     webhookId: Discord.Snowflake,
     webhookToken: string,
-    data: any,
+    data: unknown,
     params: Discord.webhook.ExecuteParams,
   ): Promise<void> {
     await this.request(`webhooks/${webhookId}/${webhookToken}/github`, {
@@ -1120,13 +1140,13 @@ export class RestClient {
   async getGateway(): Promise<Discord.gateway.Gateway> {
     return this.request("gateway", {
       method: "GET",
-    }) as Promise<Discord.gateway.Gateway>;
+    });
   }
 
   async getGatewayBot(): Promise<Discord.gateway.GatewayBot> {
     return this.request("gateway/bot", {
       method: "GET",
-    }) as Promise<Discord.gateway.GatewayBot>;
+    });
   }
 
   //endregion

@@ -14,7 +14,7 @@ export type Task = () => Promise<unknown>;
 interface Runtime {
   task: Task;
   resolve: (value?: unknown) => void;
-  reject: (reason?: any) => void;
+  reject: (reason?: unknown) => void;
 }
 
 /** Ratelimit tasks and execute them sequentially  */
