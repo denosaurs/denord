@@ -65,7 +65,6 @@ export function parsePresence(
     user,
     guild_id,
     client_status,
-    game,
     activities,
     ...presence
   }: presence.Presence,
@@ -73,7 +72,6 @@ export function parsePresence(
   return {
     ...presence,
     userId: user.id,
-    game: game && parseActivity(client, game),
     guildId: guild_id,
     activities: activities?.map((activity) => parseActivity(client, activity)),
     clientStatus: client_status,

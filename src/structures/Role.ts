@@ -68,7 +68,7 @@ export class Role<T extends role.Role = role.Role> extends SnowflakeBase<T> {
     this.managed = data.managed;
     this.mentionable = data.mentionable;
 
-    const permissions = BigInt(data.permissions_new);
+    const permissions = BigInt(data.permissions);
     for (const [key, val] of Object.entries(permissionMap)) {
       const bVal = BigInt(val);
       this.permissions[key as keyof typeof permissionMap] =

@@ -1186,13 +1186,15 @@ export class Client extends EventEmitter<Events> {
   /** Updates the current user's status. */
   statusUpdate(shardNumber: number, data: {
     since: number | null;
-    game: Activity | null;
+    activities: Activity[] | null;
     status: presence.ActiveStatus;
     afk: boolean;
   }): void {
     this.gateway.statusUpdate(shardNumber, {
       since: data.since,
-      game: data.game && unparseActivity(data.game),
+      activities: data.activities?.map((activity) =>
+        unparseActivity(activity)
+      ) ?? null,
       status: data.status,
       afk: data.afk,
     });

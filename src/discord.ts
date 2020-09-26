@@ -5,7 +5,6 @@ export type ISO8601 = string;
 export namespace presence {
   export interface Presence {
     user: Pick<user.PublicUser, "id"> & Partial<user.PublicUser>;
-    game?: Activity | null;
     guild_id?: Snowflake;
     status?: Exclude<ActiveStatus, "invisible">;
     activities?: Activity[];
@@ -99,19 +98,16 @@ export namespace auditLog {
     position: number;
     topic: string;
     bitrate: number;
-    permission_overwrites: channel.OverwriteReceive[];
+    permission_overwrites: channel.Overwrite[];
     nsfw: boolean;
     application_id: Snowflake;
     rate_limit_per_user: number;
-    permissions: number;
-    permissions_new: string;
+    permissions: string;
     color: number;
     hoist: boolean;
     mentionable: boolean;
-    allow: number;
-    allow_new: string;
-    deny: number;
-    deny_new: string;
+    allow: string;
+    deny: string;
     code: string;
     channel_id: Snowflake;
     inviter_id: Snowflake;
@@ -204,13 +200,13 @@ export namespace auditLog {
 
   interface ChannelOverwriteMember {
     id: Snowflake;
-    type: "member";
+    type: 1;
     role_name: undefined;
   }
 
   interface ChannelOverwriteRole {
     id: Snowflake;
-    type: "role";
+    type: 0;
     role_name: string;
   }
 
@@ -310,7 +306,7 @@ export namespace channel {
     position: number;
     parent_id: Snowflake | null;
     guild_id: Snowflake;
-    permission_overwrites: OverwriteReceive[];
+    permission_overwrites: Overwrite[];
     nsfw: boolean;
   }
 
@@ -358,20 +354,11 @@ export namespace channel {
 
   export type Channel = GuildChannels | DMChannels;
 
-  export interface OverwriteReceive {
+  export interface Overwrite {
     id: Snowflake;
-    type: "role" | "member";
-    allow: number;
-    allow_new: string;
-    deny: number;
-    deny_new: string;
-  }
-
-  export interface OverwriteSend {
-    id: Snowflake;
-    type: "role" | "member";
-    allow: number | string;
-    deny: number | string;
+    type: 0 | 1;
+    allow: string;
+    deny: string;
   }
 
   export interface Mention {
@@ -420,7 +407,7 @@ export namespace channel {
     user_limit?: number;
     rate_limit_per_user?: number;
     position?: number;
-    permission_overwrites?: OverwriteSend[];
+    permission_overwrites?: Overwrite[];
     parent_id?: Snowflake;
     nsfw?: boolean;
   }
@@ -434,7 +421,7 @@ export namespace channel {
     rate_limit_per_user?: number | null;
     bitrate?: number | null;
     user_limit?: number | null;
-    permission_overwrites?: OverwriteSend[] | null;
+    permission_overwrites?: Overwrite[] | null;
     parent_id?: Snowflake | null;
   }
 
@@ -609,8 +596,7 @@ export namespace guild {
 
   export interface CurrentUserGuild extends BaseGuild {
     owner: boolean;
-    permissions: number;
-    permissions_new: string;
+    permissions: string;
   }
 
   export interface RESTGuild extends BaseGuild {
@@ -669,7 +655,7 @@ export namespace guild {
     >
   >;
 
-  export interface Widget {
+  export interface WidgetSettings {
     enabled: boolean;
     channel_id: Snowflake | null;
   }
@@ -743,7 +729,7 @@ export namespace guild {
     pruned: number | null;
   }
 
-  export type WidgetModify = Partial<Widget>;
+  export type WidgetModify = Partial<WidgetSettings>;
 
   export type UnavailableGuild = Pick<GatewayGuild, "id" | "unavailable">;
 
@@ -1069,15 +1055,14 @@ export namespace role {
     color: number;
     hoist: boolean;
     position: number;
-    permissions: number;
-    permissions_new: string;
+    permissions: string;
     managed: boolean;
     mentionable: boolean;
   }
 
   export interface Create
     extends Partial<Pick<Role, "name" | "color" | "hoist" | "mentionable">> {
-    permissions?: number | string;
+    permissions?: string;
   }
 
   export type ModifyPosition = Pick<Role, "id" | "position">;
@@ -1275,7 +1260,7 @@ export namespace gateway {
     RESUMED: undefined;
     RECONNECT: undefined;
 
-    CHANNEL_CREATE: Exclude<channel.Channel, channel.GroupDMChannel>;
+    CHANNEL_CREATE: channel.GuildChannels;
     CHANNEL_UPDATE: Exclude<channel.Channel, channel.GroupDMChannel>;
     CHANNEL_DELETE: Exclude<channel.Channel, channel.GroupDMChannel>;
     CHANNEL_PINS_UPDATE: channel.PinsUpdateEvent;
@@ -1339,7 +1324,7 @@ export namespace gateway {
 
   export interface StatusUpdate {
     since: number | null;
-    game: presence.Activity | null;
+    activities: presence.Activity[] | null;
     status: presence.ActiveStatus;
     afk: boolean;
   }
