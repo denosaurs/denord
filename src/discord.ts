@@ -200,13 +200,13 @@ export namespace auditLog {
 
   interface ChannelOverwriteMember {
     id: Snowflake;
-    type: 1;
+    type: "1";
     role_name: undefined;
   }
 
   interface ChannelOverwriteRole {
     id: Snowflake;
-    type: 0;
+    type: "0";
     role_name: string;
   }
 

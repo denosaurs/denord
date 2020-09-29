@@ -295,7 +295,7 @@ function parseEntry(entry: auditLog.Entry): Entry {
       case 15:
         extra = {
           id: entry.options.id,
-          type: entry.options.type ? "member" : "role",
+          type: entry.options.type === "1" ? "member" : "role",
           roleName: entry.options.role_name,
         } as ChannelOverwriteMember | ChannelOverwriteRole;
         break;
