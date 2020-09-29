@@ -71,4 +71,17 @@ export class VoiceChannel<T extends channel.VoiceChannel = channel.VoiceChannel>
 
     return invites.map((invite) => parseInvite(this.client, invite));
   }
+
+  connect(): Promise<void> {
+    return this.client.voice!.connect(0, this.guildId, this.id);
+  }
+
+  disconnect(): Promise<void> {
+    return this.client.voice!.disconnect(this.guildId, this.id);
+  }
+
+  get connected(): boolean {
+    return this.client.voice!.connections.get(this.guildId)?.channelId ===
+      this.id;
+  }
 }

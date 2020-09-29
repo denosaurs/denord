@@ -42,6 +42,7 @@ import {
 } from "./structures/Invite.ts";
 import { ExecuteWebhook, parseWebhook, Webhook } from "./structures/Webhook.ts";
 import { parseState, State } from "./structures/VoiceState.ts";
+import { VoiceManager } from "./voice/VoiceManager.ts";
 
 interface AwaitMessage {
   time?: number;
@@ -195,6 +196,7 @@ export interface RequestGuildMembersOptions {
 export class Client extends EventEmitter<Events> {
   gateway: ShardManager;
   rest = new RestClient();
+  voice?: VoiceManager;
   /** A map of cached guild channels, indexed by their id. */
   guildChannels = new Map<Snowflake, GuildChannels>();
   /** A map of cached (group) dm channels, indexed by their id. */
@@ -1002,6 +1004,7 @@ export class Client extends EventEmitter<Events> {
   async connect(token: string): Promise<void> {
     this.rest.token = token;
     await this.gateway.connect(token);
+    this.voice = new VoiceManager(this.gateway, this.user!.id);
     this.emit("ready", undefined);
   }
 

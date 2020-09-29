@@ -1,6 +1,6 @@
 import { EventEmitter } from "../../deps.ts";
 
-import type { gateway } from "../discord.ts";
+import type { gateway, Snowflake } from "../discord.ts";
 
 type Events = gateway.Events;
 
@@ -187,6 +187,16 @@ export class ShardManager extends EventEmitter<ValueToTupleValue<RawEvents>> {
     this.#shards[shard].postMessage({
       name: "STATUS_UPDATE",
       data,
+    });
+  }
+
+  voice(shard: number, guildId: Snowflake, channelId: Snowflake) {
+    this.#shards[shard].postMessage({
+      name: "VOICE",
+      data: {
+        guildId,
+        channelId,
+      },
     });
   }
 }

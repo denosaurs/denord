@@ -613,6 +613,10 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
       ? imageURLFormatter(`icons/${this.id}/${this.discoverySplash}`, options)
       : null;
   }
+
+  get currentVoiceChannel(): Snowflake | undefined {
+    return this.client.voice!.connections.get(this.id)?.channelId;
+  }
 }
 
 export class RestGuild<T extends guild.RESTGuild = guild.RESTGuild>

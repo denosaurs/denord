@@ -1,4 +1,4 @@
-import type { gateway } from "../discord.ts";
+import type { gateway, Snowflake } from "../discord.ts";
 import {
   connectWebSocket,
   isWebSocketCloseEvent,
@@ -200,6 +200,18 @@ class Shard {
       d: data,
     });
   }
+
+  voice(guildId: Snowflake, channelId: Snowflake) {
+    this.send({
+      op: 4,
+      d: {
+        guild_id: guildId,
+        channel_id: channelId,
+        self_mute: false,
+        self_deaf: false,
+      },
+    });
+  }
 }
 
 let shard: Shard;
@@ -208,7 +220,16 @@ type ShardData =
   | ShardDataInit
   | ShardDataToken
   | ShardDataGuildRequestMember
-  | ShardDataStatusUpdate;
+  | ShardDataStatusUpdate
+  | ShardDataVoice;
+
+interface ShardDataVoice {
+  name: "VOICE";
+  data: {
+    guildId: Snowflake;
+    channelId: Snowflake;
+  };
+}
 
 interface ShardDataInit {
   name: "INIT";
@@ -256,6 +277,9 @@ self.onmessage = async (msg: MessageEvent) => {
       break;
     case "STATUS_UPDATE":
       shard.statusUpdate(event.data);
+      break;
+    case "VOICE":
+      shard.voice(event.data.guildId, event.data.channelId);
       break;
   }
 };
