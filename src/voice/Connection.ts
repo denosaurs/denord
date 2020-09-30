@@ -13,7 +13,7 @@ const opus = new Opus(48000, 2);
 let ws: WebSocket;
 let wsSeq = 0;
 let udpSeq = Math.floor(Math.random() * 2 ** 16);
-let beatInterval;
+let beatInterval: number;
 let ACKed = true;
 let conn: Deno.DatagramConn;
 let ssrc: number;
@@ -95,11 +95,13 @@ async function listener(data: ConnectionDataInit["data"]) {
           // The last two fields of the IP discovery packet (address and port)
           // are only populated in the response, so we leave them empty.
 
-          await conn.send(discovery, {
+          addr = {
             transport: "udp",
             hostname: data.d.ip,
             port: data.d.port,
-          });
+          };
+
+          await conn.send(discovery, addr);
           const [dat] = await conn.receive();
 
           // Decode packet
@@ -107,12 +109,6 @@ async function listener(data: ConnectionDataInit["data"]) {
           const portRaw = dat.slice(72, 74);
           const ip = new TextDecoder().decode(ipRaw);
           const port = portRaw[0] + (portRaw[1] << 8);
-
-          addr = {
-            transport: "udp",
-            hostname: ip,
-            port: port,
-          };
 
           // Register handler with packet
           wsSend({
@@ -142,6 +138,7 @@ async function listener(data: ConnectionDataInit["data"]) {
           reconnect(data);
           break;
         case 4006:
+          clearInterval(beatInterval);
           connect(data);
           break;
       }
