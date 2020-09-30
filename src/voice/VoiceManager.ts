@@ -100,4 +100,49 @@ export class VoiceManager {
     });
     return promise;
   }
+
+  async speak(
+    guildId: Snowflake,
+    voiceData: ReadableStream<Uint8Array> | Uint8Array,
+    priority = false,
+  ): Promise<void> {
+    const connection = this.connections.get(guildId);
+
+    if (!connection) {
+      throw new Error("You need to be connected to a voice channel to be able speak");
+    }
+
+    connection.worker.postMessage({
+      name: "SPEAK",
+      data: priority,
+    });
+
+    if (voiceData instanceof ReadableStream) {
+      for await (const data of voiceData.getIterator()) {
+        connection.worker.postMessage({
+          name: "SEND_AUDIO",
+          data: data,
+        });
+      }
+    } else {
+      connection.worker.postMessage({
+        name: "SEND_AUDIO",
+        data: voiceData,
+      });
+    }
+
+    /*connection.worker.postMessage({
+      name: "STOP_SPEAK",
+    });*/
+
+    const promise = deferred<void>();
+    const listener = (msg: Event) => {
+      if ((msg as any).data.name === "SPOKEN") {
+        connection.worker.removeEventListener("message", listener);
+        promise.resolve();
+      }
+    }
+    connection.worker.addEventListener("message", listener);
+    return promise;
+  }
 }

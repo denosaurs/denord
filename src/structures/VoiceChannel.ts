@@ -80,6 +80,10 @@ export class VoiceChannel<T extends channel.VoiceChannel = channel.VoiceChannel>
     return this.client.voice!.disconnect(this.guildId, this.id);
   }
 
+  speak(voiceData: ReadableStream<Uint8Array> | Uint8Array, priority = false): Promise<void> {
+    return this.client.voice!.speak(this.guildId, voiceData, priority);
+  }
+
   get connected(): boolean {
     return this.client.voice!.connections.get(this.guildId)?.channelId ===
       this.id;
