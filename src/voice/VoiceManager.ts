@@ -75,7 +75,7 @@ export class VoiceManager {
     return promise;
   }
 
-  disconnect(guildId: Snowflake, channelId: Snowflake): Promise<void> {
+  async disconnect(guildId: Snowflake, channelId: Snowflake): Promise<void> {
     if (!this.connections.has(guildId)) {
       throw new Error(
         "You are not connected to a voice channel in this server",
@@ -88,17 +88,12 @@ export class VoiceManager {
       throw new Error("You are not connected to this voice channel");
     }
 
-    const promise = deferred<void>();
-    connection.worker.addEventListener("message", (msg) => {
-      if ((msg as any).data.name === "DISCONNECTED") {
-        this.connections.delete(guildId);
-        promise.resolve();
-      }
-    });
+    const promise = awaitWorkerMessage(connection.worker, "DISCONNECTED");
     connection.worker.postMessage({
       name: "DISCONNECT",
     });
-    return promise;
+    await promise;
+    this.connections.delete(guildId);
   }
 
   async speak(
@@ -113,9 +108,11 @@ export class VoiceManager {
     }
 
     connection.worker.postMessage({
-      name: "SPEAK",
+      name: "START_SPEAK",
       data: priority,
     });
+
+    const audioPromise = awaitWorkerMessage(connection.worker, "SENT_AUDIO");
 
     if (voiceData instanceof ReadableStream) {
       for await (const data of voiceData.getIterator()) {
@@ -131,18 +128,22 @@ export class VoiceManager {
       });
     }
 
-    /*connection.worker.postMessage({
-      name: "STOP_SPEAK",
-    });*/
+    await audioPromise;
 
-    const promise = deferred<void>();
-    const listener = (msg: Event) => {
-      if ((msg as any).data.name === "SPOKEN") {
-        connection.worker.removeEventListener("message", listener);
-        promise.resolve();
-      }
-    }
-    connection.worker.addEventListener("message", listener);
-    return promise;
+    connection.worker.postMessage({
+      name: "STOP_SPEAK",
+    });
   }
+}
+
+function awaitWorkerMessage(worker: Worker, name: string): Promise<void> {
+  const promise = deferred<void>();
+  const listener = (msg: Event) => {
+    if ((msg as any).data.name === name) {
+      worker.removeEventListener("message", listener);
+      promise.resolve();
+    }
+  }
+  worker.addEventListener("message", listener);
+  return promise;
 }

@@ -121,11 +121,11 @@ async function listener(data: ConnectionDataInit["data"]) {
             },
           });
 
-          self.postMessage({name: "CONNECTED"});
           break;
         }
         case 4:
           key = new Uint8Array(data.d.secret_key);
+          self.postMessage({name: "CONNECTED"});
           break;
         default:
           console.log(data);
@@ -170,7 +170,7 @@ async function disconnect() {
 }
 
 async function sendAudio(voiceData: Uint8Array) {
-  const encoded = opus.encode(voiceData, 960);
+  const encoded = voiceData; //opus.encode(voiceData, 960);
 
   const rtp = new Uint8Array(12);
   rtp[0] = 0x80;
@@ -192,9 +192,13 @@ async function sendAudio(voiceData: Uint8Array) {
   nonce.set(rtp, 0);
 
   const encrypted = sodium.crypto_secretbox_easy(data, nonce, key);
-  console.log("bar");
 
-  await conn.send(encrypted, addr);
+  try {
+    await conn.send(encrypted, addr);
+  } catch (e) {
+    console.error(e);
+  }
+  console.log("sent");
 }
 
 function speak(priority: boolean) {
@@ -260,22 +264,28 @@ self.onmessage = async (msg) => {
 
   switch (event.name) {
     case "INIT":
-      await connect(event.data);
+      connect(event.data);
       break;
     case "DISCONNECT":
-      await disconnect();
+      disconnect();
       break;
     case "START_SPEAK": {
-      await speak(event.data);
+      speak(event.data);
       break;
     }
     case "STOP_SPEAK": {
-      await stopSpeak();
+      stopSpeak();
       break;
     }
     case "SEND_AUDIO": {
       const dat = Uint8Array.from(Object.values(event.data));
-      await sendAudio(dat);
+
+      const chunk = 2000;
+      for (let i = 0, j = dat.byteLength; i < j; i += chunk) {
+        await sendAudio(dat.slice(i,i + chunk));
+      }
+
+      self.postMessage({name: "SENT_AUDIO"});
       break;
     }
   }
