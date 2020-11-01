@@ -280,9 +280,8 @@ self.onmessage = async (msg) => {
     case "SEND_AUDIO": {
       const dat = Uint8Array.from(Object.values(event.data));
 
-      const chunk = 2000;
-      for (let i = 0, j = dat.byteLength; i < j; i += chunk) {
-        await sendAudio(dat.slice(i,i + chunk));
+      for (let i = 0; i < dat.byteLength; i += 2000) {
+        await sendAudio(dat.slice(i, i + 2000));
       }
 
       self.postMessage({name: "SENT_AUDIO"});
