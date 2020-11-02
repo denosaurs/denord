@@ -81,14 +81,11 @@ const changeKeyMap = {
   application_id: "applicationId",
   rate_limit_per_user: "rateLimitPerUser",
   permissions: "permissions",
-  permissions_new: "permissionsNew",
   color: "color",
   hoist: "hoist",
   mentionable: "mentionable",
   allow: "allow",
-  allow_new: "allowNew",
   deny: "deny",
-  deny_new: "denyNew",
   code: "code",
   channel_id: "channelId",
   inviter_id: "inviterId",
@@ -298,7 +295,7 @@ function parseEntry(entry: auditLog.Entry): Entry {
       case 15:
         extra = {
           id: entry.options.id,
-          type: entry.options.type,
+          type: entry.options.type === "1" ? "member" : "role",
           roleName: entry.options.role_name,
         } as ChannelOverwriteMember | ChannelOverwriteRole;
         break;
@@ -342,8 +339,8 @@ function parseEntry(entry: auditLog.Entry): Entry {
               id: value.id,
               type: value.type,
               permissions: parsePermissionOverwritePermissions(
-                value.allow_new,
-                value.deny_new,
+                value.allow,
+                value.deny,
               ),
             })),
           ),
@@ -352,8 +349,8 @@ function parseEntry(entry: auditLog.Entry): Entry {
               id: value.id,
               type: value.type,
               permissions: parsePermissionOverwritePermissions(
-                value.allow_new,
-                value.deny_new,
+                value.allow,
+                value.deny,
               ),
             })),
           ),

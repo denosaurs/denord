@@ -32,13 +32,13 @@ export class VoiceChannel<T extends channel.VoiceChannel = channel.VoiceChannel>
     permissionOverwrites?: PermissionOverwrite[] | null;
     parentId: Snowflake | null;
   }, reason?: string): Promise<VoiceChannel> {
-    const permissionOverwrites =
+    const permissionOverwrites: channel.Overwrite[] | null | undefined =
       options.permissionOverwrites?.map(({ permissions, id, type }) => {
         const { allow, deny } = unparsePermissionOverwrite(permissions);
 
         return {
           id,
-          type,
+          type: type === "member" ? 1 : 0,
           allow,
           deny,
         };

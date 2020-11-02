@@ -43,7 +43,6 @@ export class RestClient {
     const task = async (): Promise<T> => {
       const headers = new Headers({
         "User-Agent": "DiscordBot (https://github.com/denosaurs/denord, 0.0.1)",
-        "X-RateLimit-Precision": "millisecond",
       });
 
       if (this.token) {
@@ -359,7 +358,7 @@ export class RestClient {
   async editChannelPermissions(
     channelId: Discord.Snowflake,
     overwriteId: Discord.Snowflake,
-    data: Omit<Discord.channel.OverwriteSend, "id">,
+    data: Omit<Discord.channel.Overwrite, "id">,
     reason?: string,
   ): Promise<void> {
     await this.request(`channels/${channelId}/permissions/${overwriteId}`, {
@@ -860,9 +859,9 @@ export class RestClient {
     });
   }
 
-  async getGuildWidget(
+  async getGuildWidgetSettings(
     guildId: Discord.Snowflake,
-  ): Promise<Discord.guild.Widget> {
+  ): Promise<Discord.guild.WidgetSettings> {
     return this.request(`guilds/${guildId}/widget`, {
       method: "GET",
     });
@@ -871,12 +870,14 @@ export class RestClient {
   async modifyGuildWidget(
     guildId: Discord.Snowflake,
     data: Discord.guild.WidgetModify,
-  ): Promise<Discord.guild.Widget> {
+  ): Promise<Discord.guild.WidgetSettings> {
     return this.request(`guilds/${guildId}/widget`, {
       method: "PATCH",
       data,
     });
   }
+
+  //TODO: Get Guild Widget
 
   async getGuildVanityURL(
     guildId: Discord.Snowflake,

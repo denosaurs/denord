@@ -35,7 +35,13 @@ export abstract class TextBasedGuildChannel<
   /** Whether or not the channel is Not Safe For Work. */
   nsfw: boolean;
   /** A map used to cache messages in this channel, indexed by their id. */
-  messages = new Map<Snowflake, Message>();
+  get messages(): Map<Snowflake, Message> {
+    if (!this.client.messages.get(this.id)) {
+      this.client.messages.set(this.id, new Map());
+    }
+
+    return this.client.messages.get(this.id)!;
+  }
 
   protected constructor(client: Client, data: T) {
     super(client, data);

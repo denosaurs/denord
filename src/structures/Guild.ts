@@ -334,18 +334,19 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     options: CreateChannel = {},
     reason?: string,
   ): Promise<GuildChannels> {
-    const permissionOverwrites = options.permissionOverwrites?.map(
-      ({ permissions, id, type }) => {
-        const { allow, deny } = unparsePermissionOverwrite(permissions);
+    const permissionOverwrites: channel.Overwrite[] | null | undefined = options
+      .permissionOverwrites?.map(
+        ({ permissions, id, type }) => {
+          const { allow, deny } = unparsePermissionOverwrite(permissions);
 
-        return {
-          id,
-          type,
-          allow,
-          deny,
-        };
-      },
-    );
+          return {
+            id,
+            type: type === "member" ? 1 : 0,
+            allow,
+            deny,
+          };
+        },
+      );
 
     const channel = await this.client.rest.createGuildChannel(this.id, {
       name,
@@ -519,8 +520,8 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
   }
 
   /** Fetches the widget for this guild. */
-  async getWidget(): Promise<Widget> {
-    const widget = await this.client.rest.getGuildWidget(this.id);
+  async getWidgetSettings(): Promise<Widget> {
+    const widget = await this.client.rest.getGuildWidgetSettings(this.id);
 
     return {
       enabled: widget.enabled,
