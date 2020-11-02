@@ -94,7 +94,7 @@ export type Events = {
   ready: [undefined];
   shardReady: [string];
 
-  channelCreate: [Channel];
+  channelCreate: [GuildChannels];
   channelUpdate: [Channel | undefined, Channel];
   channelDelete: [Channel];
   channelPinsUpdate: [
@@ -301,16 +301,12 @@ export class Client extends EventEmitter<Events> {
         }
 
         case "CHANNEL_CREATE": {
-          const channel = this.newChannelSwitch(e.data);
-          if (channel.type === "dm") {
-            this.dmChannels.set(channel.id, channel);
-          } else {
-            this.guildChannels.set(channel.id, channel);
+          const channel = this.newChannelSwitch(e.data) as GuildChannels;
+          this.guildChannels.set(channel.id, channel);
 
-            const guild = this.guilds.get(channel.guildId)!;
-            guild.channels.set(channel.id, channel);
-            this.guilds.set(guild.id, guild);
-          }
+          const guild = this.guilds.get(channel.guildId)!;
+          guild.channels.set(channel.id, channel);
+          this.guilds.set(guild.id, guild);
           this.emit("channelCreate", channel);
           break;
         }
@@ -578,7 +574,10 @@ export class Client extends EventEmitter<Events> {
             if (channel) {
               channel.lastMessageId = e.data.id;
 
-              this.guilds.get(channel.guildId)?.channels.set(channel.id, channel);
+              this.guilds.get(channel.guildId)?.channels.set(
+                channel.id,
+                channel,
+              );
             }
           } else {
             channel = this.dmChannels.get(e.data.channel_id);
