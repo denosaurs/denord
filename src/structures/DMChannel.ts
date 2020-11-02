@@ -17,6 +17,14 @@ export class DMChannel<T extends channel.DMChannel = channel.DMChannel>
   recipient: User;
   /** The unix timestamp of the newest pinned message. */
   lastPinTimestamp?: number;
+  /** A map used to cache messages in this channel, indexed by their id. */
+  get messages(): Map<Snowflake, Message> {
+    if (!this.client.messages.get(this.id)) {
+      this.client.messages.set(this.id, new Map());
+    }
+
+    return this.client.messages.get(this.id)!;
+  }
 
   constructor(client: Client, data: T) {
     super(client, data);
