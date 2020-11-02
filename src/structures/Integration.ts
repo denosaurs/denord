@@ -15,11 +15,23 @@ export interface Integration {
   user?: User;
   account: Account;
   syncedAt: number;
+  subscriberCount: number;
+  revoked: boolean;
+  application?: Application;
 }
 
 export interface Account {
   id: string;
   name: string;
+}
+
+export interface Application {
+  id: Snowflake;
+  name: string;
+  icon: string | null;
+  description: string;
+  summary: string;
+  bot?: User;
 }
 
 export function parseIntegration(
@@ -39,5 +51,15 @@ export function parseIntegration(
     user: integration.user && new User(client, integration.user),
     account: integration.account,
     syncedAt: Date.parse(integration.synced_at),
+    subscriberCount: integration.subscriber_count,
+    revoked: integration.revoked,
+    application: integration.application && {
+      id: integration.application.id,
+      name: integration.application.name,
+      icon: integration.application.icon,
+      description: integration.application.description,
+      summary: integration.application.summary,
+      bot: integration.application.bot && new User(client, integration.application.bot),
+    },
   };
 }

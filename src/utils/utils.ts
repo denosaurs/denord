@@ -10,8 +10,10 @@ export function imageURLFormatter(
     size?: ImageSize;
   } = {},
 ): string {
-  return `${URLs.CDN}${endpoint}.${format ??
-    (endpoint.includes("_a") ? "gif" : "jpg")}${size ? `?size=${size}` : ""}`;
+  return URLs.CDN + endpoint + "." + (format ?? (endpoint.includes("_a")
+    ? "gif"
+    : "jpg")) +
+    (size ? `?size=${size}` : "");
 }
 
 export const URLs = {

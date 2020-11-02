@@ -814,9 +814,11 @@ export class RestClient {
 
   async getGuildIntegrations(
     guildId: Discord.Snowflake,
+    params: Discord.integration.GetParams,
   ): Promise<Discord.integration.Integration[]> {
     return this.request(`guilds/${guildId}/integrations`, {
       method: "GET",
+      params,
     });
   }
 
@@ -903,6 +905,25 @@ export class RestClient {
     return this.request(`invites/${inviteCode}`, {
       method: "DELETE",
       reason,
+    });
+  }
+
+  //endregion
+
+  //region Template
+  async getTemplate(templateCode: string): Promise<Discord.template.Template> {
+    return this.request(`guilds/templates/${templateCode}`, {
+      method: "GET",
+    });
+  }
+
+  async createGuildFromTemplate(
+    templateCode: string,
+    data: Discord.template.createGuildFromTemplate,
+  ): Promise<Discord.guild.GatewayGuild> { // TODO: possibly not right return type
+    return this.request(`guilds/templates/${templateCode}`, {
+      method: "POST",
+      data,
     });
   }
 

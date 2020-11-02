@@ -286,14 +286,14 @@ export namespace channel {
     type: 1;
     last_message_id: Snowflake | null;
     recipients: [user.PublicUser];
-    last_pin_timestamp?: ISO8601;
+    last_pin_timestamp?: ISO8601 | null;
   }
 
   export interface GroupDMChannel extends BaseChannel {
     type: 3;
     last_message_id: Snowflake | null;
     recipients: user.PublicUser[];
-    last_pin_timestamp?: ISO8601;
+    last_pin_timestamp?: ISO8601 | null;
     application_id?: Snowflake;
     name: string | null;
     icon: string | null;
@@ -312,7 +312,7 @@ export namespace channel {
 
   export interface TextBasedGuildChannel extends GuildChannel {
     type: Extract<Type, 0 | 5>;
-    last_pin_timestamp?: ISO8601;
+    last_pin_timestamp?: ISO8601 | null;
     last_message_id: Snowflake | null;
     topic: string | null;
   }
@@ -588,10 +588,10 @@ export namespace guild {
     description: string | null;
     banner: string | null;
     premium_tier: 0 | 1 | 2 | 3;
-    premium_subscription_count?: number; // discord-api-docs#2034
+    premium_subscription_count?: number;
     preferred_locale: string;
     public_updates_channel_id: Snowflake | null;
-    max_video_channel_users?: number; // discord-api-docs#2034
+    max_video_channel_users?: number;
   }
 
   export interface CurrentUserGuild extends BaseGuild {
@@ -832,11 +832,23 @@ export namespace integration {
     user?: user.PublicUser;
     account: Account;
     synced_at: ISO8601;
+    subscriber_count: number;
+    revoked: boolean;
+    application?: Application;
   }
 
   export interface Account {
     id: string;
     name: string;
+  }
+
+  export interface Application {
+    id: Snowflake;
+    name: string;
+    icon: string | null;
+    description: string;
+    summary: string;
+    bot?: user.PublicUser;
   }
 
   export type Create = Pick<Integration, "id" | "type">;
@@ -847,6 +859,10 @@ export namespace integration {
       "expire_behavior" | "expire_grace_period" | "enable_emoticons"
     >
   >;
+
+  export interface GetParams {
+    include_applications?: boolean;
+  }
 }
 
 export namespace invite {
@@ -896,6 +912,27 @@ export namespace invite {
     channel_id: Snowflake;
     guild_id?: Snowflake;
     code: string;
+  }
+}
+
+export namespace template {
+  export interface Template {
+    code: string;
+    name: string;
+    description: string | null;
+    usage_count: number;
+    creator_id: Snowflake;
+    creator: user.PublicUser;
+    created_at: ISO8601;
+    updated_at: ISO8601;
+    source_guild_id: Snowflake;
+    serialized_source_guild: Partial<guild.BaseGuild>;
+    is_dirty: boolean | null;
+  }
+
+  export interface createGuildFromTemplate {
+    name: string;
+    icon?: string;
   }
 }
 
@@ -1163,6 +1200,7 @@ export namespace webhook {
     name: string | null;
     avatar: string | null;
     token?: string;
+    application_id: Snowflake | null;
   }
 
   export interface Create {

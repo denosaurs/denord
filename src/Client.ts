@@ -194,12 +194,15 @@ export class Client extends EventEmitter<Events> {
   /** A map of cached guild channels, indexed by their id. */
   guildChannels = new Map<Snowflake, GuildChannels>();
   /** A map of cached (group) dm channels, indexed by their id. */
-  dmChannels = new Map<Snowflake, DMChannel>();
+  dmChannels = new Map<Snowflake, DMChannel>(); // TODO: remove
   /** A map of cached guilds, indexed by their id. */
   guilds = new Map<Snowflake, GatewayGuild>();
   /** A map of cached users, indexed by their id. */
   users = new Map<Snowflake, User>();
-  /** A map of maps of cached messages indexed by their id, indexed by the channel id. */
+  /**
+   * A map of maps of cached messages indexed by their id,
+   * indexed by the channel id.
+   */
   messages = new Map<Snowflake, Map<Snowflake, Message>>();
   /** The current user. Is unset only before a shardReady event. */
   user?: PrivateUser;
@@ -347,14 +350,7 @@ export class Client extends EventEmitter<Events> {
             ? Date.parse(e.data.last_pin_timestamp)
             : undefined;
           let previousTimestamp: number | undefined;
-          if (this.dmChannels.has(e.data.channel_id)) {
-            channel = this.dmChannels.get(e.data.channel_id);
-            if (channel) {
-              previousTimestamp = channel.lastPinTimestamp;
-              channel.lastPinTimestamp = timestamp;
-              this.dmChannels.set(channel.id, channel);
-            }
-          } else {
+          if (e.data.guild_id) {
             channel = this.guildChannels.get(
               e.data.channel_id,
             ) as TextBasedGuildChannels;
@@ -366,6 +362,13 @@ export class Client extends EventEmitter<Events> {
               const guild = this.guilds.get(channel.guildId)!;
               guild.channels.set(channel.id, channel);
               this.guilds.set(guild.id, guild);
+            }
+          } else {
+            channel = this.dmChannels.get(e.data.channel_id);
+            if (channel) {
+              previousTimestamp = channel.lastPinTimestamp;
+              channel.lastPinTimestamp = timestamp;
+              this.dmChannels.set(channel.id, channel);
             }
           }
           this.emit(
@@ -955,6 +958,8 @@ export class Client extends EventEmitter<Events> {
     }
   }
 
+  // TODO: handle template
+
   /** Requests guild members. These then will be received through the guildMembersChunk event. */
   requestGuildMembers(
     shardNumber: number,
@@ -1049,10 +1054,10 @@ export class Client extends EventEmitter<Events> {
     return new Promise((_resolve) => {
       const found: Message[] = [];
       let i = 0;
-      function listener(_: unknown, what: Message) {
-        if (what.channelId !== channelId) return;
+      function listener(_: unknown, message: Message) {
+        if (message.channelId !== channelId) return;
         i++;
-        if (filter(what)) found.push(what);
+        if (filter(message)) found.push(message);
         if (options.max && found.length >= options.max) resolve(found);
         if (options.maxProcessed && i >= options.maxProcessed) resolve(found);
       }

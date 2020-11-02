@@ -47,7 +47,7 @@ export abstract class TextBasedGuildChannel<
     super(client, data);
 
     this.lastMessageId = data.last_message_id;
-    this.lastPinTimestamp = data.last_pin_timestamp
+    this.lastPinTimestamp = data.last_pin_timestamp // TODO: handle null?
       ? Date.parse(data.last_pin_timestamp)
       : undefined;
     this.topic = data.topic;

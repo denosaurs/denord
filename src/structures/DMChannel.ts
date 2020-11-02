@@ -31,7 +31,7 @@ export class DMChannel<T extends channel.DMChannel = channel.DMChannel>
 
     this.lastMessageId = data.last_message_id;
     this.recipient = new User(client, data.recipients[0]);
-    this.lastPinTimestamp = data.last_pin_timestamp
+    this.lastPinTimestamp = data.last_pin_timestamp // TODO: handle null?
       ? Date.parse(data.last_pin_timestamp)
       : undefined;
   }
