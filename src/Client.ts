@@ -55,6 +55,7 @@ export type AwaitMessagesOptions =
   | AwaitMessage & Required<Pick<AwaitMessage, "maxProcessed">>;
 
 export type TextBasedGuildChannels = TextChannel | NewsChannel;
+export type TextBasedChannel = DMChannel | TextBasedGuildChannels;
 export type GuildChannels =
   | TextBasedGuildChannels
   | VoiceChannel
@@ -93,11 +94,11 @@ export type Events = {
   ready: [undefined];
   shardReady: [string];
 
-  channelCreate: [GuildChannels];
-  channelUpdate: [GuildChannels | undefined, GuildChannels];
-  channelDelete: [GuildChannels];
+  channelCreate: [Channel];
+  channelUpdate: [Channel | undefined, Channel];
+  channelDelete: [Channel];
   channelPinsUpdate: [
-    TextBasedGuildChannels | {
+    TextBasedChannel | {
       id: Snowflake;
       guildId?: Snowflake;
     },
@@ -143,36 +144,33 @@ export type Events = {
   inviteCreate: [InviteCreate];
   inviteDelete: [Snowflake, Snowflake | undefined, string];
 
-  messageCreate: [TextBasedGuildChannels | undefined, Message];
+  messageCreate: [TextBasedChannel | undefined, Message];
   messageUpdate: [
-    TextBasedGuildChannels | undefined,
+    TextBasedChannel | undefined,
     Message | undefined,
     Message | PartialEditedMessage,
   ];
-  messageDelete: [TextBasedGuildChannels | undefined, Message | UnknownMessage];
+  messageDelete: [TextBasedChannel | undefined, Message | UnknownMessage];
   messageDeleteBulk: [
-    TextBasedGuildChannels | undefined,
+    TextBasedChannel | undefined,
     Map<Snowflake, Message | Snowflake>,
   ];
 
   messageReactionAdd: [
-    TextBasedGuildChannels | Snowflake,
+    TextBasedChannel | Snowflake,
     Message | Snowflake,
     Pick<Emoji, "id" | "name" | "animated">,
     User | Snowflake,
   ];
   messageReactionRemove: [
-    TextBasedGuildChannels | Snowflake,
+    TextBasedChannel | Snowflake,
     Message | Snowflake,
     Pick<Emoji, "id" | "name" | "animated">,
     User | Snowflake,
   ];
-  messageReactionRemoveAll: [
-    TextBasedGuildChannels | Snowflake,
-    Message | Snowflake,
-  ];
+  messageReactionRemoveAll: [TextBasedChannel | Snowflake, Message | Snowflake];
   messageReactionRemoveEmoji: [
-    TextBasedGuildChannels | Snowflake,
+    TextBasedChannel | Snowflake,
     Message | Snowflake,
     Pick<Emoji, "id" | "name" | "animated">,
   ];
@@ -199,6 +197,8 @@ export class Client extends EventEmitter<Events> {
   rest = new RestClient();
   /** A map of cached guild channels, indexed by their id. */
   guildChannels = new Map<Snowflake, GuildChannels>();
+  /** A map of cached (group) dm channels, indexed by their id. */
+  dmChannels = new Map<Snowflake, DMChannel>();
   /** A map of cached guilds, indexed by their id. */
   guilds = new Map<Snowflake, GatewayGuild>();
   /** A map of cached users, indexed by their id. */
@@ -303,34 +303,47 @@ export class Client extends EventEmitter<Events> {
         }
 
         case "CHANNEL_CREATE": {
-          const channel = this.newChannelSwitch(e.data) as GuildChannels;
-          this.guildChannels.set(channel.id, channel);
+          const channel = this.newChannelSwitch(e.data);
+          if (channel.type === "dm") {
+            this.dmChannels.set(channel.id, channel);
+          } else {
+            this.guildChannels.set(channel.id, channel);
 
-          const guild = this.guilds.get(channel.guildId)!;
-          guild.channels.set(channel.id, channel);
-          this.guilds.set(guild.id, guild);
+            const guild = this.guilds.get(channel.guildId)!;
+            guild.channels.set(channel.id, channel);
+            this.guilds.set(guild.id, guild);
+          }
           this.emit("channelCreate", channel);
           break;
         }
         case "CHANNEL_UPDATE": {
-          let oldChannel: GuildChannels | undefined;
-          const newChannel = this.newChannelSwitch(e.data) as GuildChannels;
-          oldChannel = this.guildChannels.get(e.data.id);
-          this.guildChannels.set(newChannel.id, newChannel);
+          let oldChannel: Channel | undefined;
+          const newChannel = this.newChannelSwitch(e.data);
+          if (newChannel.type === "dm") {
+            oldChannel = this.dmChannels.get(e.data.id);
+            this.dmChannels.set(newChannel.id, newChannel);
+          } else {
+            oldChannel = this.guildChannels.get(e.data.id);
+            this.guildChannels.set(newChannel.id, newChannel);
 
-          const guild = this.guilds.get(newChannel.guildId)!;
-          guild.channels.set(newChannel.id, newChannel);
-          this.guilds.set(guild.id, guild);
+            const guild = this.guilds.get(newChannel.guildId)!;
+            guild.channels.set(newChannel.id, newChannel);
+            this.guilds.set(guild.id, guild);
+          }
           this.emit("channelUpdate", oldChannel, newChannel);
           break;
         }
         case "CHANNEL_DELETE": {
-          const channel = this.newChannelSwitch(e.data) as GuildChannels;
-          this.guildChannels.delete(channel.id);
+          const channel = this.newChannelSwitch(e.data);
+          if (channel.type === "dm") {
+            this.dmChannels.delete(channel.id);
+          } else {
+            this.guildChannels.delete(channel.id);
 
-          const guild = this.guilds.get(channel.guildId)!;
-          guild.channels.delete(channel.id);
-          this.guilds.set(guild.id, guild);
+            const guild = this.guilds.get(channel.guildId)!;
+            guild.channels.delete(channel.id);
+            this.guilds.set(guild.id, guild);
+          }
           this.emit("channelDelete", channel);
           break;
         }
@@ -340,7 +353,14 @@ export class Client extends EventEmitter<Events> {
             ? Date.parse(e.data.last_pin_timestamp)
             : undefined;
           let previousTimestamp: number | undefined;
-          if (e.data.guild_id) {
+          if (this.dmChannels.has(e.data.channel_id)) {
+            channel = this.dmChannels.get(e.data.channel_id);
+            if (channel) {
+              previousTimestamp = channel.lastPinTimestamp;
+              channel.lastPinTimestamp = timestamp;
+              this.dmChannels.set(channel.id, channel);
+            }
+          } else {
             channel = this.guildChannels.get(
               e.data.channel_id,
             ) as TextBasedGuildChannels;
@@ -544,7 +564,7 @@ export class Client extends EventEmitter<Events> {
 
         case "MESSAGE_CREATE": {
           const message = new Message(this, e.data);
-          let channel: TextBasedGuildChannels | undefined;
+          let channel: TextBasedChannel | undefined;
           if (e.data.guild_id) {
             channel = this.guildChannels.get(
               e.data.channel_id,
@@ -561,6 +581,13 @@ export class Client extends EventEmitter<Events> {
                 this.guilds.set(guild.id, guild);
               }
             }
+          } else {
+            channel = this.dmChannels.get(e.data.channel_id);
+
+            if (channel) {
+              channel.messages.set(message.id, message);
+              this.dmChannels.set(channel.id, channel);
+            }
           }
           this.emit("messageCreate", channel, message);
           break;
@@ -568,7 +595,7 @@ export class Client extends EventEmitter<Events> {
         case "MESSAGE_UPDATE": {
           let oldMessage;
           let newMessage;
-          let channel: TextBasedGuildChannels | undefined;
+          let channel: TextBasedChannel | undefined;
           if (e.data.guild_id) {
             channel = this.guildChannels.get(
               e.data.channel_id,
@@ -593,6 +620,21 @@ export class Client extends EventEmitter<Events> {
                 }
               }
             }
+          } else {
+            channel = this.dmChannels.get(e.data.channel_id);
+
+            if (channel) {
+              oldMessage = channel.messages.get(e.data.id);
+
+              if (oldMessage) {
+                newMessage = new Message(this, {
+                  ...oldMessage.raw,
+                  ...e.data,
+                });
+                channel.messages.set(e.data.id, newMessage);
+                this.dmChannels.set(channel.id, channel);
+              }
+            }
           }
 
           this.emit(
@@ -605,7 +647,7 @@ export class Client extends EventEmitter<Events> {
         }
         case "MESSAGE_DELETE": {
           let message;
-          let channel: TextBasedGuildChannels | undefined;
+          let channel: TextBasedChannel | undefined;
           if (e.data.guild_id) {
             channel = this.guildChannels.get(
               e.data.channel_id,
@@ -623,8 +665,15 @@ export class Client extends EventEmitter<Events> {
                 this.guilds.set(guild.id, guild);
               }
             }
-          }
+          } else {
+            channel = this.dmChannels.get(e.data.channel_id);
 
+            if (channel) {
+              message = channel.messages.get(e.data.id);
+              channel.messages.delete(e.data.id);
+              this.dmChannels.set(channel.id, channel);
+            }
+          }
           this.emit(
             "messageDelete",
             channel,
@@ -638,7 +687,7 @@ export class Client extends EventEmitter<Events> {
         }
         case "MESSAGE_DELETE_BULK": {
           let messages = new Map<Snowflake, Message | Snowflake>();
-          let channel: TextBasedGuildChannels | undefined;
+          let channel: TextBasedChannel | undefined;
           if (e.data.guild_id) {
             channel = this.guildChannels.get(
               e.data.channel_id,
@@ -659,15 +708,25 @@ export class Client extends EventEmitter<Events> {
                 this.guilds.set(guild.id, guild);
               }
             }
-          }
+          } else {
+            channel = this.dmChannels.get(e.data.channel_id);
 
+            if (channel) {
+              for (const id of e.data.ids) {
+                const message = channel.messages.get(id);
+                messages.set(id, message || id);
+                channel.messages.delete(id);
+              }
+              this.dmChannels.set(channel.id, channel);
+            }
+          }
           this.emit("messageDeleteBulk", channel, messages);
           break;
         }
 
         case "MESSAGE_REACTION_ADD": {
           let message: Message | undefined;
-          let channel: TextBasedGuildChannels | undefined;
+          let channel: TextBasedChannel | undefined;
           const user = this.users.get(e.data.user_id);
           if (e.data.guild_id) {
             channel = this.guildChannels.get(
@@ -702,8 +761,33 @@ export class Client extends EventEmitter<Events> {
                 }
               }
             }
-          }
+          } else {
+            channel = this.dmChannels.get(e.data.channel_id);
 
+            if (channel) {
+              message = channel.messages.get(e.data.message_id);
+              if (message) {
+                const previousReaction = message.reactions.get(
+                  e.data.emoji.id ?? e.data.emoji.name!,
+                );
+                if (previousReaction) {
+                  message.reactions.set(e.data.emoji.id ?? e.data.emoji.name!, {
+                    count: ++previousReaction.count,
+                    emoji: e.data.emoji,
+                    me: e.data.user_id === this.user!.id || previousReaction.me,
+                  });
+                } else {
+                  message.reactions.set(e.data.emoji.id ?? e.data.emoji.name!, {
+                    count: 0,
+                    emoji: e.data.emoji,
+                    me: e.data.user_id === this.user!.id,
+                  });
+                }
+                channel.messages.set(message.id, message);
+                this.dmChannels.set(channel.id, channel);
+              }
+            }
+          }
           this.emit(
             "messageReactionAdd",
             channel || e.data.channel_id,
@@ -715,7 +799,7 @@ export class Client extends EventEmitter<Events> {
         }
         case "MESSAGE_REACTION_REMOVE": {
           let message;
-          let channel: TextBasedGuildChannels | undefined;
+          let channel: TextBasedChannel | undefined;
           const user = this.users.get(e.data.user_id);
           if (e.data.guild_id) {
             channel = this.guildChannels.get(
@@ -743,8 +827,25 @@ export class Client extends EventEmitter<Events> {
                 }
               }
             }
+          } else {
+            channel = this.dmChannels.get(e.data.channel_id);
+            if (channel) {
+              message = channel.messages.get(e.data.message_id);
+              if (message) {
+                const previousReaction = message.reactions.get(
+                  e.data.emoji.id ?? e.data.emoji.name!,
+                )!;
+                message.reactions.set(e.data.emoji.id ?? e.data.emoji.name!, {
+                  count: --previousReaction.count,
+                  emoji: e.data.emoji,
+                  me: e.data.user_id !== this.user!.id && previousReaction.me,
+                });
+                message.reactions.delete(e.data.emoji.id ?? e.data.emoji.name!);
+                channel.messages.set(message.id, message);
+                this.dmChannels.set(channel.id, channel);
+              }
+            }
           }
-
           this.emit(
             "messageReactionRemove",
             channel || e.data.channel_id,
@@ -756,7 +857,7 @@ export class Client extends EventEmitter<Events> {
         }
         case "MESSAGE_REACTION_REMOVE_ALL": {
           let message: Message | undefined;
-          let channel: TextBasedGuildChannels | undefined;
+          let channel: TextBasedChannel | undefined;
           if (e.data.guild_id) {
             channel = this.guildChannels.get(
               e.data.channel_id,
@@ -775,8 +876,17 @@ export class Client extends EventEmitter<Events> {
                 }
               }
             }
+          } else {
+            channel = this.dmChannels.get(e.data.channel_id);
+            if (channel) {
+              message = channel.messages.get(e.data.message_id);
+              if (message) {
+                message.reactions.clear();
+                channel.messages.set(message.id, message);
+                this.dmChannels.set(channel.id, channel);
+              }
+            }
           }
-
           this.emit(
             "messageReactionRemoveAll",
             channel || e.data.channel_id,
@@ -786,7 +896,7 @@ export class Client extends EventEmitter<Events> {
         }
         case "MESSAGE_REACTION_REMOVE_EMOJI": {
           let message: Message | undefined;
-          let channel: TextBasedGuildChannels | undefined;
+          let channel: TextBasedChannel | undefined;
           if (e.data.guild_id) {
             channel = this.guildChannels.get(
               e.data.channel_id,
@@ -806,8 +916,18 @@ export class Client extends EventEmitter<Events> {
                 }
               }
             }
-          }
+          } else {
+            channel = this.dmChannels.get(e.data.channel_id);
 
+            if (channel) {
+              message = channel.messages.get(e.data.message_id);
+              if (message) {
+                message.reactions.delete(e.data.emoji.id ?? e.data.emoji.name!);
+                channel.messages.set(message.id, message);
+                this.dmChannels.set(channel.id, channel);
+              }
+            }
+          }
           this.emit(
             "messageReactionRemoveEmoji",
             channel || e.data.channel_id,
