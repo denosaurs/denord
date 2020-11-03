@@ -59,7 +59,8 @@ export function parseIntegration(
       icon: integration.application.icon,
       description: integration.application.description,
       summary: integration.application.summary,
-      bot: integration.application.bot && new User(client, integration.application.bot),
+      bot: integration.application.bot &&
+        new User(client, integration.application.bot),
     },
   };
 }

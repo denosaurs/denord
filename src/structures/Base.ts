@@ -3,7 +3,7 @@ import type { Snowflake } from "../discord.ts";
 
 export abstract class Base<T> {
   client: Client;
-  /** The unchanged object received from discord. */
+  /** The raw object received from discord when this instance was created. */
   raw: T;
 
   protected constructor(client: Client, data: T) {

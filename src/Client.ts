@@ -281,7 +281,6 @@ export class Client extends EventEmitter<Events> {
           const guild = this.guilds.get(e.data.guild_id)!;
           const role = new Role(this, e.data.role, e.data.guild_id);
           guild.roles.set(e.data.role.id, role);
-          this.guilds.set(e.data.guild_id, guild);
           this.emit("guildRoleCreate", guild, role);
           break;
         }
@@ -290,7 +289,6 @@ export class Client extends EventEmitter<Events> {
           const oldRole = guild.roles.get(e.data.role.id)!;
           const newRole = new Role(this, e.data.role, e.data.guild_id);
           guild.roles.set(e.data.role.id, newRole);
-          this.guilds.set(e.data.guild_id, guild);
           this.emit("guildRoleUpdate", guild, oldRole, newRole);
           break;
         }
@@ -298,7 +296,6 @@ export class Client extends EventEmitter<Events> {
           const guild = this.guilds.get(e.data.guild_id)!;
           const role = guild.roles.get(e.data.role_id)!;
           guild.roles.delete(e.data.role_id);
-          this.guilds.set(e.data.guild_id, guild);
           this.emit("guildRoleDelete", guild, role);
           break;
         }
@@ -309,7 +306,6 @@ export class Client extends EventEmitter<Events> {
 
           const guild = this.guilds.get(channel.guildId)!;
           guild.channels.set(channel.id, channel);
-          this.guilds.set(guild.id, guild);
           this.emit("channelCreate", channel);
           break;
         }
@@ -325,7 +321,6 @@ export class Client extends EventEmitter<Events> {
 
             const guild = this.guilds.get(newChannel.guildId)!;
             guild.channels.set(newChannel.id, newChannel);
-            this.guilds.set(guild.id, guild);
           }
           this.emit("channelUpdate", oldChannel, newChannel);
           break;
@@ -339,7 +334,6 @@ export class Client extends EventEmitter<Events> {
 
             const guild = this.guilds.get(channel.guildId)!;
             guild.channels.delete(channel.id);
-            this.guilds.set(guild.id, guild);
           }
           this.emit("channelDelete", channel);
           break;
@@ -357,18 +351,18 @@ export class Client extends EventEmitter<Events> {
             if (channel) {
               previousTimestamp = channel.lastPinTimestamp;
               channel.lastPinTimestamp = timestamp;
-              this.guildChannels.set(channel.id, channel);
 
               const guild = this.guilds.get(channel.guildId)!;
-              guild.channels.set(channel.id, channel);
-              this.guilds.set(guild.id, guild);
+              const guildChannel = guild.channels.get(
+                channel.id,
+              )! as TextBasedGuildChannels;
+              guildChannel.lastPinTimestamp = timestamp;
             }
           } else {
             channel = this.dmChannels.get(e.data.channel_id);
             if (channel) {
               previousTimestamp = channel.lastPinTimestamp;
               channel.lastPinTimestamp = timestamp;
-              this.dmChannels.set(channel.id, channel);
             }
           }
           this.emit(
@@ -387,10 +381,7 @@ export class Client extends EventEmitter<Events> {
           const member = new GuildMember(this, e.data, e.data.guild_id);
           this.users.set(member.user.id, member.user);
           const guild = this.guilds.get(e.data.guild_id);
-          if (guild) {
-            guild.members.set(member.user.id, member);
-            this.guilds.set(e.data.guild_id, guild);
-          }
+          guild?.members.set(member.user.id, member);
           this.emit("guildMemberAdd", guild || e.data.guild_id, member);
           break;
         }
@@ -408,7 +399,6 @@ export class Client extends EventEmitter<Events> {
                 ...e.data,
               }, e.data.guild_id);
               guild.members.set(e.data.user.id, newMember);
-              this.guilds.set(e.data.guild_id, guild);
             }
           }
           this.emit(
@@ -429,13 +419,10 @@ export class Client extends EventEmitter<Events> {
           break;
         }
         case "GUILD_MEMBER_REMOVE": {
-          const guild = this.guilds.get(e.data.guild_id);
           const user = new User(this, e.data.user);
           this.users.set(user.id, user);
-          if (guild) {
-            guild.members.delete(user.id);
-            this.guilds.set(e.data.guild_id, guild);
-          }
+          const guild = this.guilds.get(e.data.guild_id);
+          guild?.members.delete(user.id);
           this.emit("guildMemberRemove", guild || e.data.guild_id, user);
           break;
         }
@@ -460,7 +447,6 @@ export class Client extends EventEmitter<Events> {
           );
           if (guild) {
             guild.emojis = newEmojis;
-            this.guilds.set(guild.id, guild);
 
             if (newEmojis.size > guild.emojis.size) {
               let addedEmoji: GuildEmoji;
@@ -552,7 +538,6 @@ export class Client extends EventEmitter<Events> {
             if (guild) {
               oldPresence = guild.presences.get(e.data.user.id);
               guild.presences.set(e.data.user.id, newPresence);
-              this.guilds.set(e.data.guild_id, guild);
             }
           }
           this.emit("presenceUpdate", guild, oldPresence, newPresence);
@@ -770,7 +755,6 @@ export class Client extends EventEmitter<Events> {
                 );
               }
             }
-            this.guilds.set(e.data.guild_id, guild);
           }
           this.emit("guildMembersChunk", guild || e.data.guild_id, members, {
             index: e.data.chunk_index,

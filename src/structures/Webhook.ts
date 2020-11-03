@@ -24,7 +24,8 @@ export interface ExecuteWebhook extends Omit<SendMessageOptions, "embed"> {
 
 export function parseWebhook(
   client: Client,
-  { guild_id, channel_id, user, type, application_id, ...webhook }: webhook.Webhook,
+  { guild_id, channel_id, user, type, application_id, ...webhook }:
+    webhook.Webhook,
 ): Webhook {
   return {
     ...webhook,
