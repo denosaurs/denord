@@ -19,7 +19,7 @@ export class DMChannel<T extends channel.DMChannel = channel.DMChannel>
   lastPinTimestamp?: number;
   /** A map used to cache messages in this channel, indexed by their id. */
   get messages(): Map<Snowflake, Message> {
-    if (!this.client.messages.get(this.id)) {
+    if (!this.client.messages.has(this.id)) {
       this.client.messages.set(this.id, new Map());
     }
 
