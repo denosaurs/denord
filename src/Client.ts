@@ -56,7 +56,7 @@ export type AwaitMessagesOptions =
   | AwaitMessage & Required<Pick<AwaitMessage, "maxProcessed">>;
 
 export type TextBasedGuildChannels = TextChannel | NewsChannel;
-export type TextBasedChannel = DMChannel | TextBasedGuildChannels;
+export type TextBasedChannels = DMChannel | TextBasedGuildChannels;
 export type GuildChannels =
   | TextBasedGuildChannels
   | VoiceChannel
@@ -99,7 +99,7 @@ export type Events = {
   channelUpdate: [Channel | undefined, Channel];
   channelDelete: [Channel];
   channelPinsUpdate: [
-    TextBasedChannel | {
+    TextBasedChannels | {
       id: Snowflake;
       guildId?: Snowflake;
     },
@@ -145,7 +145,7 @@ export type Events = {
   inviteCreate: [InviteCreate];
   inviteDelete: [Snowflake, Snowflake | undefined, string];
 
-  messageCreate: [TextBasedChannel | undefined, Message];
+  messageCreate: [TextBasedChannels | undefined, Message];
   messageUpdate: [
     Message | undefined,
     Message | PartialEditedMessage,
@@ -213,13 +213,12 @@ export class Client extends EventEmitter<Events> {
     intents,
     shardAmount,
   }: {
-    intents: Record<keyof typeof intentsMap, boolean> | number | boolean;
-    shardAmount: number;
-  } = {
-    intents: true,
-    shardAmount: 1,
-  }) {
+    intents?: Record<keyof typeof intentsMap, boolean> | number | boolean;
+    shardAmount?: number;
+  } = {}) {
     super();
+
+    intents ??= true;
 
     let newIntents = 0;
 
@@ -240,7 +239,7 @@ export class Client extends EventEmitter<Events> {
       }
     }
 
-    this.gateway = new ShardManager(shardAmount, newIntents);
+    this.gateway = new ShardManager(shardAmount ?? 1, newIntents);
     this.gateway.on("raw", (e) => {
       switch (e.name) {
         case "READY":
@@ -549,13 +548,13 @@ export class Client extends EventEmitter<Events> {
         case "MESSAGE_CREATE": {
           const message = new Message(this, e.data);
 
-          const channelMessages = this.messages.get(e.data.channel_id);
-          if (!channelMessages) {
+          if (!this.messages.has(e.data.channel_id)) {
             this.messages.set(e.data.channel_id, new Map());
           }
-          channelMessages!.set(e.data.id, message);
+          const channelMessages = this.messages.get(e.data.channel_id)!;
+          channelMessages.set(e.data.id, message);
 
-          let channel: TextBasedChannel | undefined;
+          let channel: TextBasedChannels | undefined;
           if (e.data.guild_id) {
             channel = this.guildChannels.get(
               e.data.channel_id,
@@ -582,11 +581,11 @@ export class Client extends EventEmitter<Events> {
         case "MESSAGE_UPDATE": {
           let newMessage: Message | undefined;
 
-          const channelMessages = this.messages.get(e.data.channel_id);
-          if (!channelMessages) {
+          if (!this.messages.has(e.data.channel_id)) {
             this.messages.set(e.data.channel_id, new Map());
           }
-          const oldMessage = channelMessages!.get(e.data.id);
+          const channelMessages = this.messages.get(e.data.channel_id)!;
+          const oldMessage = channelMessages.get(e.data.id);
 
           if (oldMessage) {
             newMessage = new Message(this, {
