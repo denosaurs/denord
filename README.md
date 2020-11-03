@@ -15,7 +15,7 @@ Denord is a module to interact with the discord API.
 
 For event handling, the [event](https://github.com/denosaurs/event) module is used.
 
-##Example
+## Example
 ```ts
 import { Client } from "https://deno.land/x/denord/src/Client.ts";
 

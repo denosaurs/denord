@@ -144,7 +144,7 @@ export type Events = {
   inviteCreate: [InviteCreate];
   inviteDelete: [Snowflake, Snowflake | undefined, string];
 
-  messageCreate: [TextBasedChannels | undefined, Message];
+  messageCreate: [TextBasedChannels | Snowflake, Message];
   messageUpdate: [
     Message | undefined,
     Message | PartialEditedMessage,
@@ -573,7 +573,7 @@ export class Client extends EventEmitter<Events> {
               channel.lastMessageId = e.data.id;
             }
           }
-          this.emit("messageCreate", channel, message);
+          this.emit("messageCreate", channel || e.data.channel_id, message);
           break;
         }
         case "MESSAGE_UPDATE": {
