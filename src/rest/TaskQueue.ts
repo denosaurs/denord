@@ -1,9 +1,3 @@
-/** Ratelimit options for TaskQueue */
-export interface RateLimit {
-  remaining: number;
-  reset?: number;
-}
-
 /** Representation of a runnable task */
 export type Task = () => Promise<unknown>;
 
@@ -19,13 +13,12 @@ export class TaskQueue {
   writer;
   reader;
 
-  rateLimit: RateLimit;
+  rateLimit = {
+    remaining: 1,
+    reset: 0,
+  };
 
   constructor() {
-    this.rateLimit = {
-      remaining: 1,
-    };
-
     const stream = new TransformStream<Runtime, Runtime>();
     this.writer = stream.writable.getWriter();
     this.reader = stream.readable.getReader();
@@ -37,7 +30,7 @@ export class TaskQueue {
       await new Promise((res) =>
         setTimeout(
           res,
-          Math.max(0, ((this.rateLimit.reset || 0) - Date.now()) + 1),
+          Math.max(0, (this.rateLimit.reset - Date.now()) + 1),
         )
       );
     }
