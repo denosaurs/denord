@@ -13,6 +13,7 @@ export interface Webhook {
   name: string | null;
   avatar: string | null;
   token?: string;
+  applicationId: Snowflake | null;
 }
 
 export interface ExecuteWebhook extends Omit<SendMessageOptions, "embed"> {
@@ -23,7 +24,8 @@ export interface ExecuteWebhook extends Omit<SendMessageOptions, "embed"> {
 
 export function parseWebhook(
   client: Client,
-  { guild_id, channel_id, user, type, ...webhook }: webhook.Webhook,
+  { guild_id, channel_id, user, type, application_id, ...webhook }:
+    webhook.Webhook,
 ): Webhook {
   return {
     ...webhook,
@@ -31,5 +33,6 @@ export function parseWebhook(
     channelId: channel_id,
     type: type === 1 ? "incoming" : "channelFollower",
     user: user && new User(client, user),
+    applicationId: application_id,
   };
 }

@@ -61,13 +61,13 @@ export function unparsePermissionOverwrite(
 
 export function unparseEditPermissionOverwrite(
   permissionOverwrites?: PermissionOverwrite[] | null,
-): channel.OverwriteSend[] | undefined | null {
+): channel.Overwrite[] | undefined | null {
   return permissionOverwrites?.map(({ permissions, id, type }) => {
     const { allow, deny } = unparsePermissionOverwrite(permissions);
 
     return {
       id,
-      type,
+      type: type === "member" ? 1 : 0,
       allow,
       deny,
     };
@@ -95,11 +95,11 @@ export abstract class GuildChannel<T extends channel.GuildChannel>
     this.parentId = data.parent_id;
     this.guildId = data.guild_id;
     this.permissionOverwrites = data.permission_overwrites.map((
-      { id, type, allow_new, deny_new },
+      { id, type, allow, deny },
     ) => ({
       id,
-      type,
-      permissions: parsePermissionOverwritePermissions(allow_new, deny_new),
+      type: type ? "member" : "role",
+      permissions: parsePermissionOverwritePermissions(allow, deny),
     }));
   }
 
@@ -116,7 +116,7 @@ export abstract class GuildChannel<T extends channel.GuildChannel>
       {
         allow,
         deny,
-        type: overwrite.type,
+        type: overwrite.type === "member" ? 1 : 0,
       },
       reason,
     );

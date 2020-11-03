@@ -10,14 +10,15 @@ export function imageURLFormatter(
     size?: ImageSize;
   } = {},
 ): string {
-  return `${URLs.CDN}${endpoint}.${format ??
-    (endpoint.includes("_a") ? "gif" : "jpg")}${size ? `?size=${size}` : ""}`;
+  return URLs.CDN + endpoint + "." +
+    (format ?? (endpoint.includes("_a") ? "gif" : "jpg")) +
+    (size ? `?size=${size}` : "");
 }
 
 export const URLs = {
   CDN: "https://cdn.discordapp.com/",
-  REST: "https://discord.com/api/v6/",
-  Gateway: "wss://gateway.discord.gg/?v=6&encoding=json",
+  REST: "https://discord.com/api/v8/",
+  Gateway: "wss://gateway.discord.gg/?v=8&encoding=json",
 };
 
 type OmitKeysThatDontMatchEntry<

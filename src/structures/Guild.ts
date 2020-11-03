@@ -73,14 +73,14 @@ const featuresMap = {
   "VANITY_URL": "vanityURL",
   "VERIFIED": "verified",
   "PARTNERED": "partnered",
-  "PUBLIC": "public",
+  "COMMUNITY": "community",
   "COMMERCE": "commerce",
   "NEWS": "news",
   "DISCOVERABLE": "discoverable",
   "FEATURABLE": "featurable",
   "ANIMATED_ICON": "animatedIcon",
   "BANNER": "banner",
-  "PUBLIC_DISABLED": "publicDisabled",
+  "WELCOME_SCREEN_ENABLED": "welcomeScreenEnabled",
 } as const;
 
 export interface Widget {
@@ -334,18 +334,19 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     options: CreateChannel = {},
     reason?: string,
   ): Promise<GuildChannels> {
-    const permissionOverwrites = options.permissionOverwrites?.map(
-      ({ permissions, id, type }) => {
-        const { allow, deny } = unparsePermissionOverwrite(permissions);
+    const permissionOverwrites: channel.Overwrite[] | null | undefined = options
+      .permissionOverwrites?.map(
+        ({ permissions, id, type }) => {
+          const { allow, deny } = unparsePermissionOverwrite(permissions);
 
-        return {
-          id,
-          type,
-          allow,
-          deny,
-        };
-      },
-    );
+          return {
+            id,
+            type: type === "member" ? 1 : 0,
+            allow,
+            deny,
+          };
+        },
+      );
 
     const channel = await this.client.rest.createGuildChannel(this.id, {
       name,
@@ -477,8 +478,10 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
   }
 
   /** Fetches an array of integrations connected to this guild. */
-  async getIntegrations(): Promise<Integration[]> {
-    const integrations = await this.client.rest.getGuildIntegrations(this.id);
+  async getIntegrations(includeApplications?: boolean): Promise<Integration[]> {
+    const integrations = await this.client.rest.getGuildIntegrations(this.id, {
+      include_applications: includeApplications,
+    });
 
     return integrations.map((integration) =>
       parseIntegration(this.client, integration)
@@ -519,8 +522,8 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
   }
 
   /** Fetches the widget for this guild. */
-  async getWidget(): Promise<Widget> {
-    const widget = await this.client.rest.getGuildWidget(this.id);
+  async getWidgetSettings(): Promise<Widget> {
+    const widget = await this.client.rest.getGuildWidgetSettings(this.id);
 
     return {
       enabled: widget.enabled,

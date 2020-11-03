@@ -69,10 +69,9 @@ export class User<T extends user.PublicUser = user.PublicUser>
   }
 
   /** Returns the url for the default avatar. */
-  defaultAvatarURL(size?: ImageSize): string {
+  defaultAvatarURL(): string {
     return imageURLFormatter(`embed/avatars/${this.defaultAvatar}`, {
       format: "png",
-      size,
     });
   }
 
@@ -83,7 +82,7 @@ export class User<T extends user.PublicUser = user.PublicUser>
   } = {}): string {
     return this.avatar
       ? imageURLFormatter(`avatars/${this.id}/${this.avatar}`, options)
-      : this.defaultAvatarURL(options.size);
+      : this.defaultAvatarURL();
   }
 
   /** Gets the dm channel for this user. */
