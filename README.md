@@ -11,17 +11,33 @@
 
 ---
 
+Denord is a module to interact with the discord API.
+
+For event handling, the [event](https://github.com/denosaurs/event) module is used.
+
+##Example
+```ts
+import { Client } from "https://deno.land/x/denord/src/Client.ts";
+
+const client = new Client();
+await client.connect("TOKEN");
+console.log("ready");
+
+for await (const [channel, message] of client.asyncOn("messageCreate")) {
+  if (message.content === "!ping") {
+    channel?.sendMessage({
+      content: `${message.author.mention} pong`,
+    });
+  }
+}
+```
+
 ## Maintainers
 
 - crowlKats ([@crowlKats](https://github.com/crowlKats))
 - Filippo Rossi ([@qu4k](https://github.com/qu4k))
 
 ## Other
-
-### Related
-
-- [eris](https://github.com/abalabahaha/eris) - A NodeJS Discord library
-- [discord.js](https://github.com/discordjs/discord.js) - A powerful JavaScript library for interacting with the Discord API
 
 ### Contribution
 
