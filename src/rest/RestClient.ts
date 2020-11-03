@@ -1,7 +1,7 @@
 import type * as Discord from "../discord.ts";
 import { URLs } from "../utils/utils.ts";
 import { DiscordJSONError, HTTPError } from "./Error.ts";
-import { RateLimit, TaskQueue } from "./TaskQueue.ts";
+import { TaskQueue } from "./TaskQueue.ts";
 
 /**
  * A client to make HTTP requests to Discord
@@ -40,6 +40,8 @@ export class RestClient {
       reason?: string;
     },
   ): Promise<T> {
+    this.buckets[endpoint] ||= new TaskQueue();
+
     const task = async (): Promise<T> => {
       const headers = new Headers({
         "User-Agent": "DiscordBot (https://github.com/denosaurs/denord, 0.0.1)",
@@ -83,18 +85,12 @@ export class RestClient {
         body,
       });
 
-      const bucket = res.headers.get("x-ratelimit-bucket");
-      if (bucket) {
-        const ratelimit: RateLimit = {
-          bucket,
-          limit: parseInt(res.headers.get("x-ratelimit-limit")!),
-          remaining: parseInt(res.headers.get("x-ratelimit-remaining")!),
-          reset: parseFloat(res.headers.get("x-ratelimit-reset")!) * 1e3,
-          resetAfter: parseFloat(res.headers.get("x-ratelimit-reset-after")!) *
-            1e3,
-        };
-        this.buckets[endpoint].ratelimit.reset = ratelimit.reset;
-        this.buckets[endpoint].ratelimit.remaining = ratelimit.remaining;
+      if (res.headers.has("x-ratelimit-bucket")) {
+        this.buckets[endpoint].rateLimit.reset =
+          parseFloat(res.headers.get("x-ratelimit-reset")!) * 1e3;
+        this.buckets[endpoint].rateLimit.remaining = parseInt(
+          res.headers.get("x-ratelimit-remaining")!,
+        );
       }
 
       switch (res.status) {
@@ -138,11 +134,7 @@ export class RestClient {
           throw new HTTPError(res.status, "Unexpected response");
       }
     };
-    this.buckets[endpoint] ||= new TaskQueue({
-      resetAfter: 500,
-      limit: 1,
-      remaining: 1,
-    });
+
     return this.buckets[endpoint].push(task) as T;
   }
 

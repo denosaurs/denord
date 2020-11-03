@@ -1,10 +1,7 @@
 /** Ratelimit options for TaskQueue */
 export interface RateLimit {
-  bucket?: string;
-  limit: number;
   remaining: number;
   reset?: number;
-  resetAfter: number;
 }
 
 /** Representation of a runnable task */
@@ -19,68 +16,47 @@ interface Runtime {
 
 /** Ratelimit tasks and execute them sequentially  */
 export class TaskQueue {
-  ratelimit: RateLimit;
+  writer;
+  reader;
 
-  queue: Runtime[];
-  busy?: number;
+  rateLimit: RateLimit;
 
-  constructor(rate: RateLimit) {
-    this.ratelimit = rate;
-    this.queue = [];
-    this.busy = undefined;
+  constructor() {
+    this.rateLimit = {
+      remaining: 1,
+    };
+
+    const stream = new TransformStream<Runtime, Runtime>();
+    this.writer = stream.writable.getWriter();
+    this.reader = stream.readable.getReader();
   }
 
-  private run(override: boolean) {
-    if (this.queue.length === 0) {
-      if (this.busy) {
-        clearTimeout(this.busy);
-        this.busy = undefined;
-      }
-      console.log("Queue empty");
-      return;
+  async run() {
+    const { value } = await this.reader.read();
+    if (this.rateLimit.remaining <= 0) {
+      await new Promise((res) =>
+        setTimeout(
+          res,
+          Math.max(0, ((this.rateLimit.reset || 0) - Date.now()) + 1),
+        )
+      );
     }
-    if (this.busy && !override) {
-      console.log("Busy");
-      return;
-    }
-    const now = Date.now();
-    const delay = this.ratelimit.resetAfter;
-    if (!this.ratelimit.reset || this.ratelimit.reset < now - delay) {
-      this.ratelimit.reset = now - delay;
-      this.ratelimit.remaining = this.ratelimit.limit;
-    }
-    if (this.ratelimit.remaining <= 0) {
-      this.busy = setTimeout(() => {
-        this.busy = undefined;
-        this.run(true);
-      }, Math.max(0, (this.ratelimit.reset || 0) - now + delay) + 1);
-      return;
-    }
-    --this.ratelimit.remaining;
+    this.rateLimit.remaining--;
 
-    this.busy = 1;
-    const runtime = this.queue.shift()!;
-    runtime
+    value!
       .task()
-      .then(runtime.resolve)
-      .catch(runtime.reject)
-      .finally(() => {
-        if (this.queue.length > 0) {
-          this.run(true);
-        } else {
-          this.busy = undefined;
-        }
-      });
+      .then(value!.resolve)
+      .catch(value!.reject);
   }
 
-  async push(task: Task): Promise<unknown> {
-    return new Promise((resolve, reject) => {
-      this.queue.push({
+  push(task: Task): Promise<unknown> {
+    return new Promise(async (resolve, reject) => {
+      await this.writer.write({
         task,
         resolve,
         reject,
       });
-      this.run(false);
+      await this.run();
     });
   }
 }
