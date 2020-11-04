@@ -7,16 +7,16 @@ export interface Integration {
   name: string;
   type: string;
   enabled: boolean;
-  syncing: boolean;
-  roleId: Snowflake;
+  syncing?: boolean;
+  roleId?: Snowflake;
   enableEmoticons?: boolean;
-  expireBehavior: 0 | 1;
-  expireGracePeriod: number;
+  expireBehavior?: 0 | 1;
+  expireGracePeriod?: number;
   user?: User;
   account: Account;
-  syncedAt: number;
-  subscriberCount: number;
-  revoked: boolean;
+  syncedAt?: number;
+  subscriberCount?: number;
+  revoked?: boolean;
   application?: Application;
 }
 
@@ -50,7 +50,9 @@ export function parseIntegration(
     expireGracePeriod: integration.expire_grace_period,
     user: integration.user && new User(client, integration.user),
     account: integration.account,
-    syncedAt: Date.parse(integration.synced_at),
+    syncedAt: integration.synced_at
+      ? Date.parse(integration.synced_at)
+      : undefined,
     subscriberCount: integration.subscriber_count,
     revoked: integration.revoked,
     application: integration.application && {

@@ -824,16 +824,16 @@ export namespace integration {
     name: string;
     type: string;
     enabled: boolean;
-    syncing: boolean;
-    role_id: Snowflake;
+    syncing?: boolean;
+    role_id?: Snowflake;
     enable_emoticons?: boolean;
-    expire_behavior: 0 | 1;
-    expire_grace_period: number;
+    expire_behavior?: 0 | 1;
+    expire_grace_period?: number;
     user?: user.PublicUser;
     account: Account;
-    synced_at: ISO8601;
-    subscriber_count: number;
-    revoked: boolean;
+    synced_at?: ISO8601;
+    subscriber_count?: number;
+    revoked?: boolean;
     application?: Application;
   }
 
@@ -859,10 +859,6 @@ export namespace integration {
       "expire_behavior" | "expire_grace_period" | "enable_emoticons"
     >
   >;
-
-  export interface GetParams {
-    include_applications?: boolean;
-  }
 }
 
 export namespace invite {
@@ -1352,7 +1348,7 @@ export namespace gateway {
   }
 
   export interface GuildRequestMembers {
-    guild_id: Snowflake | Snowflake[];
+    guild_id: Snowflake;
     query?: string;
     limit: number;
     presences?: boolean;

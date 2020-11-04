@@ -157,7 +157,7 @@ class Shard {
 
     this.socket = await connectWebSocket(URLs.Gateway);
 
-    let firstPayload = JSON.parse(
+    const firstPayload = JSON.parse(
       (await this.socket[Symbol.asyncIterator]().next()).value,
     ) as gateway.Payload;
     if (firstPayload.op === 10) {

@@ -806,11 +806,9 @@ export class RestClient {
 
   async getGuildIntegrations(
     guildId: Discord.Snowflake,
-    params: Discord.integration.GetParams,
   ): Promise<Discord.integration.Integration[]> {
     return this.request(`guilds/${guildId}/integrations`, {
       method: "GET",
-      params,
     });
   }
 

@@ -946,11 +946,11 @@ export class Client extends EventEmitter<Events> {
   /** Requests guild members. These then will be received through the guildMembersChunk event. */
   requestGuildMembers(
     shardNumber: number,
-    guildIds: Snowflake | Snowflake[],
+    guildId: Snowflake,
     options: RequestGuildMembersOptions,
   ): void {
     this.gateway.guildRequestMember(shardNumber, {
-      guild_id: guildIds,
+      guild_id: guildId,
       query: options.query,
       limit: options.limit,
       presences: options.presences,
@@ -1035,6 +1035,11 @@ export class Client extends EventEmitter<Events> {
     options: AwaitMessagesOptions,
   ): Promise<Message[]> {
     return new Promise((_resolve) => {
+      const resolve = (found: Message[]) => {
+        this.off("messageCreate", listener);
+        _resolve(found);
+      };
+
       const found: Message[] = [];
       let i = 0;
       function listener(_: unknown, message: Message) {
@@ -1044,10 +1049,6 @@ export class Client extends EventEmitter<Events> {
         if (options.max && found.length >= options.max) resolve(found);
         if (options.maxProcessed && i >= options.maxProcessed) resolve(found);
       }
-      const resolve = (found: Message[]) => {
-        this.off("messageCreate", listener);
-        _resolve(found);
-      };
 
       if (options.time) setTimeout(() => resolve(found), options.time);
       this.on("messageCreate", listener);

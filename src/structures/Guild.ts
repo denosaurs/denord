@@ -478,10 +478,8 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
   }
 
   /** Fetches an array of integrations connected to this guild. */
-  async getIntegrations(includeApplications?: boolean): Promise<Integration[]> {
-    const integrations = await this.client.rest.getGuildIntegrations(this.id, {
-      include_applications: includeApplications,
-    });
+  async getIntegrations(): Promise<Integration[]> {
+    const integrations = await this.client.rest.getGuildIntegrations(this.id);
 
     return integrations.map((integration) =>
       parseIntegration(this.client, integration)

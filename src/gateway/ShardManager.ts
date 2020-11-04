@@ -58,7 +58,7 @@ export class ShardManager extends EventEmitter<ValueToTupleValue<RawEvents>> {
 
     for (let i = 0; i < shardAmount; i++) {
       const name = `${i}/${shardAmount}`;
-      let worker = new Worker(new URL("Shard.ts", import.meta.url).href, {
+      const worker = new Worker(new URL("Shard.ts", import.meta.url).href, {
         type: "module",
         name,
         deno: true,
