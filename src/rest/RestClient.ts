@@ -37,7 +37,7 @@ export class RestClient {
     },
   ): Promise<T> {
     let bucket = endpoint
-      .replaceAll(/([a-z-]+)\/(?:\d.+?)/g, (match, p) => {
+      .replaceAll(/([a-z-]+)\/(?:[^/]+)/g, (match, p) => {
         if (p === "channels" || p === "guilds" || p === "webhooks") {
           return match;
         } else {
@@ -45,7 +45,6 @@ export class RestClient {
         }
       })
       .replaceAll(/reactions\/[^/]+/g, "reactions/:emoji");
-    console.log(endpoint, bucket);
 
     if(method === "DELETE" && bucket.endsWith("/messages/:id")) {
       bucket = `${method}:/${bucket}`;
