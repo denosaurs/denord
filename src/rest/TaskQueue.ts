@@ -26,15 +26,16 @@ export class TaskQueue {
 
   async run() {
     const { value } = await this.reader.read();
-    if (this.rateLimit.remaining <= 0) {
+    if (this.rateLimit.remaining === 0) {
       await new Promise((res) =>
         setTimeout(
           res,
-          Math.max(0, (this.rateLimit.reset - Date.now()) + 1),
+          Math.max(0, this.rateLimit.reset - Date.now()),
         )
       );
+    } else {
+      this.rateLimit.remaining--;
     }
-    this.rateLimit.remaining--;
 
     value!
       .task()
@@ -43,13 +44,13 @@ export class TaskQueue {
   }
 
   push(task: Task): Promise<unknown> {
-    return new Promise(async (resolve, reject) => {
-      await this.writer.write({
+    return new Promise((resolve, reject) => {
+      this.writer.write({
         task,
         resolve,
         reject,
       });
-      await this.run();
+      this.run();
     });
   }
 }

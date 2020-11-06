@@ -10,18 +10,14 @@ import { TaskQueue } from "./TaskQueue.ts";
 export class RestClient {
   /** The token to make requests with */
   token: string;
-  /** Whether the token is a bot token or not */
-  bot: boolean;
   /** Ratelimit tracking buckets */
   buckets: { [key: string]: TaskQueue } = {};
 
   /**
    * @param token - The token to make requests with
-   * @param bot - Whether the token is a bot token or not
    */
-  constructor(token?: string, bot?: boolean) {
-    this.token = token ?? "";
-    this.bot = bot ?? true;
+  constructor(token: string = "") {
+    this.token = token;
   }
 
   private async request<T extends unknown>(
@@ -40,15 +36,29 @@ export class RestClient {
       reason?: string;
     },
   ): Promise<T> {
-    this.buckets[endpoint] ||= new TaskQueue();
+    let bucket = endpoint
+      .replaceAll(/([a-z-]+)\/(?:\d{17,19})/g, (match, p) => {
+        if (p === "channels" || p === "guilds" || p === "webhooks") {
+          return match;
+        } else {
+          return `${p}/:id`;
+        }
+      })
+      .replaceAll(/reactions\/[^/]+/g, "reactions/:emoji");
 
-    const task = async (): Promise<T> => {
+    if(method === "DELETE" && bucket.endsWith("/messages/:id")) {
+      bucket = `${method}:/${bucket}`;
+    }
+
+    this.buckets[bucket] ??= new TaskQueue();
+
+    return this.buckets[bucket].push(async () => {
       const headers = new Headers({
         "User-Agent": "DiscordBot (https://github.com/denosaurs/denord, 0.0.1)",
       });
 
       if (this.token) {
-        headers.append("Authorization", (this.bot ? "Bot " : "") + this.token);
+        headers.append("Authorization", "Bot " + this.token);
       }
 
       if (reason) {
@@ -86,11 +96,10 @@ export class RestClient {
       });
 
       if (res.headers.has("x-ratelimit-bucket")) {
-        this.buckets[endpoint].rateLimit.reset =
-          parseFloat(res.headers.get("x-ratelimit-reset")!) * 1e3;
-        this.buckets[endpoint].rateLimit.remaining = parseInt(
-          res.headers.get("x-ratelimit-remaining")!,
-        );
+        this.buckets[bucket].rateLimit = {
+          reset: parseFloat(res.headers.get("x-ratelimit-reset")!) * 1e3,
+          remaining: parseInt(res.headers.get("x-ratelimit-remaining")!),
+        };
       }
 
       switch (res.status) {
@@ -99,7 +108,7 @@ export class RestClient {
           return res.json();
 
         case 204:
-          return undefined as T;
+          return undefined;
 
         case 400:
         case 404:
@@ -133,9 +142,7 @@ export class RestClient {
         default:
           throw new HTTPError(res.status, "Unexpected response");
       }
-    };
-
-    return this.buckets[endpoint].push(task) as T;
+    }) as T;
   }
 
   //region Audit Log
