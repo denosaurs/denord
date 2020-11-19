@@ -6,7 +6,7 @@ import { GuildMember } from "./GuildMember.ts";
 import { Embed, parseEmbed, unparseEmbed } from "./Embed.ts";
 import { parseSticker, Sticker } from "./Sticker.ts";
 
-export interface SendMessage {
+export interface SendMessageBase {
   tts?: boolean;
   allowedMentions?: message.AllowedMentions;
   content?: string;
@@ -15,10 +15,17 @@ export interface SendMessage {
   reply?: Snowflake;
 }
 
+type ReplyBase = Omit<SendMessageOptions, "reply">;
+
 export type SendMessageOptions =
-  | SendMessage & Required<Pick<SendMessage, "content">>
-  | SendMessage & Required<Pick<SendMessage, "file">>
-  | SendMessage & Required<Pick<SendMessage, "embed">>;
+  | SendMessageBase & Required<Pick<SendMessageBase, "content">>
+  | SendMessageBase & Required<Pick<SendMessageBase, "file">>
+  | SendMessageBase & Required<Pick<SendMessageBase, "embed">>;
+
+export type ReplyOptions =
+  | ReplyBase & Required<Pick<ReplyBase, "content">>
+  | ReplyBase & Required<Pick<ReplyBase, "file">>
+  | ReplyBase & Required<Pick<ReplyBase, "embed">>;
 
 const messageTypeMap = {
   0: "normal",
@@ -292,6 +299,13 @@ export class Message<T extends message.Message = message.Message>
     );
 
     return new Message(this.client, message);
+  }
+
+  reply(data: ReplyOptions): Promise<Message> {
+    return this.client.sendMessage(this.channelId, {
+      ...data,
+      reply: this.id,
+    });
   }
 }
 
