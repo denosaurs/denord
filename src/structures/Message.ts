@@ -11,6 +11,7 @@ export interface SendMessage {
   content?: string;
   file?: File;
   embed?: Embed;
+  reply?: Snowflake;
 }
 
 export type SendMessageOptions =
@@ -34,6 +35,7 @@ const messageTypeMap = {
   12: "channelAddFollow",
   14: "guildDiscoveryDisqualified",
   15: "guildDiscoveryRequalified",
+  19: "reply",
 } as const;
 
 const activityTypeMap = {
@@ -99,7 +101,7 @@ export class Message<T extends message.Message = message.Message>
     type: typeof activityTypeMap[keyof typeof activityTypeMap];
     partyId?: string;
   };
-  /** sent with Rich Presence-related chat embeds. */
+  /** Sent with Rich Presence-related chat embeds. */
   application?: {
     id: Snowflake;
     coverImage?: string;
@@ -108,12 +110,14 @@ export class Message<T extends message.Message = message.Message>
     name: string;
   };
   /**
-   * The reference of the message. Available if the message is crossposted or
-   * if the message type is channelPinnedMessage.
+   * The reference of the message. Available if the message is:
+   * - a crosspost (channelId is sure to be there)
+   * - a reply (messageId is sure to be there)
+   * - type is channelPinnedMessage
    */
   reference?: {
     messageId?: Snowflake;
-    channelId: Snowflake;
+    channelId?: Snowflake;
     guildId?: Snowflake;
   };
   /**
@@ -121,6 +125,8 @@ export class Message<T extends message.Message = message.Message>
    * If the message has a flag, that flag is set to true.
    */
   flags = {} as Record<keyof typeof flagsMap, boolean>;
+  /** If this message is a reply, this is the message this message is replying to */
+  replyReference?: Message | null;
 
   constructor(client: Client, data: T) {
     super(client, data);
@@ -179,6 +185,9 @@ export class Message<T extends message.Message = message.Message>
     for (const [key, val] of Object.entries(flagsMap)) {
       this.flags[key as keyof typeof flagsMap] = ((flags & val) === val);
     }
+
+    this.replyReference = data.referenced_message &&
+      new Message(client, data.referenced_message);
   }
 
   /** Deletes the message. */

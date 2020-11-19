@@ -1012,6 +1012,11 @@ export class Client extends EventEmitter<Events> {
       tts: data.tts,
       embed,
       allowed_mentions: data.allowedMentions,
+      message_reference: data.reply
+        ? {
+          message_id: data.reply,
+        }
+        : undefined,
     };
 
     if (data.file) {

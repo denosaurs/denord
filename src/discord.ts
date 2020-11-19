@@ -959,6 +959,7 @@ export namespace message {
     application?: Application;
     message_reference?: Reference;
     flags?: number;
+    referenced_message?: Message | null;
   }
 
   export type Type =
@@ -976,7 +977,8 @@ export namespace message {
     | 11
     | 12
     | 14
-    | 15;
+    | 15
+    | 19;
 
   export interface Attachment {
     id: Snowflake;
@@ -1011,11 +1013,12 @@ export namespace message {
     parse: ["roles"?, "users"?, "everyone"?];
     roles: Snowflake[];
     users: Snowflake[];
+    replied_user: boolean;
   }
 
   export interface Reference {
     message_id?: Snowflake;
-    channel_id: Snowflake;
+    channel_id?: Snowflake;
     guild_id?: Snowflake;
   }
 
@@ -1027,6 +1030,7 @@ export namespace message {
     embed?: embed.Embed;
     payload_json?: string;
     allowed_mentions?: AllowedMentions;
+    message_reference?: Reference & Required<Pick<Reference, "message_id">>;
   }
 
   export type Create =

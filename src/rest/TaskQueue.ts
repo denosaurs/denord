@@ -10,8 +10,8 @@ interface Runtime {
 
 /** Ratelimit tasks and execute them sequentially  */
 export class TaskQueue {
-  writer;
-  reader;
+  writer: WritableStreamDefaultWriter<Runtime>;
+  reader: ReadableStreamDefaultReader<Runtime>;
 
   rateLimit = {
     remaining: 1,

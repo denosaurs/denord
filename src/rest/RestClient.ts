@@ -46,7 +46,7 @@ export class RestClient {
       })
       .replaceAll(/reactions\/[^/]+/g, "reactions/:emoji");
 
-    if(method === "DELETE" && bucket.endsWith("/messages/:id")) {
+    if (method === "DELETE" && bucket.endsWith("/messages/:id")) {
       bucket = `${method}:/${bucket}`;
     }
 
