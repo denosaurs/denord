@@ -4,6 +4,7 @@ import type { message, Snowflake } from "../discord.ts";
 import { User } from "./User.ts";
 import { GuildMember } from "./GuildMember.ts";
 import { Embed, parseEmbed, unparseEmbed } from "./Embed.ts";
+import { parseSticker, Sticker } from "./Sticker.ts";
 
 export interface SendMessage {
   tts?: boolean;
@@ -125,6 +126,7 @@ export class Message<T extends message.Message = message.Message>
    * If the message has a flag, that flag is set to true.
    */
   flags = {} as Record<keyof typeof flagsMap, boolean>;
+  stickers?: Sticker[];
   /** If this message is a reply, this is the message this message is replying to */
   replyReference?: Message | null;
 
@@ -186,6 +188,7 @@ export class Message<T extends message.Message = message.Message>
       this.flags[key as keyof typeof flagsMap] = ((flags & val) === val);
     }
 
+    this.stickers = data.stickers?.map((sticker) => parseSticker(sticker));
     this.replyReference = data.referenced_message &&
       new Message(client, data.referenced_message);
   }

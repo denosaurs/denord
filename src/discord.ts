@@ -959,6 +959,7 @@ export namespace message {
     application?: Application;
     message_reference?: Reference;
     flags?: number;
+    stickers?: Sticker[];
     referenced_message?: Message | null;
   }
 
@@ -1020,6 +1021,17 @@ export namespace message {
     message_id?: Snowflake;
     channel_id?: Snowflake;
     guild_id?: Snowflake;
+  }
+
+  export interface Sticker {
+    id: Snowflake;
+    pack_id: Snowflake;
+    name: string;
+    description: string;
+    tags?: string;
+    asset: string;
+    preview_asset: string | null;
+    format_type: 1 | 2 | 3;
   }
 
   export interface BaseCreate {
