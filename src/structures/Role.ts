@@ -56,6 +56,12 @@ export class Role<T extends role.Role = role.Role> extends SnowflakeBase<T> {
   position: number;
   /** The id of the guild this role belongs to. */
   guildId: Snowflake;
+  /** Additional possible tags */
+  tags: {
+    botId?: Snowflake;
+    integrationId?: Snowflake;
+    boost: boolean;
+  };
 
   constructor(client: Client, data: T, guildId: Snowflake) {
     super(client, data);
@@ -76,6 +82,11 @@ export class Role<T extends role.Role = role.Role> extends SnowflakeBase<T> {
     }
 
     this.position = data.position;
+    this.tags = {
+      botId: data.tags?.bot_id,
+      integrationId: data.tags?.integration_id,
+      boost: data.tags?.premium_subscriber === null,
+    };
   }
 
   /** The string that mentions the role. */

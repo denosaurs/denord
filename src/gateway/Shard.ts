@@ -43,6 +43,7 @@ class Shard {
         this.ACKed = false;
         this.beat();
       } else {
+        console.log("bar");
         this.socket.close(1008);
         this.reconnect();
       }
@@ -135,6 +136,7 @@ class Shard {
 
   private reconnect(resume = true) {
     if (!this.socket.isClosed) {
+      console.log("foo");
       this.socket.close();
     }
 

@@ -1107,6 +1107,13 @@ export namespace role {
     permissions: string;
     managed: boolean;
     mentionable: boolean;
+    tags?: Tags;
+  }
+
+  export interface Tags {
+    bot_id?: Snowflake;
+    integration_id?: Snowflake;
+    premium_subscriber?: null;
   }
 
   export interface Create
@@ -1251,6 +1258,7 @@ export namespace gateway {
       total: number;
       remaining: number;
       reset_after: number;
+      max_concurrency: number;
     };
   }
 
