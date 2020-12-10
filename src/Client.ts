@@ -20,12 +20,14 @@ import { NewsChannel, TextChannel } from "./structures/TextNewsChannel.ts";
 import { CategoryChannel } from "./structures/CategoryChannel.ts";
 import { StoreChannel } from "./structures/StoreChannel.ts";
 import {
+  AllowedMentions,
   Message,
   parsePartialMessage,
   PartialEditedMessage,
   SendMessageOptions,
+  unparseAllowedMentions,
 } from "./structures/Message.ts";
-import { unparseEmbed } from "./structures/Embed.ts";
+import { Embed, unparseEmbed } from "./structures/Embed.ts";
 import { Emoji, GuildEmoji, parseEmoji } from "./structures/Emoji.ts";
 import { Role } from "./structures/Role.ts";
 import {
@@ -916,7 +918,6 @@ export class Client extends EventEmitter<Events> {
       content: data.content,
       tts: data.tts,
       embeds,
-      allowed_mentions: data.allowedMentions,
     };
 
     if (data.file) {
@@ -939,6 +940,27 @@ export class Client extends EventEmitter<Events> {
       // TODO: cast shouldn't be unnecessary but ts complains
       return new Message(this, res as message.Message);
     }
+  }
+
+  editWebhookMessage(
+    webhookId: Snowflake,
+    token: string,
+    messageId: Snowflake,
+    options: {
+      content?: string | null;
+      embeds?: Embed[] | null;
+      allowedMentions?: AllowedMentions | null;
+    }
+  ): Promise<void> {
+    return this.rest.editWebhookMessage(webhookId, token, messageId, {
+      content: options.content,
+      embeds: options.embeds ? options.embeds.map(unparseEmbed) : options.embeds,
+      allowed_mentions: options.allowedMentions ? unparseAllowedMentions(options.allowedMentions) : options.allowedMentions,
+    });
+  }
+
+  deleteWebhookMessage(webhookId: Snowflake, token: string, messageId: Snowflake): Promise<void> {
+    return this.rest.deleteWebhookMessage(webhookId, token, messageId);
   }
 
   // TODO: handle template
@@ -1011,7 +1033,7 @@ export class Client extends EventEmitter<Events> {
       content: data.content,
       tts: data.tts,
       embed,
-      allowed_mentions: data.allowedMentions,
+      allowed_mentions: data.allowedMentions ? unparseAllowedMentions(data.allowedMentions) : data.allowedMentions,
       message_reference: data.reply
         ? {
           message_id: data.reply,

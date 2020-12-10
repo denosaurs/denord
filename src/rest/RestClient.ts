@@ -1153,6 +1153,28 @@ export class RestClient {
     });
   }
 
+  async editWebhookMessage(
+    webhookId: Discord.Snowflake,
+    webhookToken: string,
+    messageId: Discord.Snowflake,
+    data: Discord.webhook.EditMessage,
+  ): Promise<void> {
+    await this.request(`webhooks/${webhookId}/${webhookToken}/messages/${messageId}`, {
+      method: "PATCH",
+      data,
+    });
+  }
+
+  async deleteWebhookMessage(
+    webhookId: Discord.Snowflake,
+    webhookToken: string,
+    messageId: Discord.Snowflake,
+  ): Promise<void> {
+    await this.request(`webhooks/${webhookId}/${webhookToken}/messages/${messageId}`, {
+      method: "DELETE",
+    });
+  }
+
   //endregion
 
   //region Gateway

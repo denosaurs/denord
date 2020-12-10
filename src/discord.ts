@@ -1051,9 +1051,10 @@ export namespace message {
     | BaseCreate & Required<Pick<BaseCreate, "content">>;
 
   export interface Edit {
-    content?: string;
-    embed?: embed.Embed;
-    flags?: number;
+    content?: string | null;
+    embed?: embed.Embed | null;
+    flags?: number | null;
+    allowed_mentions?: AllowedMentions | null;
   }
 
   export type DeleteEvent = Pick<Message, "id" | "channel_id" | "guild_id">;
@@ -1239,6 +1240,12 @@ export namespace webhook {
     username?: string;
     avatar_url?: string;
     embeds?: embed.Embed[];
+  }
+
+  export interface EditMessage {
+    content?: string | null;
+    embeds?: embed.Embed[] | null;
+    allowed_mentions?: message.AllowedMentions | null;
   }
 
   export interface UpdateEvent {

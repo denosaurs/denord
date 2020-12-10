@@ -6,16 +6,38 @@ import { GuildMember } from "./GuildMember.ts";
 import { Embed, parseEmbed, unparseEmbed } from "./Embed.ts";
 import { parseSticker, Sticker } from "./Sticker.ts";
 
+export interface AllowedMentions {
+  parse: ["roles"?, "users"?, "everyone"?];
+  roles: Snowflake[];
+  users: Snowflake[];
+  repliedUser: boolean;
+
+}
+
+export function parseAllowedMentions({replied_user, ...allowedMentions}: message.AllowedMentions): AllowedMentions {
+  return {
+    ...allowedMentions,
+    repliedUser: replied_user,
+  }
+}
+
+export function unparseAllowedMentions({repliedUser, ...allowedMentions}: AllowedMentions): message.AllowedMentions {
+  return {
+    ...allowedMentions,
+    replied_user: repliedUser,
+  }
+}
+
 export interface SendMessageBase {
   tts?: boolean;
-  allowedMentions?: message.AllowedMentions;
+  allowedMentions?: AllowedMentions;
   content?: string;
   file?: File;
   embed?: Embed;
   reply?: Snowflake;
 }
 
-type ReplyBase = Omit<SendMessageOptions, "reply">;
+type ReplyBase = Omit<SendMessageBase, "reply">;
 
 export type SendMessageOptions =
   | SendMessageBase & Required<Pick<SendMessageBase, "content">>
@@ -211,9 +233,10 @@ export class Message<T extends message.Message = message.Message>
 
   /** Edits the message. */
   async edit(options: {
-    content?: string;
-    embed?: Embed;
-    suppressEmbeds?: boolean;
+    content?: string | null;
+    embed?: Embed | null;
+    suppressEmbeds?: boolean | null;
+    allowedMentions?: AllowedMentions | null;
   }): Promise<Message> {
     let flags = 0;
 
@@ -235,7 +258,8 @@ export class Message<T extends message.Message = message.Message>
       this.id,
       {
         content: options.content,
-        embed: options.embed && unparseEmbed(options.embed),
+        embed: options.embed ? unparseEmbed(options.embed) : options.embed,
+        allowed_mentions: options.allowedMentions ? unparseAllowedMentions(options.allowedMentions) : options.allowedMentions,
         flags,
       },
     );
