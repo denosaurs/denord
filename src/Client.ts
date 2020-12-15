@@ -190,6 +190,17 @@ export interface RequestGuildMembersOptions {
   nonce?: string;
 }
 
+export interface ClientOptions {
+  /**
+   * The intents used by the client. Defaults to all non-privileged intents.
+   * If true is passed, then it will use all intents.
+   * If false is passed, it will use none.
+   */
+  intents?: { [K in keyof typeof intentsMap]?: boolean } | number | boolean;
+  /** The amount of shards to use. Defaults to 1 */
+  shardAmount?: number;
+}
+
 export class Client extends EventEmitter<Events> {
   gateway: ShardManager;
   rest = new RestClient();
@@ -209,37 +220,32 @@ export class Client extends EventEmitter<Events> {
   /** The current user. Is unset only before a shardReady event. */
   user?: PrivateUser;
 
-  constructor({
-    intents,
-    shardAmount,
-  }: {
-    intents?: Record<keyof typeof intentsMap, boolean> | number | boolean;
-    shardAmount?: number;
-  } = {}) {
+  constructor(options: ClientOptions = {}) {
     super();
 
-    intents ??= true;
+    options.intents ??= true;
 
-    let newIntents = 0;
+    let newIntents = 32509;
 
-    if (intents) {
-      if (typeof intents === "boolean") {
-        newIntents = Object.values(intentsMap).reduce(
-          (prev, curr) => prev | curr,
-          0,
-        );
-      } else if (typeof intents === "number") {
-        newIntents = intents;
+    if (options.intents) {
+      if (typeof options.intents === "boolean") {
+        if (options.intents) {
+          newIntents = 32767;
+        } else {
+          newIntents = 0;
+        }
+      } else if (typeof options.intents === "number") {
+        newIntents = options.intents;
       } else {
         for (const [key, val] of Object.entries(intentsMap)) {
-          if (intents[key as keyof typeof intentsMap]) {
+          if (options.intents[key as keyof typeof intentsMap]) {
             newIntents |= val;
           }
         }
       }
     }
 
-    this.gateway = new ShardManager(shardAmount ?? 1, newIntents);
+    this.gateway = new ShardManager(options.shardAmount ?? 1, newIntents);
     this.gateway.on("raw", (e) => {
       switch (e.name) {
         case "READY":
