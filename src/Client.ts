@@ -956,16 +956,24 @@ export class Client extends EventEmitter<Events> {
       content?: string | null;
       embeds?: Embed[] | null;
       allowedMentions?: AllowedMentions | null;
-    }
+    },
   ): Promise<void> {
     return this.rest.editWebhookMessage(webhookId, token, messageId, {
       content: options.content,
-      embeds: options.embeds ? options.embeds.map(unparseEmbed) : options.embeds,
-      allowed_mentions: options.allowedMentions ? unparseAllowedMentions(options.allowedMentions) : options.allowedMentions,
+      embeds: options.embeds
+        ? options.embeds.map(unparseEmbed)
+        : options.embeds,
+      allowed_mentions: options.allowedMentions
+        ? unparseAllowedMentions(options.allowedMentions)
+        : options.allowedMentions,
     });
   }
 
-  deleteWebhookMessage(webhookId: Snowflake, token: string, messageId: Snowflake): Promise<void> {
+  deleteWebhookMessage(
+    webhookId: Snowflake,
+    token: string,
+    messageId: Snowflake,
+  ): Promise<void> {
     return this.rest.deleteWebhookMessage(webhookId, token, messageId);
   }
 
@@ -1039,7 +1047,9 @@ export class Client extends EventEmitter<Events> {
       content: data.content,
       tts: data.tts,
       embed,
-      allowed_mentions: data.allowedMentions ? unparseAllowedMentions(data.allowedMentions) : data.allowedMentions,
+      allowed_mentions: data.allowedMentions
+        ? unparseAllowedMentions(data.allowedMentions)
+        : data.allowedMentions,
       message_reference: data.reply
         ? {
           message_id: data.reply,

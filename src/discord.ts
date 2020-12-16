@@ -979,7 +979,8 @@ export namespace message {
     | 12
     | 14
     | 15
-    | 19;
+    | 19
+    | 20;
 
   export interface Attachment {
     id: Snowflake;
@@ -1367,6 +1368,7 @@ export namespace gateway {
     VOICE_SERVER_UPDATE: voice.ServerUpdateEvent;
 
     WEBHOOKS_UPDATE: webhook.UpdateEvent;
+    INTERACTION_CREATE: interaction.Interaction;
   }
 
   export interface ReadyEvent {
@@ -1376,6 +1378,7 @@ export namespace gateway {
     guilds: guild.UnavailableGuild[];
     session_id: string;
     shard?: [number, number];
+    application: any; // TODO: typings for oath2
   }
 
   export interface GuildRequestMembers {
@@ -1392,5 +1395,98 @@ export namespace gateway {
     activities: presence.Activity[] | null;
     status: presence.ActiveStatus;
     afk: boolean;
+  }
+}
+
+export namespace interaction {
+  export interface ApplicationCommand {
+    id: Snowflake;
+    application_id: Snowflake;
+    name: string;
+    description: string;
+    options?: ApplicationCommandOption[];
+  }
+
+  export interface ApplicationCommandOption {
+    type: ApplicationCommandOptionType;
+    name: string;
+    description: string;
+    default?: boolean;
+    required?: boolean;
+    choices?: ApplicationCommandOptionChoice[];
+    options?: ApplicationCommandOption[];
+  }
+
+  export type ApplicationCommandOptionType = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
+  export interface ApplicationCommandOptionChoice {
+    name: string;
+    value: string | number;
+  }
+
+  export interface Interaction {
+    id: Snowflake;
+    type: InteractionType;
+    data?: ApplicationCommandInteractionData;
+    guild_id: Snowflake;
+    channel_id: Snowflake;
+    member: guildMember.GuildMember;
+    token: string;
+    version: 1;
+  }
+
+  export type InteractionType = 1 | 2;
+
+  export interface ApplicationCommandInteractionData {
+    id: Snowflake;
+    name: string;
+    options?: ApplicationCommandInteractionDataOption[];
+  }
+
+  export interface ApplicationCommandInteractionDataOptionBase {
+    name: string;
+  }
+
+  export interface ApplicationCommandInteractionDataOptionValue
+    extends ApplicationCommandInteractionDataOptionBase {
+    value: Snowflake | string | number | boolean;
+  }
+  export interface ApplicationCommandInteractionDataOptionOptions
+    extends ApplicationCommandInteractionDataOptionBase {
+    options: ApplicationCommandInteractionDataOption[];
+  }
+
+  export type ApplicationCommandInteractionDataOption =
+    | ApplicationCommandInteractionDataOptionValue
+    | ApplicationCommandInteractionDataOptionOptions;
+
+  export interface ResponseBase {
+    type: InteractionResponseType;
+  }
+
+  export interface ResponseData extends ResponseBase {
+    type: 3 | 4;
+    data: InteractionApplicationCommandCallbackData;
+  }
+
+  export interface ResponseNoData extends ResponseBase {
+    type: Exclude<InteractionResponseType, 3 | 4>;
+  }
+
+  export type Response = ResponseData | ResponseNoData;
+
+  export type InteractionResponseType = 1 | 2 | 3 | 4 | 5;
+
+  export type InteractionApplicationCommandCallbackData =
+    & Pick<message.BaseCreate, "tts" | "allowed_mentions">
+    & Required<Pick<message.BaseCreate, "content">>
+    & {
+      embeds?: embed.Embed[];
+    };
+
+  export interface createGlobalApplicationCommand {
+    name: string;
+    description: string;
+    options?: ApplicationCommandOption[];
   }
 }

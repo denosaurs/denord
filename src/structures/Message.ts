@@ -11,21 +11,24 @@ export interface AllowedMentions {
   roles: Snowflake[];
   users: Snowflake[];
   repliedUser: boolean;
-
 }
 
-export function parseAllowedMentions({replied_user, ...allowedMentions}: message.AllowedMentions): AllowedMentions {
+export function parseAllowedMentions(
+  { replied_user, ...allowedMentions }: message.AllowedMentions,
+): AllowedMentions {
   return {
     ...allowedMentions,
     repliedUser: replied_user,
-  }
+  };
 }
 
-export function unparseAllowedMentions({repliedUser, ...allowedMentions}: AllowedMentions): message.AllowedMentions {
+export function unparseAllowedMentions(
+  { repliedUser, ...allowedMentions }: AllowedMentions,
+): message.AllowedMentions {
   return {
     ...allowedMentions,
     replied_user: repliedUser,
-  }
+  };
 }
 
 export interface SendMessageBase {
@@ -66,6 +69,7 @@ const messageTypeMap = {
   14: "guildDiscoveryDisqualified",
   15: "guildDiscoveryRequalified",
   19: "reply",
+  20: "applicationCommand",
 } as const;
 
 const activityTypeMap = {
@@ -259,7 +263,9 @@ export class Message<T extends message.Message = message.Message>
       {
         content: options.content,
         embed: options.embed ? unparseEmbed(options.embed) : options.embed,
-        allowed_mentions: options.allowedMentions ? unparseAllowedMentions(options.allowedMentions) : options.allowedMentions,
+        allowed_mentions: options.allowedMentions
+          ? unparseAllowedMentions(options.allowedMentions)
+          : options.allowedMentions,
         flags,
       },
     );

@@ -106,10 +106,11 @@ class Shard {
           case 4009:
             this.reconnect(false);
             break;
+          case 4004:
+            throw new Error(`You provided an invalid token`);
           case 4001:
           case 4002:
           case 4003:
-          case 4004:
           case 4005:
           case 4007:
           case 4008:

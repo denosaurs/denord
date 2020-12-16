@@ -109,6 +109,7 @@ export class ShardManager extends EventEmitter<ValueToTupleValue<RawEvents>> {
               case "VOICE_STATE_UPDATE":
               case "VOICE_SERVER_UPDATE":
               case "WEBHOOKS_UPDATE":
+              case "INTERACTION_CREATE":
                 // TODO(@qu4k): find a way to remove the any cast
                 // deno-lint-ignore no-explicit-any
                 this.emit(payload.t, payload.d as any);

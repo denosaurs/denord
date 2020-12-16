@@ -1159,10 +1159,13 @@ export class RestClient {
     messageId: Discord.Snowflake,
     data: Discord.webhook.EditMessage,
   ): Promise<void> {
-    await this.request(`webhooks/${webhookId}/${webhookToken}/messages/${messageId}`, {
-      method: "PATCH",
-      data,
-    });
+    await this.request(
+      `webhooks/${webhookId}/${webhookToken}/messages/${messageId}`,
+      {
+        method: "PATCH",
+        data,
+      },
+    );
   }
 
   async deleteWebhookMessage(
@@ -1170,9 +1173,12 @@ export class RestClient {
     webhookToken: string,
     messageId: Discord.Snowflake,
   ): Promise<void> {
-    await this.request(`webhooks/${webhookId}/${webhookToken}/messages/${messageId}`, {
-      method: "DELETE",
-    });
+    await this.request(
+      `webhooks/${webhookId}/${webhookToken}/messages/${messageId}`,
+      {
+        method: "DELETE",
+      },
+    );
   }
 
   //endregion
@@ -1188,6 +1194,191 @@ export class RestClient {
     return this.request("gateway/bot", {
       method: "GET",
     });
+  }
+
+  //endregion
+
+  //region Interaction
+  async getGlobalApplicationCommands(applicationId: Discord.Snowflake): Promise<
+    Discord.interaction.ApplicationCommand[]
+  > {
+    return this.request(`applications/${applicationId}/commands`, {
+      method: "GET",
+    });
+  }
+
+  async createGlobalApplicationCommand(
+    applicationId: Discord.Snowflake,
+    data: Discord.interaction.createGlobalApplicationCommand,
+  ): Promise<Discord.interaction.ApplicationCommand> {
+    return this.request(`applications/${applicationId}/commands`, {
+      method: "POST",
+      data,
+    });
+  }
+
+  async editGlobalApplicationCommand(
+    applicationId: Discord.Snowflake,
+    commandId: Discord.Snowflake,
+    data: Discord.interaction.createGlobalApplicationCommand,
+  ): Promise<Discord.interaction.ApplicationCommand> {
+    return this.request(
+      `applications/${applicationId}/commands/${commandId}/applicationcommand`,
+      {
+        method: "PATCH",
+        data,
+      },
+    );
+  }
+
+  async deleteGlobalApplicationCommand(
+    applicationId: Discord.Snowflake,
+    commandId: Discord.Snowflake,
+  ): Promise<void> {
+    await this.request(
+      `applications/${applicationId}/commands/${commandId}/applicationcommand`,
+      {
+        method: "DELETE",
+      },
+    );
+  }
+
+  async getGuildApplicationCommands(
+    applicationId: Discord.Snowflake,
+    guildId: Discord.Snowflake,
+  ): Promise<Discord.interaction.ApplicationCommand[]> {
+    return this.request(
+      `applications/${applicationId}/guilds/${guildId}/commands`,
+      {
+        method: "GET",
+      },
+    );
+  }
+
+  async createGuildApplicationCommand(
+    applicationId: Discord.Snowflake,
+    guildId: Discord.Snowflake,
+    data: Discord.interaction.createGlobalApplicationCommand,
+  ): Promise<Discord.interaction.ApplicationCommand> {
+    return this.request(
+      `applications/${applicationId}/guilds/${guildId}/commands`,
+      {
+        method: "POST",
+        data,
+      },
+    );
+  }
+
+  async editGuildApplicationCommand(
+    applicationId: Discord.Snowflake,
+    guildId: Discord.Snowflake,
+    commandId: Discord.Snowflake,
+    data: Discord.interaction.createGlobalApplicationCommand,
+  ): Promise<Discord.interaction.ApplicationCommand> {
+    return this.request(
+      `applications/${applicationId}/guilds/${guildId}/commands/${commandId}/applicationcommand`,
+      {
+        method: "PATCH",
+        data,
+      },
+    );
+  }
+
+  async deleteGuildApplicationCommand(
+    applicationId: Discord.Snowflake,
+    guildId: Discord.Snowflake,
+    commandId: Discord.Snowflake,
+  ): Promise<void> {
+    await this.request(
+      `applications/${applicationId}/guilds/${guildId}/commands/${commandId}/applicationcommand`,
+      {
+        method: "DELETE",
+      },
+    );
+  }
+
+  async createInteractionResponse(
+    interactionId: Discord.Snowflake,
+    interactionToken: Discord.Snowflake,
+    data: Discord.interaction.Response,
+  ): Promise<void> {
+    return this.request(
+      `interactions/${interactionId}/${interactionToken}/callback`,
+      {
+        method: "POST",
+        data,
+      },
+    );
+  }
+
+  async editOriginalInteractionResponse(
+    applicationId: Discord.Snowflake,
+    interactionToken: Discord.Snowflake,
+    data: Discord.webhook.EditMessage,
+  ): Promise<Discord.message.Message> {
+    return this.request(
+      `/webhooks/${applicationId}/${interactionToken}/messages/@original`,
+      {
+        method: "PATCH",
+        data,
+      },
+    );
+  }
+
+  async deleteOriginalInteractionResponse(
+    applicationId: Discord.Snowflake,
+    interactionToken: Discord.Snowflake,
+  ): Promise<void> {
+    await this.request(
+      `/webhooks/${applicationId}/${interactionToken}/messages/@original`,
+      {
+        method: "DELETE",
+      },
+    );
+  }
+
+  async createFollowupMessage(
+    applicationId: Discord.Snowflake,
+    interactionToken: Discord.Snowflake,
+    data: Discord.webhook.ExecuteBody,
+    params: Discord.webhook.ExecuteParams,
+  ): Promise<Discord.message.Message> {
+    return this.request(
+      `webhooks/${applicationId}/${interactionToken}`,
+      {
+        method: "POST",
+        data,
+        params,
+      },
+    );
+  }
+
+  async editFollowupMessage(
+    applicationId: Discord.Snowflake,
+    interactionToken: Discord.Snowflake,
+    messageId: Discord.Snowflake,
+    data: Discord.webhook.EditMessage,
+  ): Promise<Discord.message.Message> {
+    return this.request(
+      `/webhooks/${applicationId}/${interactionToken}/messages/${messageId}`,
+      {
+        method: "PATCH",
+        data,
+      },
+    );
+  }
+
+  async deleteFollowupMessage(
+    applicationId: Discord.Snowflake,
+    interactionToken: Discord.Snowflake,
+    messageId: Discord.Snowflake,
+  ): Promise<void> {
+    await this.request(
+      `/webhooks/${applicationId}/${interactionToken}/messages/${messageId}`,
+      {
+        method: "DELETE",
+      },
+    );
   }
 
   //endregion
