@@ -11,7 +11,12 @@ import type {
   role,
   Snowflake,
 } from "../discord.ts";
-import { ImageFormat, ImageSize, imageURLFormatter } from "../utils/utils.ts";
+import {
+  ImageFormat,
+  ImageSize,
+  imageURLFormatter,
+  inverseMap,
+} from "../utils/utils.ts";
 import { Role } from "./Role.ts";
 import { GuildMember } from "./GuildMember.ts";
 import type { PermissionOverwrite } from "./GuildChannel.ts";
@@ -27,6 +32,11 @@ import { parseState, State } from "./VoiceState.ts";
 import { parsePresence, Presence } from "./Presence.ts";
 import { MetadataInvite, parseMetadataInvite } from "./Invite.ts";
 import { parseWebhook, Webhook } from "./Webhook.ts";
+import {
+  parseWelcomeScreen,
+  WelcomeScreen,
+  WelcomeScreenChannel,
+} from "./WelcomeScreen.ts";
 
 const channelTypeMap = {
   "text": 0,
@@ -67,6 +77,13 @@ interface RealPrune extends BasePrune {
 
 type Prune = DryPrune | RealPrune;
 
+interface GuildPosition {
+  id: Snowflake;
+  position: number | null;
+  lockPermissions: boolean | null;
+  parentId: Snowflake | null;
+}
+
 const featuresMap = {
   "INVITE_SPLASH": "inviteSplash",
   "VIP_REGIONS": "vipRegions",
@@ -81,7 +98,11 @@ const featuresMap = {
   "ANIMATED_ICON": "animatedIcon",
   "BANNER": "banner",
   "WELCOME_SCREEN_ENABLED": "welcomeScreenEnabled",
+  "MEMBER_VERIFICATION_GATE_ENABLED": "memberVerificationGateEnabled",
+  "PREVIEW_ENABLED": "previewEnabled",
 } as const;
+
+const inverseFeaturesMap = inverseMap(featuresMap);
 
 export interface Widget {
   enabled: boolean;
@@ -91,7 +112,10 @@ export interface Widget {
 const systemChannelFlags = {
   1: "suppressJoinNotifications",
   2: "suppressBoostNotifications",
+  3: "suppressGuildReminderNotifications",
 } as const;
+
+export const inverseSystemChannelFlags = inverseMap(systemChannelFlags);
 
 abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
   /** The name of the guild. */
@@ -124,10 +148,7 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
    * An object of features the guild can have.
    * If the guild has a feature, that feature is set to true.
    */
-  features = {} as Record<
-    typeof featuresMap[keyof typeof featuresMap],
-    boolean
-  >;
+  features = {} as Record<keyof typeof inverseFeaturesMap, boolean>;
   /** Whether or not the guild requires MFA enabled for moderation. */
   requiresMFA: boolean;
   /**
@@ -155,7 +176,7 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
    * If the system channel has a flag, that flag is set to true.
    */
   systemChannelFlags = {} as Record<
-    typeof systemChannelFlags[keyof typeof systemChannelFlags],
+    keyof typeof inverseSystemChannelFlags,
     boolean
   >;
   /** The id of the channel in which rules for the guild are described. Null if none is set. */
@@ -191,6 +212,8 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
   publicUpdatesChannelId: Snowflake | null;
   /** The maximum amount of users that can be in a video channel. */
   maxVideoChannelUsers?: number;
+  /** the welcome screen of a Community guild, shown to new members. */
+  welcomeScreen?: WelcomeScreen;
 
   protected constructor(client: Client, data: T) {
     super(client, data);
@@ -242,6 +265,8 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     this.preferredLocale = data.preferred_locale;
     this.publicUpdatesChannelId = data.public_updates_channel_id;
     this.maxVideoChannelUsers = data.max_video_channel_users;
+    this.welcomeScreen = data.welcome_screen &&
+      parseWelcomeScreen(data.welcome_screen);
   }
 
   /** The number of the shard this guild belongs to. */
@@ -273,11 +298,15 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     icon?: string | null;
     ownerId?: Snowflake;
     splash?: string | null;
+    discoverySplash?: string | null;
     banner?: string | null;
     systemChannelId?: Snowflake | null;
+    systemChannelFlags?: (keyof typeof inverseSystemChannelFlags)[];
     rulesChannelId?: Snowflake | null;
     publicUpdatesChannelId?: Snowflake | null;
     preferredLocale?: string | null;
+    features?: (keyof typeof inverseFeaturesMap)[];
+    description?: string | null;
   }, reason?: string): Promise<RestGuild> {
     const guild = await this.client.rest.modifyGuild(this.id, {
       name: options.name,
@@ -293,11 +322,18 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
       icon: options.icon,
       owner_id: options.ownerId,
       splash: options.splash,
+      discovery_splash: options.discoverySplash,
       banner: options.banner,
       system_channel_id: options.systemChannelId,
+      system_channel_flags: options.systemChannelFlags?.reduce(
+        (acc, flag) => acc + Number(inverseSystemChannelFlags[flag]),
+        0,
+      ),
       rules_channel_id: options.rulesChannelId,
       public_updates_channel_id: options.publicUpdatesChannelId,
       preferred_locale: options.preferredLocale,
+      features: options.features?.map((feature) => inverseFeaturesMap[feature]),
+      description: options.description,
     }, reason);
 
     return new RestGuild(this.client, guild);
@@ -365,8 +401,16 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
   }
 
   /** Edits the position of channels. */
-  async editChannelsPositions(options: channel.GuildPosition[]): Promise<void> {
-    await this.client.rest.modifyGuildChannelPositions(this.id, options);
+  async editChannelsPositions(options: GuildPosition[]): Promise<void> {
+    await this.client.rest.modifyGuildChannelPositions(
+      this.id,
+      options.map((p) => ({
+        id: p.id,
+        position: p.position,
+        lock_permissions: p.lockPermissions,
+        parent_id: p.parentId,
+      })),
+    );
   }
 
   /** Unbans a user. */
@@ -486,34 +530,6 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     );
   }
 
-  /** Adds a new integration. */
-  async addIntegration(integrationId: Snowflake, type: string): Promise<void> {
-    await this.client.rest.createGuildIntegration(this.id, {
-      id: integrationId,
-      type,
-    });
-  }
-
-  /** Sync an integration. */
-  async syncIntegration(integrationId: Snowflake): Promise<void> {
-    await this.client.rest.syncGuildIntegration(this.id, integrationId);
-  }
-
-  /** Edits an integration. */
-  async editIntegration(
-    integrationId: Snowflake,
-    options: Pick<
-      Integration,
-      "expireBehavior" | "expireGracePeriod" | "enableEmoticons"
-    >,
-  ): Promise<void> {
-    await this.client.rest.modifyGuildIntegration(this.id, integrationId, {
-      expire_behavior: options.expireBehavior,
-      expire_grace_period: options.expireGracePeriod,
-      enable_emoticons: options.enableEmoticons,
-    });
-  }
-
   /** Removes an integration from this guild. */
   async removeIntegration(integrationId: Snowflake): Promise<void> {
     await this.client.rest.deleteGuildIntegration(this.id, integrationId);
@@ -613,6 +629,28 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     return this.discoverySplash
       ? imageURLFormatter(`icons/${this.id}/${this.discoverySplash}`, options)
       : null;
+  }
+
+  async modifyWelcomeScreen(data: {
+    enabled?: boolean | null;
+    channels?: WelcomeScreenChannel[] | null;
+    description?: string | null;
+  }) {
+    const welcomeScreen = await this.client.rest.modifyGuildWelcomeScreen(
+      this.id,
+      {
+        enabled: data.enabled,
+        welcome_channels: data.channels?.map((channel) => ({
+          channel_id: channel.channelId,
+          description: channel.description,
+          emoji_id: channel.emojiId,
+          emoji_name: channel.emojiName,
+        })),
+        description: data.description,
+      },
+    );
+    this.welcomeScreen = parseWelcomeScreen(welcomeScreen);
+    return this;
   }
 }
 

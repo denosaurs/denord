@@ -197,7 +197,7 @@ class Shard {
     });
   }
 
-  statusUpdate(data: gateway.StatusUpdate) {
+  statusUpdate(data: gateway.PresenceUpdate) {
     this.send({
       op: 3,
       d: data,
@@ -234,7 +234,7 @@ interface ShardDataGuildRequestMember {
 
 interface ShardDataStatusUpdate {
   name: "STATUS_UPDATE";
-  data: gateway.StatusUpdate;
+  data: gateway.PresenceUpdate;
 }
 
 self.onmessage = async (msg: MessageEvent) => {

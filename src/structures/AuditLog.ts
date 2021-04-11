@@ -56,12 +56,18 @@ export const inverseActionType = inverseMap(actionTypeMap);
 
 const changeKeyMap = {
   name: "name",
+  description: "description",
   icon_hash: "iconHash",
   splash_hash: "splashHash",
+  discovery_splash_hash: "discoverySplashHash",
+  banner_hash: "bannerHash",
   owner_id: "ownerId",
   region: "region",
+  preferred_locale: "preferredLocale",
   afk_channel_id: "afkChannelId",
   afk_timeout: "afkTimeout",
+  rules_channel_id: "rulesChannelId",
+  public_updates_channel_id: "publicUpdatesChannelId",
   mfa_level: "mfaLevel",
   verification_level: "verificationLevel",
   explicit_content_filter: "explicitContentFilter",
@@ -102,12 +108,13 @@ const changeKeyMap = {
   enable_emoticons: "enableEmoticons",
   expire_behavior: "expireBehavior",
   expire_grace_period: "expireGracePeriod",
+  user_limit: "userLimit",
 } as const;
 
 interface BaseEntry {
   targetId: string | null;
   changes?: Change[];
-  userId: Snowflake;
+  userId: Snowflake | null;
   id: Snowflake;
   reason?: string;
   actionType: keyof typeof inverseActionType;

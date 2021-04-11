@@ -10,7 +10,7 @@ export interface Embed {
   footer?: Footer;
   image?: Image;
   thumbnail?: Thumbnail;
-  video?: embed.Video;
+  video?: Video;
   provider?: embed.Provider;
   author?: Author;
   fields?: embed.Field[];
@@ -36,6 +36,13 @@ export interface Thumbnail {
   width?: number;
 }
 
+export interface Video {
+  url?: string;
+  proxyUrl?: string;
+  height?: number;
+  width?: number;
+}
+
 export interface Author {
   name?: string;
   url?: string;
@@ -48,6 +55,7 @@ export function parseEmbed({
   footer,
   image,
   thumbnail,
+  video,
   author,
   ...embed
 }: embed.Embed): Embed {
@@ -71,6 +79,12 @@ export function parseEmbed({
       height: thumbnail.height,
       width: thumbnail.width,
     },
+    video: video && {
+      url: video.url,
+      proxyUrl: video.proxy_url,
+      height: video.height,
+      width: video.width,
+    },
     author: author && {
       name: author.name,
       url: author.url,
@@ -85,6 +99,7 @@ export function unparseEmbed({
   footer,
   image,
   thumbnail,
+  video,
   author,
   ...embed
 }: Embed): embed.Embed {
@@ -109,6 +124,12 @@ export function unparseEmbed({
       proxy_url: thumbnail.proxyUrl,
       height: thumbnail.height,
       width: thumbnail.width,
+    },
+    video: video && {
+      url: video.url,
+      proxy_url: video.proxyUrl,
+      height: video.height,
+      width: video.width,
     },
     author: author && {
       name: author.name,

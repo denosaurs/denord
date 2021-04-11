@@ -15,6 +15,7 @@ export interface State {
   selfStream?: boolean;
   selfVideo: boolean;
   suppress: boolean;
+  requestToSpeakTimestamp: number | null;
 }
 
 export function parseState(state: voice.State, client?: Client): State {
@@ -32,5 +33,8 @@ export function parseState(state: voice.State, client?: Client): State {
     selfStream: state.self_stream,
     selfVideo: state.self_video,
     suppress: state.suppress,
+    requestToSpeakTimestamp: state.request_to_speak_timestamp
+      ? Date.parse(state.request_to_speak_timestamp)
+      : null,
   };
 }

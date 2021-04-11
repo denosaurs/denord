@@ -1,6 +1,7 @@
 import { SnowflakeBase } from "./Base.ts";
 import type { Client } from "../Client.ts";
 import type { message, Snowflake } from "../discord.ts";
+import { oauth2 } from "../discord.ts";
 import { User } from "./User.ts";
 import { GuildMember } from "./GuildMember.ts";
 import { Embed, parseEmbed, unparseEmbed } from "./Embed.ts";
@@ -68,8 +69,11 @@ const messageTypeMap = {
   12: "channelAddFollow",
   14: "guildDiscoveryDisqualified",
   15: "guildDiscoveryRequalified",
+  16: "guildDiscoveryGracePeriodInitialWarning",
+  17: "guildDiscoveryGracePeriodFinalWarning",
   19: "reply",
   20: "applicationCommand",
+  22: "guildInviteReminder",
 } as const;
 
 const activityTypeMap = {
@@ -85,6 +89,8 @@ const flagsMap = {
   "suppressEmbeds": 0x04,
   "sourceMessageDeleted": 0x08,
   "urgent": 0x10,
+  "ephemeral": 0x40,
+  "loading": 0x80,
 } as const;
 
 export class Message<T extends message.Message = message.Message>
@@ -116,11 +122,12 @@ export class Message<T extends message.Message = message.Message>
   attachments: {
     id: Snowflake;
     filename: string;
+    contentType?: string;
     size: number;
     url: string;
     proxyUrl: string;
-    height: number | null;
-    width: number | null;
+    height?: number | null;
+    width?: number | null;
   }[];
   /** An array of embeds in the message. */
   embeds: Embed[];
@@ -136,13 +143,7 @@ export class Message<T extends message.Message = message.Message>
     partyId?: string;
   };
   /** Sent with Rich Presence-related chat embeds. */
-  application?: {
-    id: Snowflake;
-    coverImage?: string;
-    description: string;
-    icon: string | null;
-    name: string;
-  };
+  application?: Partial<oauth2.Application>; // TODO
   /**
    * The reference of the message. Available if the message is:
    * - a crosspost (channelId is sure to be there)
@@ -185,9 +186,12 @@ export class Message<T extends message.Message = message.Message>
       roles: data.mention_roles,
       channels: data.mention_channels?.map((mention) => mention.id),
     };
-    this.attachments = data.attachments.map(({ proxy_url, ...attachment }) => ({
+    this.attachments = data.attachments.map((
+      { proxy_url, content_type, ...attachment },
+    ) => ({
       ...attachment,
       proxyUrl: proxy_url,
+      contentType: content_type,
     }));
     this.embeds = data.embeds.map((embed) => parseEmbed(embed));
     this.reactions = new Map(
@@ -203,13 +207,7 @@ export class Message<T extends message.Message = message.Message>
       type: activityTypeMap[data.activity.type],
       partyId: data.activity.party_id,
     };
-    this.application = data.application && {
-      id: data.application.id,
-      coverImage: data.application.cover_image,
-      description: data.application.description,
-      icon: data.application.icon,
-      name: data.application.name,
-    };
+    this.application = data.application;
     this.reference = data.message_reference && {
       messageId: data.message_reference.message_id,
       channelId: data.message_reference.channel_id,
@@ -396,13 +394,7 @@ export function parsePartialMessage(
     type: activityTypeMap[data.activity.type],
     partyId: data.activity.party_id,
   };
-  partialMessage.application = data.application && {
-    id: data.application.id,
-    coverImage: data.application.cover_image,
-    description: data.application.description,
-    icon: data.application.icon,
-    name: data.application.name,
-  };
+  partialMessage.application = data.application;
   partialMessage.reference = data.message_reference && {
     messageId: data.message_reference.message_id,
     channelId: data.message_reference.channel_id,

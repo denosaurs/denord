@@ -29,7 +29,7 @@ export abstract class TextBasedGuildChannel<
    */
   lastMessageId: Snowflake | null;
   /** The unix timestamp of the newest pinned message. */
-  lastPinTimestamp?: number;
+  lastPinTimestamp?: number | null;
   /** The topic of the channel. Null if none is set. */
   topic: string | null;
   /** Whether or not the channel is Not Safe For Work. */

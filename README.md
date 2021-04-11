@@ -13,9 +13,11 @@
 
 Denord is a module to interact with the discord API.
 
-For event handling, the [event](https://github.com/denosaurs/event) module is used.
+For event handling, the [event](https://github.com/denosaurs/event) module is
+used.
 
 ## Example
+
 ```ts
 import { Client } from "https://deno.land/x/denord/src/Client.ts";
 
@@ -41,7 +43,8 @@ for await (const [channel, message] of client.asyncOn("messageCreate")) {
 
 ### Contribution
 
-Pull request, issues and feedback are very welcome. Code style is formatted with `deno fmt` and commit messages are done following Conventional Commits spec.
+Pull request, issues and feedback are very welcome. Code style is formatted with
+`deno fmt` and commit messages are done following Conventional Commits spec.
 
 ### Licence
 

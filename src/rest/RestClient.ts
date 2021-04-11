@@ -613,6 +613,16 @@ export class RestClient {
     });
   }
 
+  async searchGuildMembers(
+    guildId: Discord.Snowflake,
+    params: Discord.guildMember.Search,
+  ): Promise<Discord.guildMember.GuildMember[]> {
+    return this.request(`guilds/${guildId}/members/search`, {
+      method: "GET",
+      params,
+    });
+  }
+
   async addGuildMember(
     guildId: Discord.Snowflake,
     userId: Discord.Snowflake,
@@ -819,42 +829,12 @@ export class RestClient {
     });
   }
 
-  async createGuildIntegration(
-    guildId: Discord.Snowflake,
-    data: Discord.integration.Create,
-  ): Promise<void> {
-    await this.request(`guilds/${guildId}/integrations`, {
-      method: "POST",
-      data,
-    });
-  }
-
-  async modifyGuildIntegration(
-    guildId: Discord.Snowflake,
-    integrationId: Discord.Snowflake,
-    data: Discord.integration.Modify,
-  ): Promise<void> {
-    await this.request(`guilds/${guildId}/integrations/${integrationId}`, {
-      method: "PATCH",
-      data,
-    });
-  }
-
   async deleteGuildIntegration(
     guildId: Discord.Snowflake,
     integrationId: Discord.Snowflake,
   ): Promise<void> {
     await this.request(`guilds/${guildId}/integrations/${integrationId}`, {
       method: "DELETE",
-    });
-  }
-
-  async syncGuildIntegration(
-    guildId: Discord.Snowflake,
-    integrationId: Discord.Snowflake,
-  ): Promise<void> {
-    await this.request(`guilds/${guildId}/integrations/${integrationId}/sync`, {
-      method: "POST",
     });
   }
 
@@ -883,6 +863,44 @@ export class RestClient {
   ): Promise<Discord.invite.VanityURL> {
     return this.request(`guilds/${guildId}/vanity-url`, {
       method: "GET",
+    });
+  }
+
+  async getGuildWelcomeScreen(
+    guildId: Discord.Snowflake,
+  ): Promise<Discord.guild.WelcomeScreen> {
+    return this.request(`guilds/${guildId}/welcome-screen`, {
+      method: "GET",
+    });
+  }
+
+  async modifyGuildWelcomeScreen(
+    guildId: Discord.Snowflake,
+    data: Discord.guild.ModifyWelcomeScreen,
+  ): Promise<Discord.guild.WelcomeScreen> {
+    return this.request(`guilds/${guildId}/welcome-screen`, {
+      method: "PATCH",
+      data,
+    });
+  }
+
+  async updateCurrentUserVoiceState(
+    guildId: Discord.Snowflake,
+    data: Discord.voice.CurrentUserUpdateState,
+  ): Promise<void> {
+    await this.request(`guilds/${guildId}/voice-states/@me`, {
+      method: "PATCH",
+      data,
+    });
+  }
+  async updateUserVoiceState(
+    guildId: Discord.Snowflake,
+    userId: Discord.Snowflake,
+    data: Discord.voice.UserUpdateState,
+  ): Promise<void> {
+    await this.request(`guilds/${guildId}/voice-states/${userId}`, {
+      method: "PATCH",
+      data,
     });
   }
 
@@ -924,6 +942,53 @@ export class RestClient {
     });
   }
 
+  async getGuildTemplates(
+    guildId: Discord.Snowflake,
+  ): Promise<Discord.template.Template[]> {
+    return this.request(`guilds/${guildId}/templates`, {
+      method: "GET",
+    });
+  }
+
+  async createGuildTemplate(
+    guildId: Discord.Snowflake,
+    data: Discord.template.createGuildTemplate,
+  ): Promise<Discord.template.Template> {
+    return this.request(`guilds/${guildId}/templates`, {
+      method: "POST",
+      data,
+    });
+  }
+
+  async syncGuildTemplate(
+    guildId: Discord.Snowflake,
+    templateCode: string,
+  ): Promise<Discord.template.Template> {
+    return this.request(`guilds/${guildId}/templates/${templateCode}`, {
+      method: "PUT",
+    });
+  }
+
+  async modifyGuildTemplate(
+    guildId: Discord.Snowflake,
+    templateCode: string,
+    data: Discord.template.modifyGuildTemplate,
+  ): Promise<Discord.template.Template> {
+    return this.request(`guilds/${guildId}/templates/${templateCode}`, {
+      method: "PATCH",
+      data,
+    });
+  }
+
+  async deleteGuildTemplate(
+    guildId: Discord.Snowflake,
+    templateCode: string,
+  ): Promise<Discord.template.Template> {
+    return this.request(`guilds/${guildId}/templates/${templateCode}`, {
+      method: "DELETE",
+    });
+  }
+
   //endregion
 
   //region User
@@ -960,12 +1025,6 @@ export class RestClient {
   async leaveGuild(guildId: Discord.Snowflake): Promise<void> {
     await this.request(`users/@me/guilds/${guildId}`, {
       method: "DELETE",
-    });
-  }
-
-  async getUserDMs(): Promise<Discord.channel.DMChannels[]> {
-    return this.request("users/@me/channels", {
-      method: "GET",
     });
   }
 
@@ -1207,9 +1266,18 @@ export class RestClient {
     });
   }
 
+  async getGlobalApplicationCommand(
+    applicationId: Discord.Snowflake,
+    commandId: Discord.Snowflake,
+  ): Promise<Discord.interaction.ApplicationCommand> {
+    return this.request(`applications/${applicationId}/commands/${commandId}`, {
+      method: "GET",
+    });
+  }
+
   async createGlobalApplicationCommand(
     applicationId: Discord.Snowflake,
-    data: Discord.interaction.createGlobalApplicationCommand,
+    data: Discord.interaction.CreateGlobalApplicationCommand,
   ): Promise<Discord.interaction.ApplicationCommand> {
     return this.request(`applications/${applicationId}/commands`, {
       method: "POST",
@@ -1220,7 +1288,7 @@ export class RestClient {
   async editGlobalApplicationCommand(
     applicationId: Discord.Snowflake,
     commandId: Discord.Snowflake,
-    data: Discord.interaction.createGlobalApplicationCommand,
+    data: Discord.interaction.EditGlobalApplicationCommand,
   ): Promise<Discord.interaction.ApplicationCommand> {
     return this.request(
       `applications/${applicationId}/commands/${commandId}/applicationcommand`,
@@ -1255,10 +1323,23 @@ export class RestClient {
     );
   }
 
+  async bulkOverwriteGlobalApplicationCommands(
+    applicationId: Discord.Snowflake,
+    data: Discord.interaction.ApplicationCommand[],
+  ): Promise<Discord.interaction.ApplicationCommand[]> {
+    return this.request(
+      `applications/${applicationId}/commands`,
+      {
+        method: "PUT",
+        data,
+      },
+    );
+  }
+
   async createGuildApplicationCommand(
     applicationId: Discord.Snowflake,
     guildId: Discord.Snowflake,
-    data: Discord.interaction.createGlobalApplicationCommand,
+    data: Discord.interaction.CreateGuildApplicationCommand,
   ): Promise<Discord.interaction.ApplicationCommand> {
     return this.request(
       `applications/${applicationId}/guilds/${guildId}/commands`,
@@ -1269,11 +1350,24 @@ export class RestClient {
     );
   }
 
+  async getGuildApplicationCommand(
+    applicationId: Discord.Snowflake,
+    guildId: Discord.Snowflake,
+    commandId: Discord.Snowflake,
+  ): Promise<Discord.interaction.ApplicationCommand> {
+    return this.request(
+      `applications/${applicationId}/guilds/${guildId}/commands/${commandId}`,
+      {
+        method: "GET",
+      },
+    );
+  }
+
   async editGuildApplicationCommand(
     applicationId: Discord.Snowflake,
     guildId: Discord.Snowflake,
     commandId: Discord.Snowflake,
-    data: Discord.interaction.createGlobalApplicationCommand,
+    data: Discord.interaction.EditGuildApplicationCommand,
   ): Promise<Discord.interaction.ApplicationCommand> {
     return this.request(
       `applications/${applicationId}/guilds/${guildId}/commands/${commandId}/applicationcommand`,
@@ -1293,6 +1387,20 @@ export class RestClient {
       `applications/${applicationId}/guilds/${guildId}/commands/${commandId}/applicationcommand`,
       {
         method: "DELETE",
+      },
+    );
+  }
+
+  async bulkOverwriteGuildApplicationCommands(
+    applicationId: Discord.Snowflake,
+    guildId: Discord.Snowflake,
+    data: Discord.interaction.ApplicationCommand[],
+  ): Promise<Discord.interaction.ApplicationCommand[]> {
+    return this.request(
+      `applications/${applicationId}/guilds/${guildId}/commands/`,
+      {
+        method: "PUT",
+        data,
       },
     );
   }
@@ -1377,6 +1485,60 @@ export class RestClient {
       `/webhooks/${applicationId}/${interactionToken}/messages/${messageId}`,
       {
         method: "DELETE",
+      },
+    );
+  }
+
+  async getGuildApplicationCommandPermissions(
+    applicationId: Discord.Snowflake,
+    guildId: Discord.Snowflake,
+  ): Promise<Discord.interaction.GuildApplicationCommandPermissions> {
+    return this.request(
+      `/applications/${applicationId}/guilds/${guildId}/commands/permissions`,
+      {
+        method: "GET",
+      },
+    );
+  }
+
+  async getApplicationCommandPermissions(
+    applicationId: Discord.Snowflake,
+    guildId: Discord.Snowflake,
+    commandId: Discord.Snowflake,
+  ): Promise<Discord.interaction.GuildApplicationCommandPermissions> {
+    return this.request(
+      `/applications/${applicationId}/guilds/${guildId}/commands/${commandId}/permissions`,
+      {
+        method: "GET",
+      },
+    );
+  }
+
+  async editApplicationCommandPermissions(
+    applicationId: Discord.Snowflake,
+    guildId: Discord.Snowflake,
+    commandId: Discord.Snowflake,
+    data: Discord.interaction.EditApplicationCommandPermissions,
+  ): Promise<Discord.interaction.GuildApplicationCommandPermissions> {
+    return this.request(
+      `/applications/${applicationId}/guilds/${guildId}/commands/${commandId}/permissions`,
+      {
+        method: "PUT",
+        data,
+      },
+    );
+  }
+
+  async batchEditApplicationCommandPermissions(
+    applicationId: Discord.Snowflake,
+    guildId: Discord.Snowflake,
+    data: Discord.interaction.BatchEditApplicationCommandPermissions,
+  ): Promise<Discord.interaction.GuildApplicationCommandPermissions> {
+    return this.request(
+      `/applications/${applicationId}/guilds/${guildId}/commands/permissions`,
+      {
+        method: "PUT",
+        data,
       },
     );
   }

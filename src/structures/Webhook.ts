@@ -1,4 +1,5 @@
 import type { Snowflake, webhook } from "../discord.ts";
+import { channel, guild } from "../discord.ts";
 import { User } from "./User.ts";
 import type { Client } from "../Client.ts";
 import type { SendMessageOptions } from "./Message.ts";
@@ -14,9 +15,13 @@ export interface Webhook {
   avatar: string | null;
   token?: string;
   applicationId: Snowflake | null;
+  sourceGuild?: Pick<guild.BaseGuild, "id" | "name" | "icon">;
+  sourceChannel?: Pick<channel.GuildChannels, "id" | "name">;
+  url?: string;
 }
 
-export interface ExecuteWebhook extends Omit<SendMessageOptions, "embed"> {
+export interface ExecuteWebhook
+  extends Omit<SendMessageOptions, "embed" | "reply"> {
   username?: string;
   avatarUrl?: string;
   embeds?: Embed[];
@@ -24,8 +29,16 @@ export interface ExecuteWebhook extends Omit<SendMessageOptions, "embed"> {
 
 export function parseWebhook(
   client: Client,
-  { guild_id, channel_id, user, type, application_id, ...webhook }:
-    webhook.Webhook,
+  {
+    guild_id,
+    channel_id,
+    user,
+    type,
+    application_id,
+    source_channel,
+    source_guild,
+    ...webhook
+  }: webhook.Webhook,
 ): Webhook {
   return {
     ...webhook,
@@ -34,5 +47,7 @@ export function parseWebhook(
     type: type === 1 ? "incoming" : "channelFollower",
     user: user && new User(client, user),
     applicationId: application_id,
+    sourceGuild: source_guild,
+    sourceChannel: source_channel,
   };
 }

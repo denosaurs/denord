@@ -93,6 +93,9 @@ export class ShardManager extends EventEmitter<ValueToTupleValue<RawEvents>> {
               case "GUILD_ROLE_CREATE":
               case "GUILD_ROLE_UPDATE":
               case "GUILD_ROLE_DELETE":
+              case "INTEGRATION_CREATE":
+              case "INTEGRATION_UPDATE":
+              case "INTEGRATION_DELETE":
               case "INVITE_CREATE":
               case "INVITE_DELETE":
               case "MESSAGE_CREATE":
@@ -109,6 +112,9 @@ export class ShardManager extends EventEmitter<ValueToTupleValue<RawEvents>> {
               case "VOICE_STATE_UPDATE":
               case "VOICE_SERVER_UPDATE":
               case "WEBHOOKS_UPDATE":
+              case "APPLICATION_COMMAND_CREATE":
+              case "APPLICATION_COMMAND_UPDATE":
+              case "APPLICATION_COMMAND_DELETE":
               case "INTERACTION_CREATE":
                 // TODO(@qu4k): find a way to remove the any cast
                 // deno-lint-ignore no-explicit-any
@@ -184,7 +190,7 @@ export class ShardManager extends EventEmitter<ValueToTupleValue<RawEvents>> {
    * @param shard - The number of the shard to make the request with
    * @param data - The data to make the request with
    */
-  statusUpdate(shard: number, data: gateway.StatusUpdate) {
+  statusUpdate(shard: number, data: gateway.PresenceUpdate) {
     this.#shards[shard].postMessage({
       name: "STATUS_UPDATE",
       data,

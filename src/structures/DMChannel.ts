@@ -16,7 +16,7 @@ export class DMChannel<T extends channel.DMChannel = channel.DMChannel>
   /** The recipient for this dm channel. */
   recipient: User;
   /** The unix timestamp of the newest pinned message. */
-  lastPinTimestamp?: number;
+  lastPinTimestamp?: number | null;
   /** A map used to cache messages in this channel, indexed by their id. */
   get messages(): Map<Snowflake, Message> {
     if (!this.client.messages.has(this.id)) {

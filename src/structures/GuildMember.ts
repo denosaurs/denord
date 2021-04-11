@@ -25,6 +25,8 @@ export class GuildMember<
   mute: boolean;
   /** The id of the guild this user belongs to. */
   guildId: Snowflake;
+  /** Whether the user has not yet passed the guild's membership screening requirements. */
+  pending?: boolean;
 
   constructor(
     client: Client,
@@ -36,7 +38,7 @@ export class GuildMember<
     this.guildId = guildId;
 
     this.user = new User(client, data.user);
-    this.nickname = data.nick;
+    this.nickname = data.nick ?? null;
     this.roles = data.roles;
     this.joinedAt = Date.parse(data.joined_at);
     this.boostingSince = data.premium_since
@@ -44,6 +46,8 @@ export class GuildMember<
       : null;
     this.deaf = data.deaf;
     this.mute = data.mute;
+    this.pending = data.pending;
+    // data.permissions
   }
 
   /** Bans the member from the guild. */

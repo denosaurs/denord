@@ -31,6 +31,7 @@ export interface Activity {
   secrets?: presence.Secrets;
   instance?: boolean;
   flags: Record<keyof typeof flagsMap, boolean>;
+  buttons: presence.Button[];
 }
 
 interface Assets {
@@ -44,6 +45,7 @@ const typeMap = {
   0: "game",
   1: "streaming",
   2: "listening",
+  3: "watching",
   4: "custom",
   5: "competing",
 } as const;
@@ -80,8 +82,16 @@ export function parsePresence(
 
 function parseActivity(
   client: Client,
-  { type, created_at, application_id, emoji, assets, flags, ...activity }:
-    presence.Activity,
+  {
+    type,
+    created_at,
+    application_id,
+    emoji,
+    assets,
+    flags,
+    buttons,
+    ...activity
+  }: presence.Activity,
 ): Activity {
   const newFlags = flags ?? 0;
 
@@ -104,6 +114,7 @@ function parseActivity(
       smallText: assets.small_text,
     },
     flags: parsedFlags,
+    buttons: buttons ?? [],
   };
 }
 

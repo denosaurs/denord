@@ -2,7 +2,7 @@ import type { channel, Snowflake } from "../discord.ts";
 import type { Client } from "../Client.ts";
 import { permissionMap } from "./Role.ts";
 import { SnowflakeBase } from "./Base.ts";
-import { Invite, parseInvite } from "./Invite.ts";
+import { inverseTargetTypeMap, Invite, parseInvite } from "./Invite.ts";
 
 export interface PermissionOverwrite {
   id: Snowflake;
@@ -140,15 +140,18 @@ export abstract class GuildChannel<T extends channel.GuildChannel>
     maxUses?: number;
     temporary?: boolean;
     unique?: boolean;
-    targetUser?: Snowflake;
-    targetUserType?: 1;
+    targetType?: keyof typeof inverseTargetTypeMap;
+    targetUserId?: Snowflake;
+    targetApplicationId?: Snowflake;
   } = {}, reason?: string): Promise<Invite> {
     const invite = await this.client.rest.createChannelInvite(this.id, {
       max_age: options.maxAge,
       max_uses: options.maxAge,
       unique: options.unique,
-      target_user: options.targetUser,
-      target_user_type: options.targetUserType,
+      target_type: options.targetType &&
+        inverseTargetTypeMap[options.targetType],
+      target_user_id: options.targetUserId,
+      target_application_id: options.targetApplicationId,
     }, reason);
 
     return parseInvite(this.client, invite);

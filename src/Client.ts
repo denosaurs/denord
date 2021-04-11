@@ -12,7 +12,11 @@ import type {
   webhook,
 } from "./discord.ts";
 import { PrivateUser, User } from "./structures/User.ts";
-import { GatewayGuild, RestGuild } from "./structures/Guild.ts";
+import {
+  GatewayGuild,
+  inverseSystemChannelFlags,
+  RestGuild,
+} from "./structures/Guild.ts";
 import { GuildMember } from "./structures/GuildMember.ts";
 import { VoiceChannel } from "./structures/VoiceChannel.ts";
 import { DMChannel } from "./structures/DMChannel.ts";
@@ -44,6 +48,7 @@ import {
 } from "./structures/Invite.ts";
 import { ExecuteWebhook, parseWebhook, Webhook } from "./structures/Webhook.ts";
 import { parseState, State } from "./structures/VoiceState.ts";
+import { StageVoiceChannel } from "./structures/StageVoiceChannel";
 
 interface AwaitMessage {
   time?: number;
@@ -104,8 +109,8 @@ export type Events = {
       id: Snowflake;
       guildId?: Snowflake;
     },
-    number | undefined,
-    number | undefined,
+    number | undefined | null,
+    number | undefined | null,
   ];
 
   guildCreate: [GatewayGuild];
@@ -129,7 +134,7 @@ export type Events = {
         GuildMember,
         "roles" | "user" | "boostingSince" | "joinedAt" | "guildId"
       >
-      & Partial<Pick<GuildMember, "nickname">>
+      & Partial<Pick<GuildMember, "nickname" | "deaf" | "mute" | "pending">>
     ),
   ];
   guildMemberRemove: [GatewayGuild | Snowflake, User];
@@ -202,7 +207,9 @@ export interface ClientOptions {
 }
 
 export class Client extends EventEmitter<Events> {
+  /** @hidden */
   gateway: ShardManager;
+  /** @hidden */
   rest = new RestClient();
   /** A map of cached guild channels, indexed by their id. */
   guildChannels = new Map<Snowflake, GuildChannels>();
@@ -247,6 +254,15 @@ export class Client extends EventEmitter<Events> {
 
     this.gateway = new ShardManager(options.shardAmount ?? 1, newIntents);
     this.gateway.on("raw", (e) => {
+      /* TODO:
+      INTEGRATION_CREATE
+      INTEGRATION_UPDATE
+      INTEGRATION_DELETE
+      APPLICATION_COMMAND_CREATE
+      APPLICATION_COMMAND_UPDATE
+      APPLICATION_COMMAND_DELETE
+      INTERACTION_CREATE
+       */
       switch (e.name) {
         case "READY":
           this.user = new PrivateUser(this, e.data.user);
@@ -347,10 +363,10 @@ export class Client extends EventEmitter<Events> {
         }
         case "CHANNEL_PINS_UPDATE": {
           let channel: Channel | undefined;
-          const timestamp = e.data.last_pin_timestamp
+          const timestamp = typeof e.data.last_pin_timestamp === "string"
             ? Date.parse(e.data.last_pin_timestamp)
-            : undefined;
-          let previousTimestamp: number | undefined;
+            : e.data.last_pin_timestamp;
+          let previousTimestamp: number | undefined | null;
           if (e.data.guild_id) {
             channel = this.guildChannels.get(
               e.data.channel_id,
@@ -421,6 +437,9 @@ export class Client extends EventEmitter<Events> {
               joinedAt: Date.parse(e.data.joined_at),
               guildId: e.data.guild_id,
               nickname: e.data.nick,
+              deaf: e.data.deaf,
+              mute: e.data.mute,
+              pending: e.data.pending,
             },
           );
           break;
@@ -501,7 +520,8 @@ export class Client extends EventEmitter<Events> {
             code,
             inviter,
             target_user,
-            target_user_type,
+            target_type,
+            target_application,
             ...metadata
           } = e.data;
 
@@ -799,6 +819,7 @@ export class Client extends EventEmitter<Events> {
     afkChannelId?: Snowflake;
     afkTimeout?: number;
     systemChannelId?: Snowflake;
+    systemChannelFlags?: (keyof typeof inverseSystemChannelFlags)[];
   } = {}): Promise<RestGuild> {
     const guild = await this.rest.createGuild({
       name,
@@ -815,6 +836,10 @@ export class Client extends EventEmitter<Events> {
       afk_channel_id: options.afkChannelId,
       afk_timeout: options.afkTimeout,
       system_channel_id: options.systemChannelId,
+      system_channel_flags: options.systemChannelFlags?.reduce(
+        (acc, flag) => acc + Number(inverseSystemChannelFlags[flag]),
+        0,
+      ),
     });
 
     return new RestGuild(this, guild);
@@ -822,6 +847,7 @@ export class Client extends EventEmitter<Events> {
 
   /** Fetches the preview of the given guild id. */
   async getGuildPreview(guildId: Snowflake): Promise<guild.Preview> {
+    // TODO
     return await this.rest.getGuildPreview(guildId);
   }
 
@@ -923,6 +949,8 @@ export class Client extends EventEmitter<Events> {
     let convertedData: webhook.ExecuteBody = {
       content: data.content,
       tts: data.tts,
+      username: data.username,
+      avatar_url: data.avatarUrl,
       embeds,
     };
 
@@ -956,9 +984,10 @@ export class Client extends EventEmitter<Events> {
       content?: string | null;
       embeds?: Embed[] | null;
       allowedMentions?: AllowedMentions | null;
+      file?: File | null;
     },
   ): Promise<void> {
-    return this.rest.editWebhookMessage(webhookId, token, messageId, {
+    let convertedData: webhook.EditMessage = {
       content: options.content,
       embeds: options.embeds
         ? options.embeds.map(unparseEmbed)
@@ -966,7 +995,23 @@ export class Client extends EventEmitter<Events> {
       allowed_mentions: options.allowedMentions
         ? unparseAllowedMentions(options.allowedMentions)
         : options.allowedMentions,
-    });
+    };
+
+    if (options.file) {
+      convertedData = {
+        file: options.file,
+        payload_json: JSON.stringify(convertedData),
+      };
+    } else if (options.file === null) {
+      convertedData.file = null;
+    }
+
+    return this.rest.editWebhookMessage(
+      webhookId,
+      token,
+      messageId,
+      convertedData,
+    );
   }
 
   deleteWebhookMessage(
@@ -997,16 +1042,14 @@ export class Client extends EventEmitter<Events> {
 
   /** Updates the current user's status. */
   statusUpdate(shardNumber: number, data: {
-    since: number | null;
-    activities: Activity[] | null;
+    idleSince: number | null;
+    activities: Activity[];
     status: presence.ActiveStatus;
     afk: boolean;
   }): void {
     this.gateway.statusUpdate(shardNumber, {
-      since: data.since,
-      activities: data.activities?.map((activity) =>
-        unparseActivity(activity)
-      ) ?? null,
+      since: data.idleSince,
+      activities: data.activities.map(unparseActivity),
       status: data.status,
       afk: data.afk,
     });
@@ -1030,6 +1073,8 @@ export class Client extends EventEmitter<Events> {
         return new NewsChannel(this, data);
       case 6:
         return new StoreChannel(this, data);
+      case 13:
+        return new StageVoiceChannel(this, data);
     }
   }
 

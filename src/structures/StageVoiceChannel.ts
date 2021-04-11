@@ -1,45 +1,35 @@
 import type { Client } from "../Client.ts";
 import type { channel, Snowflake } from "../discord.ts";
+import { VoiceChannel } from "./VoiceChannel.ts";
 import {
-  GuildChannel,
   PermissionOverwrite,
   unparsePermissionOverwrite,
 } from "./GuildChannel.ts";
-import { Invite, parseInvite } from "./Invite.ts";
 
-export class VoiceChannel<T extends channel.VoiceChannel = channel.VoiceChannel>
-  extends GuildChannel<T> {
+export class StageVoiceChannel<
+  T extends channel.StageVoiceChannel = channel.StageVoiceChannel,
+> extends // @ts-ignore
+VoiceChannel<T> {
   /** The type of this channel. */
-  type = "voice" as const;
-  /** The bitrate for this channel. */
-  bitrate: number;
-  /** The maximum amount of users that can be in this channel. */
-  userLimit: number;
-  /** The voice region id for the voice channel, null means automatic. */
-  voiceRegionId?: string | null; // TODO
-  /** Whether Discord chooses the quality for optimal performance or uses 720p */
-  automaticVideoQuality: boolean;
+  // @ts-ignore
+  type = "stage" as const;
 
   constructor(client: Client, data: T) {
     super(client, data);
-
-    this.bitrate = data.bitrate;
-    this.userLimit = data.user_limit;
-    this.voiceRegionId = data.rtc_region;
-    this.automaticVideoQuality = (data.video_quality_mode ?? 1) === 1;
   }
 
   /** Edits this channel. Returns a new instance. */
+  // @ts-ignore
   async edit(options: {
     name?: string;
     position?: number | null;
     bitrate?: number | null;
     userLimit?: number | null;
     permissionOverwrites?: PermissionOverwrite[] | null;
-    parentId?: Snowflake | null;
+    parentId: Snowflake | null;
     voiceRegionId?: string | null;
     automaticVideoQuality?: boolean | null;
-  }, reason?: string): Promise<VoiceChannel> {
+  }, reason?: string): Promise<StageVoiceChannel> {
     const permissionOverwrites: channel.Overwrite[] | null | undefined =
       options.permissionOverwrites?.map(({ permissions, id, type }) => {
         const { allow, deny } = unparsePermissionOverwrite(permissions);
@@ -70,22 +60,33 @@ export class VoiceChannel<T extends channel.VoiceChannel = channel.VoiceChannel>
       video_quality_mode: videoQualityMode,
     }, reason);
 
-    return new VoiceChannel(this.client, channel as channel.VoiceChannel);
+    return new StageVoiceChannel(
+      this.client,
+      channel as channel.StageVoiceChannel,
+    );
   }
 
   /** Deletes the channel. Returns a new instance. */
-  async delete(reason?: string): Promise<VoiceChannel> {
+  // @ts-ignore
+  async delete(reason?: string): Promise<StageVoiceChannel> {
     const channel = await this.client.rest.deleteChannel(
       this.id,
       reason,
-    ) as channel.VoiceChannel;
-    return new VoiceChannel(this.client, channel);
+    ) as channel.StageVoiceChannel;
+    return new StageVoiceChannel(this.client, channel);
   }
 
-  /** Fetches the invites for this channel. */
-  async getInvites(): Promise<Invite[]> {
-    const invites = await this.client.rest.getChannelInvites(this.id);
+  async updateCurrentUserVoiceState(suppress: boolean) {
+    await this.client.rest.updateCurrentUserVoiceState(this.guildId, {
+      channel_id: this.id,
+      suppress,
+    });
+  }
 
-    return invites.map((invite) => parseInvite(this.client, invite));
+  async updateUserVoiceState(userId: Snowflake, suppress: boolean) {
+    await this.client.rest.updateUserVoiceState(this.guildId, userId, {
+      channel_id: this.id,
+      suppress,
+    });
   }
 }
