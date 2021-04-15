@@ -202,37 +202,6 @@ export interface IntegrationsUpdateEvent {
   guild_id: Snowflake;
 }
 
-export interface MemberAddEvent extends GuildMember {
-  guild_id: Snowflake;
-}
-
-export interface MemberRemoveEvent {
-  guild_id: Snowflake;
-  user: PublicUser;
-}
-
-export interface MemberUpdateEvent extends
-  Pick<
-    GuildMember,
-    "roles" | "user" | "premium_since" | "joined_at"
-  >,
-  Partial<Pick<GuildMember, "nick">> {
-  guild_id: Snowflake;
-  deaf?: boolean;
-  mute?: boolean;
-  pending?: boolean;
-}
-
-export interface MembersChunkEvent {
-  guild_id: Snowflake;
-  members: GuildMember[];
-  chunk_index: number;
-  chunk_count: number;
-  not_found?: Snowflake[];
-  presences?: Presence[];
-  nonce?: string;
-}
-
 export interface Params {
   with_counts?: boolean;
 }

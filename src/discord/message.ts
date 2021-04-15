@@ -148,3 +148,5 @@ export type ReactionRemoveAllEvent = Omit<
 >;
 
 export type ReactionRemoveEmojiEvent = Omit<ReactionRemoveEvent, "user_id">;
+
+export type UpdateEvent = Partial<Message> & Pick<Message, "id" | "channel_id">;

@@ -1,5 +1,6 @@
 import type { ISO8601, Snowflake } from "./common.ts";
 import type { PublicUser } from "./user.ts";
+import type { Presence } from "./presence.ts";
 
 export interface GuildMember {
   user: PublicUser;
@@ -42,4 +43,35 @@ export interface Modify extends ModifyCurrentNick {
   deaf?: boolean | null;
   mute?: boolean | null;
   channel_id?: Snowflake | null;
+}
+
+export interface AddEvent extends GuildMember {
+  guild_id: Snowflake;
+}
+
+export interface RemoveEvent {
+  guild_id: Snowflake;
+  user: PublicUser;
+}
+
+export interface UpdateEvent extends
+  Pick<
+    GuildMember,
+    "roles" | "user" | "premium_since" | "joined_at"
+  >,
+  Partial<Pick<GuildMember, "nick">> {
+  guild_id: Snowflake;
+  deaf?: boolean;
+  mute?: boolean;
+  pending?: boolean;
+}
+
+export interface ChunkEvent {
+  guild_id: Snowflake;
+  members: GuildMember[];
+  chunk_index: number;
+  chunk_count: number;
+  not_found?: Snowflake[];
+  presences?: Presence[];
+  nonce?: string;
 }

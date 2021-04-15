@@ -4,10 +4,6 @@ import type {
   EmojisUpdateEvent,
   GatewayGuild,
   IntegrationsUpdateEvent,
-  MemberAddEvent,
-  MemberRemoveEvent,
-  MembersChunkEvent,
-  MemberUpdateEvent,
   UnavailableGuild,
 } from "./guild.ts";
 import type { Application } from "./oauth2.ts";
@@ -27,6 +23,7 @@ import type {
   ReactionRemoveAllEvent,
   ReactionRemoveEmojiEvent,
   ReactionRemoveEvent,
+  UpdateEvent as MessageUpdateEvent,
 } from "./message.ts";
 import type { ActiveStatus, Activity, Presence } from "./presence.ts";
 import type {
@@ -41,12 +38,18 @@ import type {
   DeleteEvent as RoleDeleteEvent,
   UpdateEvent as RoleUpdateEvent,
 } from "./role.ts";
-import type { ApplicationCommand, Interaction } from "./interaction.ts";
+import type { ApplicationCommandEvent, Interaction } from "./interaction.ts";
 import type { UpdateEvent as WebhookUpdateEvent } from "./webhook.ts";
 import type {
   ServerUpdateEvent as VoiceServerUpdateEvent,
   State as VoiceState,
 } from "./voice.ts";
+import type {
+  AddEvent as GuildMemberAddEvent,
+  ChunkEvent as GuildMemberUpdateEvent,
+  RemoveEvent as GuildMemberRemoveEvent,
+  UpdateEvent as GuildMembersChunkEvent,
+} from "./guildMember.ts";
 
 export interface Gateway {
   url: string;
@@ -129,10 +132,10 @@ export interface Events {
   GUILD_BAN_REMOVE: BanEvent;
   GUILD_EMOJIS_UPDATE: EmojisUpdateEvent;
   GUILD_INTEGRATIONS_UPDATE: IntegrationsUpdateEvent;
-  GUILD_MEMBER_ADD: MemberAddEvent;
-  GUILD_MEMBER_REMOVE: MemberRemoveEvent;
-  GUILD_MEMBER_UPDATE: MemberUpdateEvent;
-  GUILD_MEMBERS_CHUNK: MembersChunkEvent;
+  GUILD_MEMBER_ADD: GuildMemberAddEvent;
+  GUILD_MEMBER_REMOVE: GuildMemberRemoveEvent;
+  GUILD_MEMBER_UPDATE: GuildMemberUpdateEvent;
+  GUILD_MEMBERS_CHUNK: GuildMembersChunkEvent;
   GUILD_ROLE_CREATE: RoleUpdateEvent;
   GUILD_ROLE_UPDATE: RoleUpdateEvent;
   GUILD_ROLE_DELETE: RoleDeleteEvent;
@@ -145,9 +148,7 @@ export interface Events {
   INVITE_DELETE: InviteDeleteEvent;
 
   MESSAGE_CREATE: Message;
-  MESSAGE_UPDATE:
-    & Partial<Message>
-    & Pick<Message, "id" | "channel_id">;
+  MESSAGE_UPDATE: MessageUpdateEvent;
   MESSAGE_DELETE: MessageDeleteEvent;
   MESSAGE_DELETE_BULK: ChannelDeleteBulkEvent;
   MESSAGE_REACTION_ADD: ReactionAddEvent;
@@ -164,15 +165,9 @@ export interface Events {
 
   WEBHOOKS_UPDATE: WebhookUpdateEvent;
 
-  APPLICATION_COMMAND_CREATE: ApplicationCommand & {
-    guild_id?: Snowflake;
-  };
-  APPLICATION_COMMAND_UPDATE: ApplicationCommand & {
-    guild_id?: Snowflake;
-  };
-  APPLICATION_COMMAND_DELETE: ApplicationCommand & {
-    guild_id?: Snowflake;
-  };
+  APPLICATION_COMMAND_CREATE: ApplicationCommandEvent;
+  APPLICATION_COMMAND_UPDATE: ApplicationCommandEvent;
+  APPLICATION_COMMAND_DELETE: ApplicationCommandEvent;
 
   INTERACTION_CREATE: Interaction;
 }

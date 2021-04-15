@@ -141,3 +141,7 @@ export type BatchEditApplicationCommandPermissions = Pick<
   GuildApplicationCommandPermissions,
   "id" | "permissions"
 >[];
+
+export type ApplicationCommandEvent = ApplicationCommand & {
+  guild_id?: Snowflake;
+};
