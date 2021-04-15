@@ -42,18 +42,19 @@ export interface Create extends
 
 export type VanityURL = Pick<MetadataInvite, "code" | "uses">;
 
-export interface CreateEvent extends
-  Pick<
-    Invite,
-    | "code"
-    | "inviter"
-    | "target_user"
-    | "target_type"
-    | "target_application"
-  >,
-  Metadata {
+export interface CreateEvent {
   channel_id: Snowflake;
+  code: string;
+  created_at: string;
   guild_id?: Snowflake;
+  inviter?: PublicUser;
+  max_age: number;
+  max_uses: number;
+  target_type?: number;
+  target_user?: PublicUser;
+  target_application?: Partial<Application>;
+  temporary: boolean;
+  uses: 0;
 }
 
 export interface DeleteEvent {

@@ -18,9 +18,12 @@ export interface Tags {
   premium_subscriber?: null;
 }
 
-export interface Create
-  extends Partial<Pick<Role, "name" | "color" | "hoist" | "mentionable">> {
+export interface Create {
+  name?: string;
   permissions?: string;
+  color?: number;
+  hoist?: boolean;
+  mentionable?: boolean;
 }
 
 export type ModifyPosition = Pick<Role, "id" | "position">;

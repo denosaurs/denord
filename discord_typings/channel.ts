@@ -35,6 +35,7 @@ export interface GuildChannel extends BaseChannel {
   guild_id: Snowflake;
   permission_overwrites: Overwrite[];
   nsfw: boolean;
+  permissions?: number;
 }
 
 export interface TextBasedGuildChannel extends GuildChannel {
@@ -86,6 +87,8 @@ export type GuildChannels =
   | NewsChannel
   | StoreChannel
   | StageVoiceChannel;
+
+export type TextBasedChannels = TextChannel | NewsChannel | DMChannels;
 
 export type DMChannels = DMChannel | GroupDMChannel;
 

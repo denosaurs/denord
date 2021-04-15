@@ -132,31 +132,26 @@ export interface Create {
   system_channel_flags?: number;
 }
 
-export interface Modify extends
-  Partial<
-    Pick<
-      BaseGuild,
-      | "name"
-      | "afk_channel_id"
-      | "afk_timeout"
-      | "icon"
-      | "owner_id"
-      | "splash"
-      | "discovery_splash"
-      | "banner"
-      | "system_channel_id"
-      | "system_channel_flags"
-      | "rules_channel_id"
-      | "public_updates_channel_id"
-      | "features"
-      | "description"
-    >
-  > {
+export interface Modify {
+  name?: string;
   region?: string | null;
   verification_level?: VerificationLevel | null;
   default_message_notifications?: DefaultMessageNotifications | null;
   explicit_content_filter?: ExplicitContentFilter | null;
+  afk_channel_id?: Snowflake | null;
+  afk_timeout?: number;
+  icon?: string | null;
+  owner_id?: Snowflake;
+  splash?: string | null;
+  discovery_splash?: string | null;
+  banner?: string | null;
+  system_channel_id?: Snowflake | null;
+  system_channel_flags?: number;
+  rules_channel_id?: Snowflake | null;
+  public_updates_channel_id?: Snowflake | null;
   preferred_locale?: string | null;
+  features?: Features[];
+  description?: string;
 }
 
 export type BanDeleteMessageDays = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;

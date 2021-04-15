@@ -54,13 +54,13 @@ export interface RemoveEvent {
   user: PublicUser;
 }
 
-export interface UpdateEvent extends
-  Pick<
-    GuildMember,
-    "roles" | "user" | "premium_since" | "joined_at"
-  >,
-  Partial<Pick<GuildMember, "nick">> {
+export interface UpdateEvent {
   guild_id: Snowflake;
+  roles: Snowflake[];
+  user: PublicUser;
+  nick?: string | null;
+  joined_at: ISO8601;
+  premium_since?: ISO8601 | null;
   deaf?: boolean;
   mute?: boolean;
   pending?: boolean;

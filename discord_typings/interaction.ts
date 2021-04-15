@@ -3,6 +3,8 @@ import type { PublicUser } from "./user.ts";
 import type { Embed } from "./embed.ts";
 import type { BaseCreate as MessageBaseCreate } from "./message.ts";
 import type { GuildMember } from "./guildMember.ts";
+import type { Role } from "./role.ts";
+import type { TextBasedGuildChannel } from "./channel.ts";
 
 export interface ApplicationCommand {
   id: Snowflake;
@@ -30,11 +32,10 @@ export interface ApplicationCommandOptionChoice {
   value: string | number;
 }
 
-export interface Interaction {
+interface BaseInteraction {
   id: Snowflake;
   application_id: Snowflake;
   type: InteractionType;
-  data?: ApplicationCommandInteractionData;
   guild_id?: Snowflake;
   channel_id?: Snowflake;
   member?: GuildMember;
@@ -43,46 +44,113 @@ export interface Interaction {
   version: 1;
 }
 
+export interface PingInteraction extends BaseInteraction {
+  type: 1;
+}
+
+export interface ApplicationCommandInteraction extends BaseInteraction {
+  type: 2;
+  data: ApplicationCommandInteractionData;
+}
+
+export type Interaction = PingInteraction | ApplicationCommandInteraction;
+
 export type InteractionType = 1 | 2;
 
 export interface ApplicationCommandInteractionData {
   id: Snowflake;
   name: string;
+  resolved?: ApplicationCommandInteractionDataResolved;
   options?: ApplicationCommandInteractionDataOption[];
 }
 
-export interface ApplicationCommandInteractionDataOptionBase {
+interface BaseApplicationCommandInteractionDataOption {
   name: string;
   type: ApplicationCommandOptionType;
 }
 
-export interface ApplicationCommandInteractionDataOptionValue
-  extends ApplicationCommandInteractionDataOptionBase {
-  value: Snowflake | string | number | boolean;
-}
-export interface ApplicationCommandInteractionDataOptionOptions
-  extends ApplicationCommandInteractionDataOptionBase {
+interface SubCommandApplicationCommandInteractionDataOption
+  extends BaseApplicationCommandInteractionDataOption {
+  type: 1;
   options: ApplicationCommandInteractionDataOption[];
 }
 
-export type ApplicationCommandInteractionDataOption =
-  | ApplicationCommandInteractionDataOptionValue
-  | ApplicationCommandInteractionDataOptionOptions;
+interface SubCommandGroupApplicationCommandInteractionDataOption
+  extends BaseApplicationCommandInteractionDataOption {
+  type: 2;
+  options: ApplicationCommandInteractionDataOption[];
+}
 
-export interface ResponseBase {
+interface StringApplicationCommandInteractionDataOption
+  extends BaseApplicationCommandInteractionDataOption {
+  type: 3;
+  value: string;
+}
+
+interface IntegerApplicationCommandInteractionDataOption
+  extends BaseApplicationCommandInteractionDataOption {
+  type: 4;
+  value: number;
+}
+
+interface BooleanApplicationCommandInteractionDataOption
+  extends BaseApplicationCommandInteractionDataOption {
+  type: 5;
+  value: boolean;
+}
+
+interface UserApplicationCommandInteractionDataOption
+  extends BaseApplicationCommandInteractionDataOption {
+  type: 6;
+  value: Snowflake;
+}
+
+interface ChannelApplicationCommandInteractionDataOption
+  extends BaseApplicationCommandInteractionDataOption {
+  type: 7;
+  value: Snowflake;
+}
+
+interface RoleApplicationCommandInteractionDataOption
+  extends BaseApplicationCommandInteractionDataOption {
+  type: 8;
+  value: Snowflake;
+}
+
+export type ApplicationCommandInteractionDataOption =
+  | SubCommandApplicationCommandInteractionDataOption
+  | SubCommandGroupApplicationCommandInteractionDataOption
+  | StringApplicationCommandInteractionDataOption
+  | IntegerApplicationCommandInteractionDataOption
+  | BooleanApplicationCommandInteractionDataOption
+  | UserApplicationCommandInteractionDataOption
+  | ChannelApplicationCommandInteractionDataOption
+  | RoleApplicationCommandInteractionDataOption;
+
+export interface ApplicationCommandInteractionDataResolved {
+  users?: Record<Snowflake, PublicUser>;
+  members?: Record<Snowflake, Omit<GuildMember, "user" | "deaf" | "mute">>;
+  roles?: Record<Snowflake, Role>;
+  channels?: Record<
+    Snowflake,
+    Pick<TextBasedGuildChannel, "id" | "name" | "type" | "permissions">
+  >;
+}
+
+export interface BaseResponse {
   type: InteractionResponseType;
 }
 
-export interface ResponseData extends ResponseBase {
+export interface DataResponse extends BaseResponse {
   type: 4;
   data: InteractionApplicationCommandCallbackData;
 }
 
-export interface ResponseNoData extends ResponseBase {
+export interface NoDataResponse extends BaseResponse {
   type: Exclude<InteractionResponseType, 4>;
 }
 
-export type Response = ResponseData | ResponseNoData;
+export type Response = DataResponse | NoDataResponse;
 
 export type InteractionResponseType = 1 | 4 | 5;
 
