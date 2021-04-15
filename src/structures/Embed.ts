@@ -1,4 +1,4 @@
-import type { embed } from "../discord.ts";
+import type { embed } from "../discord/mod.ts";
 
 export interface Embed {
   title?: string;

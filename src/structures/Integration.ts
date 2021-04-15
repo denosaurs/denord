@@ -1,4 +1,4 @@
-import type { integration, Snowflake } from "../discord.ts";
+import type { integration, Snowflake } from "../discord/mod.ts";
 import { User } from "./User.ts";
 import type { Client } from "../Client.ts";
 

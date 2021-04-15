@@ -1,5 +1,5 @@
 import type { Client } from "../Client.ts";
-import type { channel } from "../discord.ts";
+import type { channel } from "../discord/mod.ts";
 import {
   GuildChannel,
   PermissionOverwrite,

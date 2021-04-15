@@ -1,4 +1,4 @@
-import type { message, Snowflake } from "../discord.ts";
+import type { message, Snowflake } from "../discord/mod.ts";
 
 export interface Sticker {
   id: Snowflake;

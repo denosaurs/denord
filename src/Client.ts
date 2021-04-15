@@ -10,7 +10,7 @@ import type {
   role,
   Snowflake,
   webhook,
-} from "./discord.ts";
+} from "./discord/mod.ts";
 import { PrivateUser, User } from "./structures/User.ts";
 import {
   GatewayGuild,

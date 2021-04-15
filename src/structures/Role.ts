@@ -1,6 +1,6 @@
 import { SnowflakeBase } from "./Base.ts";
 import type { Client } from "../Client.ts";
-import type { role, Snowflake } from "../discord.ts";
+import type { role, Snowflake } from "../discord/mod.ts";
 
 export const permissionMap = {
   "createInstantInvite": 0x000000001,

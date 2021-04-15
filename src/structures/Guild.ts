@@ -10,7 +10,7 @@ import type {
   guildMember,
   role,
   Snowflake,
-} from "../discord.ts";
+} from "../discord/mod.ts";
 import {
   ImageFormat,
   ImageSize,

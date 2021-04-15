@@ -1,5 +1,5 @@
 import type { AwaitMessagesOptions, Client } from "../Client.ts";
-import type { channel, Snowflake } from "../discord.ts";
+import type { channel, Snowflake } from "../discord/mod.ts";
 import { User } from "./User.ts";
 import { Message, SendMessageOptions } from "./Message.ts";
 import { SnowflakeBase } from "./Base.ts";

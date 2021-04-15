@@ -1,7 +1,6 @@
 import { SnowflakeBase } from "./Base.ts";
 import type { Client } from "../Client.ts";
-import type { message, Snowflake } from "../discord.ts";
-import { oauth2 } from "../discord.ts";
+import type { message, oauth2, Snowflake } from "../discord/mod.ts";
 import { User } from "./User.ts";
 import { GuildMember } from "./GuildMember.ts";
 import { Embed, parseEmbed, unparseEmbed } from "./Embed.ts";

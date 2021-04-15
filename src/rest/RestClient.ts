@@ -1,4 +1,4 @@
-import type * as Discord from "../discord.ts";
+import type * as Discord from "../discord/mod.ts";
 import { URLs } from "../utils/utils.ts";
 import { DiscordJSONError, HTTPError } from "./Error.ts";
 import { TaskQueue } from "./TaskQueue.ts";

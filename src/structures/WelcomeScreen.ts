@@ -1,4 +1,4 @@
-import type { guild, Snowflake } from "../discord.ts";
+import type { guild, Snowflake } from "../discord/mod.ts";
 
 export interface WelcomeScreen {
   description: string | null;

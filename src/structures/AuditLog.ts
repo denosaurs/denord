@@ -1,5 +1,5 @@
 import { User } from "./User.ts";
-import type { auditLog, role, Snowflake } from "../discord.ts";
+import type { auditLog, role, Snowflake } from "../discord/mod.ts";
 import type { Client } from "../Client.ts";
 import type { Integration } from "./Integration.ts";
 import { inverseMap } from "../utils/utils.ts";

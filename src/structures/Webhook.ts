@@ -1,5 +1,4 @@
-import type { Snowflake, webhook } from "../discord.ts";
-import { channel, guild } from "../discord.ts";
+import type { channel, guild, Snowflake, webhook } from "../discord/mod.ts";
 import { User } from "./User.ts";
 import type { Client } from "../Client.ts";
 import type { SendMessageOptions } from "./Message.ts";

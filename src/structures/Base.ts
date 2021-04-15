@@ -1,5 +1,5 @@
 import type { Client } from "../Client.ts";
-import type { Snowflake } from "../discord.ts";
+import type { Snowflake } from "../discord/mod.ts";
 
 export abstract class Base<T> {
   client: Client;

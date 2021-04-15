@@ -1,6 +1,6 @@
 import { SnowflakeBase } from "./Base.ts";
 import type { Client } from "../Client.ts";
-import type { user } from "../discord.ts";
+import type { user } from "../discord/mod.ts";
 import { ImageFormat, ImageSize, imageURLFormatter } from "../utils/utils.ts";
 import { DMChannel } from "./DMChannel.ts";
 

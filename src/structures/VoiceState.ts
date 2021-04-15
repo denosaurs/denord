@@ -1,4 +1,4 @@
-import type { Snowflake, voice } from "../discord.ts";
+import type { Snowflake, voice } from "../discord/mod.ts";
 import { GuildMember } from "./GuildMember.ts";
 import type { Client } from "../Client.ts";
 

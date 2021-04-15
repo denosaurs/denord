@@ -4,7 +4,7 @@ import {
   unparseEditPermissionOverwrite,
 } from "./GuildChannel.ts";
 import type { AwaitMessagesOptions, Client } from "../Client.ts";
-import type { channel, Snowflake } from "../discord.ts";
+import type { channel, Snowflake } from "../discord/mod.ts";
 import { NewsChannel, TextChannel } from "./TextNewsChannel.ts";
 import { Message, SendMessageOptions } from "./Message.ts";
 import { Invite, parseInvite } from "./Invite.ts";

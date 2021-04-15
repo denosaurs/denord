@@ -1,5 +1,4 @@
-import type { invite, Snowflake } from "../discord.ts";
-import { oauth2 } from "../discord.ts";
+import type { invite, oauth2, Snowflake } from "../discord/mod.ts";
 import { User } from "./User.ts";
 import type { Client } from "../Client.ts";
 import { inverseMap } from "../utils/utils.ts";

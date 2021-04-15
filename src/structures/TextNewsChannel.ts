@@ -1,6 +1,6 @@
 import { EditOptions, TextBasedGuildChannel } from "./TextBasedGuildChannel.ts";
 import type { Client } from "../Client.ts";
-import type { channel, Snowflake, webhook } from "../discord.ts";
+import type { channel, Snowflake, webhook } from "../discord/mod.ts";
 import { parseWebhook, Webhook } from "./Webhook.ts";
 
 export class TextChannel<T extends channel.TextChannel = channel.TextChannel>

@@ -1,4 +1,4 @@
-import type { presence, Snowflake } from "../discord.ts";
+import type { presence, Snowflake } from "../discord/mod.ts";
 import { Emoji, parseEmoji, unparseEmoji } from "./Emoji.ts";
 import type { Client } from "../Client.ts";
 import { inverseMap } from "../utils/utils.ts";

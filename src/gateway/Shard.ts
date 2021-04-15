@@ -1,10 +1,14 @@
-import type { gateway } from "../discord.ts";
 import {
   connectWebSocket,
   isWebSocketCloseEvent,
   WebSocket,
 } from "../../deps.ts";
 import { URLs } from "../utils/utils.ts";
+import type {
+  GuildRequestMembers,
+  Payload,
+  PresenceUpdate,
+} from "../discord/gateway.ts";
 
 class Shard {
   token!: string;
@@ -53,7 +57,7 @@ class Shard {
   private async listener() {
     for await (const msg of this.socket) {
       if (typeof msg === "string") {
-        const payload = JSON.parse(msg) as gateway.Payload;
+        const payload = JSON.parse(msg) as Payload;
         switch (payload.op) {
           case 0:
             this.seq = payload.s;
@@ -162,7 +166,7 @@ class Shard {
 
     const firstPayload = JSON.parse(
       (await this.socket[Symbol.asyncIterator]().next()).value,
-    ) as gateway.Payload;
+    ) as Payload;
     if (firstPayload.op === 10) {
       this.heartbeat = firstPayload.d.heartbeat_interval;
       this.send({
@@ -190,14 +194,14 @@ class Shard {
     this.startBeating();
   }
 
-  guildRequestMember(data: gateway.GuildRequestMembers) {
+  guildRequestMember(data: GuildRequestMembers) {
     this.send({
       op: 8,
       d: data,
     });
   }
 
-  statusUpdate(data: gateway.PresenceUpdate) {
+  statusUpdate(data: PresenceUpdate) {
     this.send({
       op: 3,
       d: data,
@@ -229,12 +233,12 @@ interface ShardDataToken {
 
 interface ShardDataGuildRequestMember {
   name: "GUILD_REQUEST_MEMBER";
-  data: gateway.GuildRequestMembers;
+  data: GuildRequestMembers;
 }
 
 interface ShardDataStatusUpdate {
   name: "STATUS_UPDATE";
-  data: gateway.PresenceUpdate;
+  data: PresenceUpdate;
 }
 
 self.onmessage = async (msg: MessageEvent) => {

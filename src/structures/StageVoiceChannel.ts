@@ -1,5 +1,5 @@
 import type { Client } from "../Client.ts";
-import type { channel, Snowflake } from "../discord.ts";
+import type { channel, Snowflake } from "../discord/mod.ts";
 import { VoiceChannel } from "./VoiceChannel.ts";
 import {
   PermissionOverwrite,

@@ -1,4 +1,4 @@
-import type { channel, Snowflake } from "../discord.ts";
+import type { channel, Snowflake } from "../discord/mod.ts";
 import type { Client } from "../Client.ts";
 import { permissionMap } from "./Role.ts";
 import { SnowflakeBase } from "./Base.ts";

@@ -1,8 +1,10 @@
 import { EventEmitter } from "../../deps.ts";
-
-import type { gateway } from "../discord.ts";
-
-type Events = gateway.Events;
+import type {
+  Events,
+  GuildRequestMembers,
+  PresenceUpdate,
+  SpecificEvent,
+} from "../discord/gateway.ts";
 
 type BundledEvent<K extends keyof Events> = {
   name: K;
@@ -27,7 +29,7 @@ type ShardEvent =
 
 interface ShardSpecificEvent {
   name: "EVENT";
-  data: gateway.SpecificEvent;
+  data: SpecificEvent;
 }
 
 interface ShardCloseEvent {
@@ -179,7 +181,7 @@ export class ShardManager extends EventEmitter<ValueToTupleValue<RawEvents>> {
    * @param shard - The number of the shard to make the request with
    * @param data - The data to make the request with
    */
-  guildRequestMember(shard: number, data: gateway.GuildRequestMembers) {
+  guildRequestMember(shard: number, data: GuildRequestMembers) {
     this.#shards[shard].postMessage({
       name: "GUILD_REQUEST_MEMBER",
       data,
@@ -190,7 +192,7 @@ export class ShardManager extends EventEmitter<ValueToTupleValue<RawEvents>> {
    * @param shard - The number of the shard to make the request with
    * @param data - The data to make the request with
    */
-  statusUpdate(shard: number, data: gateway.PresenceUpdate) {
+  statusUpdate(shard: number, data: PresenceUpdate) {
     this.#shards[shard].postMessage({
       name: "STATUS_UPDATE",
       data,
