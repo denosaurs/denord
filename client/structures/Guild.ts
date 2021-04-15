@@ -214,6 +214,8 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
   maxVideoChannelUsers?: number;
   /** the welcome screen of a Community guild, shown to new members. */
   welcomeScreen?: WelcomeScreen;
+  /** Whether or not this guild is NSFW. */
+  nsfw: boolean;
 
   protected constructor(client: Client, data: T) {
     super(client, data);
@@ -267,6 +269,7 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
     this.maxVideoChannelUsers = data.max_video_channel_users;
     this.welcomeScreen = data.welcome_screen &&
       parseWelcomeScreen(data.welcome_screen);
+    this.nsfw = data.nsfw;
   }
 
   /** The number of the shard this guild belongs to. */

@@ -41,6 +41,7 @@ export interface BaseGuild {
   public_updates_channel_id: Snowflake | null;
   max_video_channel_users?: number;
   welcome_screen?: WelcomeScreen;
+  nsfw: boolean;
 }
 
 export interface CurrentUserGuild extends BaseGuild {

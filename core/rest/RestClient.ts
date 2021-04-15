@@ -1212,13 +1212,28 @@ export class RestClient {
     });
   }
 
+  async getWebhookMessage(
+    webhookId: Discord.Snowflake,
+    webhookToken: string,
+    messageId: Discord.Snowflake,
+    data: Discord.webhook.EditMessage,
+  ): Promise<Discord.message.Message> {
+    return this.request(
+      `webhooks/${webhookId}/${webhookToken}/messages/${messageId}`,
+      {
+        method: "GET",
+        data,
+      },
+    );
+  }
+
   async editWebhookMessage(
     webhookId: Discord.Snowflake,
     webhookToken: string,
     messageId: Discord.Snowflake,
     data: Discord.webhook.EditMessage,
-  ): Promise<void> {
-    await this.request(
+  ): Promise<Discord.message.Message> {
+    return this.request(
       `webhooks/${webhookId}/${webhookToken}/messages/${messageId}`,
       {
         method: "PATCH",
@@ -1410,11 +1425,23 @@ export class RestClient {
     interactionToken: Discord.Snowflake,
     data: Discord.interaction.Response,
   ): Promise<void> {
-    return this.request(
+    await this.request(
       `interactions/${interactionId}/${interactionToken}/callback`,
       {
         method: "POST",
         data,
+      },
+    );
+  }
+
+  async getOriginalInteractionResponse(
+    applicationId: Discord.Snowflake,
+    interactionToken: Discord.Snowflake,
+  ): Promise<Discord.message.Message> {
+    return this.request(
+      `/webhooks/${applicationId}/${interactionToken}/messages/@original`,
+      {
+        method: "GET",
       },
     );
   }
