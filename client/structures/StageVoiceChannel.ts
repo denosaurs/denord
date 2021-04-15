@@ -1,17 +1,12 @@
 import type { Client } from "../Client.ts";
 import type { channel, Snowflake } from "../../discord_typings/mod.ts";
-import { VoiceChannel } from "./VoiceChannel.ts";
-import {
-  PermissionOverwrite,
-  unparsePermissionOverwrite,
-} from "./GuildChannel.ts";
+import { PermissionOverwrite } from "./GuildChannel.ts";
+import { VoiceBasedChannel } from "./VoiceBasedChannel.ts";
 
 export class StageVoiceChannel<
   T extends channel.StageVoiceChannel = channel.StageVoiceChannel,
-> extends // @ts-ignore
-VoiceChannel<T> {
+> extends VoiceBasedChannel<T> {
   /** The type of this channel. */
-  // @ts-ignore
   type = "stage" as const;
 
   constructor(client: Client, data: T) {
@@ -19,8 +14,7 @@ VoiceChannel<T> {
   }
 
   /** Edits this channel. Returns a new instance. */
-  // @ts-ignore
-  async edit(options: {
+  edit(options: {
     name?: string;
     position?: number | null;
     bitrate?: number | null;
@@ -30,50 +24,12 @@ VoiceChannel<T> {
     voiceRegionId?: string | null;
     automaticVideoQuality?: boolean | null;
   }, reason?: string): Promise<StageVoiceChannel> {
-    const permissionOverwrites: channel.Overwrite[] | null | undefined =
-      options.permissionOverwrites?.map(({ permissions, id, type }) => {
-        const { allow, deny } = unparsePermissionOverwrite(permissions);
-
-        return {
-          id,
-          type: type === "member" ? 1 : 0,
-          allow,
-          deny,
-        };
-      }) ?? (options.permissionOverwrites as undefined | null);
-
-    let videoQualityMode: 1 | 2 | undefined | null;
-    if (typeof options.automaticVideoQuality === "boolean") {
-      videoQualityMode = options.automaticVideoQuality ? 1 : 2;
-    } else {
-      videoQualityMode = options.automaticVideoQuality;
-    }
-
-    const channel = await this.client.rest.modifyChannel(this.id, {
-      name: options.name,
-      position: options.position,
-      bitrate: options.bitrate,
-      user_limit: options.userLimit,
-      permission_overwrites: permissionOverwrites,
-      parent_id: options.parentId,
-      rtc_region: options.voiceRegionId,
-      video_quality_mode: videoQualityMode,
-    }, reason);
-
-    return new StageVoiceChannel(
-      this.client,
-      channel as channel.StageVoiceChannel,
-    );
+    return super.edit(options, reason) as Promise<StageVoiceChannel>;
   }
 
   /** Deletes the channel. Returns a new instance. */
-  // @ts-ignore
-  async delete(reason?: string): Promise<StageVoiceChannel> {
-    const channel = await this.client.rest.deleteChannel(
-      this.id,
-      reason,
-    ) as channel.StageVoiceChannel;
-    return new StageVoiceChannel(this.client, channel);
+  delete(reason?: string): Promise<StageVoiceChannel> {
+    return super.delete(reason) as Promise<StageVoiceChannel>;
   }
 
   async updateCurrentUserVoiceState(suppress: boolean) {

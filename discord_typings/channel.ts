@@ -50,13 +50,16 @@ export interface TextChannel extends TextBasedGuildChannel {
   rate_limit_per_user: number;
 }
 
-export interface VoiceChannel extends GuildChannel {
-  type: 2;
+export interface VoiceBasedChannel extends GuildChannel {
   bitrate: number;
   user_limit: number;
   nsfw: false;
   rtc_region?: string | null;
   video_quality_mode?: VideoQualityMode;
+}
+
+export interface VoiceChannel extends VoiceBasedChannel {
+  type: 2;
 }
 
 export type VideoQualityMode = 1 | 2;
@@ -75,8 +78,7 @@ export interface StoreChannel extends GuildChannel {
   type: 6;
 }
 
-// @ts-ignore
-export interface StageVoiceChannel extends VoiceChannel {
+export interface StageVoiceChannel extends VoiceBasedChannel {
   type: 13;
 }
 
