@@ -167,7 +167,7 @@ export class ShardManager extends EventEmitter<ValueToTupleValue<RawEvents>> {
    *
    * @param token - The token to connect with
    */
-  async connect(token: string): Promise<void> {
+  connect(token: string): Promise<void> {
     return new Promise((resolve) => {
       this.#resolveConnect = resolve;
       this.#shards[0].postMessage({

@@ -20,7 +20,7 @@ export class RestClient {
     this.token = token;
   }
 
-  private async request<T extends unknown>(
+  private request<T extends unknown>(
     endpoint: string,
     {
       method,
@@ -142,11 +142,11 @@ export class RestClient {
         default:
           throw new HTTPError(res.status, "Unexpected response");
       }
-    }) as T;
+    }) as Promise<T>;
   }
 
   //region Audit Log
-  async getGuildAuditLog(
+  getGuildAuditLog(
     guildId: Discord.Snowflake,
     params: Discord.auditLog.Params,
   ): Promise<Discord.auditLog.AuditLog> {
@@ -159,7 +159,7 @@ export class RestClient {
   //endregion
 
   //region Channel
-  async getChannel(
+  getChannel(
     channelId: Discord.Snowflake,
   ): Promise<Discord.channel.Channel> {
     return this.request(`channels/${channelId}`, {
@@ -167,7 +167,7 @@ export class RestClient {
     });
   }
 
-  async modifyChannel(
+  modifyChannel(
     channelId: Discord.Snowflake,
     data: Discord.channel.Modify,
     reason?: string,
@@ -179,7 +179,7 @@ export class RestClient {
     });
   }
 
-  async deleteChannel(
+  deleteChannel(
     channelId: Discord.Snowflake,
     reason?: string,
   ): Promise<Discord.channel.Channel> {
@@ -189,7 +189,7 @@ export class RestClient {
     });
   }
 
-  async getChannelMessages(
+  getChannelMessages(
     channelId: Discord.Snowflake,
     params: Discord.channel.GetMessages,
   ): Promise<Discord.message.Message[]> {
@@ -199,7 +199,7 @@ export class RestClient {
     });
   }
 
-  async getChannelMessage(
+  getChannelMessage(
     channelId: Discord.Snowflake,
     messageId: Discord.Snowflake,
   ): Promise<Discord.message.Message> {
@@ -208,7 +208,7 @@ export class RestClient {
     });
   }
 
-  async createMessage(
+  createMessage(
     channelId: Discord.Snowflake,
     data: Discord.message.Create,
   ): Promise<Discord.message.Message> {
@@ -218,7 +218,7 @@ export class RestClient {
     });
   }
 
-  async crosspostMessage(
+  crosspostMessage(
     channelId: Discord.Snowflake,
     messageId: Discord.Snowflake,
   ): Promise<Discord.message.Message> {
@@ -276,7 +276,7 @@ export class RestClient {
     );
   }
 
-  async getReactions(
+  getReactions(
     channelId: Discord.Snowflake,
     messageId: Discord.Snowflake,
     emoji: string,
@@ -320,7 +320,7 @@ export class RestClient {
     );
   }
 
-  async editMessage(
+  editMessage(
     channelId: Discord.Snowflake,
     messageId: Discord.Snowflake,
     data: Discord.message.Edit,
@@ -367,7 +367,7 @@ export class RestClient {
     });
   }
 
-  async getChannelInvites(
+  getChannelInvites(
     channelId: Discord.Snowflake,
   ): Promise<Discord.invite.Invite[]> {
     return this.request(`channels/${channelId}/invites`, {
@@ -375,7 +375,7 @@ export class RestClient {
     });
   }
 
-  async createChannelInvite(
+  createChannelInvite(
     channelId: Discord.Snowflake,
     data: Discord.invite.Create,
     reason?: string,
@@ -398,7 +398,7 @@ export class RestClient {
     });
   }
 
-  async followNewsChannel(
+  followNewsChannel(
     channelId: Discord.Snowflake,
     data: Discord.channel.FollowNewsChannel,
   ): Promise<Discord.channel.FollowedChannel> {
@@ -414,7 +414,7 @@ export class RestClient {
     });
   }
 
-  async getPinnedMessages(
+  getPinnedMessages(
     channelId: Discord.Snowflake,
   ): Promise<Discord.message.Message[]> {
     return this.request(`channels/${channelId}/pins`, {
@@ -463,7 +463,7 @@ export class RestClient {
   //endregion
 
   //region Emoji
-  async listGuildEmojis(
+  listGuildEmojis(
     guildId: Discord.Snowflake,
   ): Promise<Discord.emoji.Emoji[]> {
     return this.request(`guilds/${guildId}/emojis`, {
@@ -471,7 +471,7 @@ export class RestClient {
     });
   }
 
-  async getGuildEmoji(
+  getGuildEmoji(
     guildId: Discord.Snowflake,
     emojiId: Discord.Snowflake,
   ): Promise<Discord.emoji.Emoji> {
@@ -480,7 +480,7 @@ export class RestClient {
     });
   }
 
-  async createGuildEmoji(
+  createGuildEmoji(
     guildId: Discord.Snowflake,
     data: Discord.emoji.Create,
     reason?: string,
@@ -492,7 +492,7 @@ export class RestClient {
     });
   }
 
-  async modifyGuildEmoji(
+  modifyGuildEmoji(
     guildId: Discord.Snowflake,
     emojiId: Discord.Snowflake,
     data: Discord.emoji.Modify,
@@ -519,7 +519,7 @@ export class RestClient {
   //endregion
 
   //region Guild
-  async createGuild(
+  createGuild(
     data: Discord.guild.Create,
   ): Promise<Discord.guild.RESTGuild> {
     return this.request("guilds", {
@@ -528,7 +528,7 @@ export class RestClient {
     });
   }
 
-  async getGuild(
+  getGuild(
     guildId: Discord.Snowflake,
     params: Discord.guild.Params,
   ): Promise<Discord.guild.RESTGuild> {
@@ -538,7 +538,7 @@ export class RestClient {
     });
   }
 
-  async getGuildPreview(
+  getGuildPreview(
     guildId: Discord.Snowflake,
   ): Promise<Discord.guild.Preview> {
     return this.request(`guilds/${guildId}/preview`, {
@@ -546,7 +546,7 @@ export class RestClient {
     });
   }
 
-  async modifyGuild(
+  modifyGuild(
     guildId: Discord.Snowflake,
     data: Discord.guild.Modify,
     reason?: string,
@@ -564,7 +564,7 @@ export class RestClient {
     });
   }
 
-  async getGuildChannels(
+  getGuildChannels(
     guildId: Discord.Snowflake,
   ): Promise<Discord.channel.GuildChannels[]> {
     return this.request(`guilds/${guildId}/channels`, {
@@ -572,7 +572,7 @@ export class RestClient {
     });
   }
 
-  async createGuildChannel(
+  createGuildChannel(
     guildId: Discord.Snowflake,
     data: Discord.channel.CreateGuildChannel,
     reason?: string,
@@ -594,7 +594,7 @@ export class RestClient {
     });
   }
 
-  async getGuildMember(
+  getGuildMember(
     guildId: Discord.Snowflake,
     userId: Discord.Snowflake,
   ): Promise<Discord.guildMember.GuildMember> {
@@ -603,7 +603,7 @@ export class RestClient {
     });
   }
 
-  async listGuildMembers(
+  listGuildMembers(
     guildId: Discord.Snowflake,
     params: Discord.guildMember.List,
   ): Promise<Discord.guildMember.GuildMember[]> {
@@ -613,7 +613,7 @@ export class RestClient {
     });
   }
 
-  async searchGuildMembers(
+  searchGuildMembers(
     guildId: Discord.Snowflake,
     params: Discord.guildMember.Search,
   ): Promise<Discord.guildMember.GuildMember[]> {
@@ -623,7 +623,7 @@ export class RestClient {
     });
   }
 
-  async addGuildMember(
+  addGuildMember(
     guildId: Discord.Snowflake,
     userId: Discord.Snowflake,
     data: Discord.guildMember.Add,
@@ -634,7 +634,7 @@ export class RestClient {
     });
   }
 
-  async modifyGuildMember(
+  modifyGuildMember(
     guildId: Discord.Snowflake,
     userId: Discord.Snowflake,
     data: Discord.guildMember.Modify,
@@ -647,7 +647,7 @@ export class RestClient {
     });
   }
 
-  async modifyCurrentUserNick(
+  modifyCurrentUserNick(
     guildId: Discord.Snowflake,
     data: Discord.guildMember.ModifyCurrentNick,
   ): Promise<Discord.guildMember.ModifyCurrentNickResponse> {
@@ -692,13 +692,13 @@ export class RestClient {
     });
   }
 
-  async getGuildBans(guildId: Discord.Snowflake): Promise<Discord.guild.Ban[]> {
+  getGuildBans(guildId: Discord.Snowflake): Promise<Discord.guild.Ban[]> {
     return this.request(`guilds/${guildId}/bans`, {
       method: "GET",
     });
   }
 
-  async getGuildBan(
+  getGuildBan(
     guildId: Discord.Snowflake,
     userId: Discord.Snowflake,
   ): Promise<Discord.guild.Ban> {
@@ -729,7 +729,7 @@ export class RestClient {
     });
   }
 
-  async getGuildRoles(
+  getGuildRoles(
     guildId: Discord.Snowflake,
   ): Promise<Discord.role.Role[]> {
     return this.request(`guilds/${guildId}/roles`, {
@@ -737,7 +737,7 @@ export class RestClient {
     });
   }
 
-  async createGuildRole(
+  createGuildRole(
     guildId: Discord.Snowflake,
     data: Discord.role.Create,
     reason?: string,
@@ -749,7 +749,7 @@ export class RestClient {
     });
   }
 
-  async modifyGuildRolePositions(
+  modifyGuildRolePositions(
     guildId: Discord.Snowflake,
     data: Discord.role.ModifyPosition[],
   ): Promise<Discord.role.Role[]> {
@@ -759,7 +759,7 @@ export class RestClient {
     });
   }
 
-  async modifyGuildRole(
+  modifyGuildRole(
     guildId: Discord.Snowflake,
     roleId: Discord.Snowflake,
     data: Discord.role.Modify,
@@ -783,7 +783,7 @@ export class RestClient {
     });
   }
 
-  async getGuildPruneCount(
+  getGuildPruneCount(
     guildId: Discord.Snowflake,
     params: Discord.guild.PruneCount,
   ): Promise<Discord.guild.DryPruneData> {
@@ -793,7 +793,7 @@ export class RestClient {
     });
   }
 
-  async beginGuildPrune(
+  beginGuildPrune(
     guildId: Discord.Snowflake,
     data: Discord.guild.BeginPrune,
     reason?: string,
@@ -805,7 +805,7 @@ export class RestClient {
     });
   }
 
-  async getGuildVoiceRegions(
+  getGuildVoiceRegions(
     guildId: Discord.Snowflake,
   ): Promise<Discord.voice.Region[]> {
     return this.request(`guilds/${guildId}/regions`, {
@@ -813,7 +813,7 @@ export class RestClient {
     });
   }
 
-  async getGuildInvites(
+  getGuildInvites(
     guildId: Discord.Snowflake,
   ): Promise<Discord.invite.MetadataInvite[]> {
     return this.request(`guilds/${guildId}/invites`, {
@@ -821,7 +821,7 @@ export class RestClient {
     });
   }
 
-  async getGuildIntegrations(
+  getGuildIntegrations(
     guildId: Discord.Snowflake,
   ): Promise<Discord.integration.Integration[]> {
     return this.request(`guilds/${guildId}/integrations`, {
@@ -838,7 +838,7 @@ export class RestClient {
     });
   }
 
-  async getGuildWidgetSettings(
+  getGuildWidgetSettings(
     guildId: Discord.Snowflake,
   ): Promise<Discord.guild.WidgetSettings> {
     return this.request(`guilds/${guildId}/widget`, {
@@ -846,7 +846,7 @@ export class RestClient {
     });
   }
 
-  async modifyGuildWidget(
+  modifyGuildWidget(
     guildId: Discord.Snowflake,
     data: Discord.guild.WidgetModify,
   ): Promise<Discord.guild.WidgetSettings> {
@@ -858,7 +858,7 @@ export class RestClient {
 
   //TODO: Get Guild Widget
 
-  async getGuildVanityURL(
+  getGuildVanityURL(
     guildId: Discord.Snowflake,
   ): Promise<Discord.invite.VanityURL> {
     return this.request(`guilds/${guildId}/vanity-url`, {
@@ -866,7 +866,7 @@ export class RestClient {
     });
   }
 
-  async getGuildWelcomeScreen(
+  getGuildWelcomeScreen(
     guildId: Discord.Snowflake,
   ): Promise<Discord.guild.WelcomeScreen> {
     return this.request(`guilds/${guildId}/welcome-screen`, {
@@ -874,7 +874,7 @@ export class RestClient {
     });
   }
 
-  async modifyGuildWelcomeScreen(
+  modifyGuildWelcomeScreen(
     guildId: Discord.Snowflake,
     data: Discord.guild.ModifyWelcomeScreen,
   ): Promise<Discord.guild.WelcomeScreen> {
@@ -907,13 +907,13 @@ export class RestClient {
   //endregion
 
   //region Invite
-  async getInvite(inviteCode: string): Promise<Discord.invite.Invite> {
+  getInvite(inviteCode: string): Promise<Discord.invite.Invite> {
     return this.request(`invites/${inviteCode}`, {
       method: "GET",
     });
   }
 
-  async deleteInvite(
+  deleteInvite(
     inviteCode: string,
     reason?: string,
   ): Promise<Discord.invite.Invite> {
@@ -926,13 +926,13 @@ export class RestClient {
   //endregion
 
   //region Template
-  async getTemplate(templateCode: string): Promise<Discord.template.Template> {
+  getTemplate(templateCode: string): Promise<Discord.template.Template> {
     return this.request(`guilds/templates/${templateCode}`, {
       method: "GET",
     });
   }
 
-  async createGuildFromTemplate(
+  createGuildFromTemplate(
     templateCode: string,
     data: Discord.template.createGuildFromTemplate,
   ): Promise<Discord.guild.GatewayGuild> { // TODO: possibly not right return type
@@ -942,7 +942,7 @@ export class RestClient {
     });
   }
 
-  async getGuildTemplates(
+  getGuildTemplates(
     guildId: Discord.Snowflake,
   ): Promise<Discord.template.Template[]> {
     return this.request(`guilds/${guildId}/templates`, {
@@ -950,7 +950,7 @@ export class RestClient {
     });
   }
 
-  async createGuildTemplate(
+  createGuildTemplate(
     guildId: Discord.Snowflake,
     data: Discord.template.createGuildTemplate,
   ): Promise<Discord.template.Template> {
@@ -960,7 +960,7 @@ export class RestClient {
     });
   }
 
-  async syncGuildTemplate(
+  syncGuildTemplate(
     guildId: Discord.Snowflake,
     templateCode: string,
   ): Promise<Discord.template.Template> {
@@ -969,7 +969,7 @@ export class RestClient {
     });
   }
 
-  async modifyGuildTemplate(
+  modifyGuildTemplate(
     guildId: Discord.Snowflake,
     templateCode: string,
     data: Discord.template.modifyGuildTemplate,
@@ -980,7 +980,7 @@ export class RestClient {
     });
   }
 
-  async deleteGuildTemplate(
+  deleteGuildTemplate(
     guildId: Discord.Snowflake,
     templateCode: string,
   ): Promise<Discord.template.Template> {
@@ -992,19 +992,19 @@ export class RestClient {
   //endregion
 
   //region User
-  async getCurrentUser(): Promise<Discord.user.PrivateUser> {
+  getCurrentUser(): Promise<Discord.user.PrivateUser> {
     return this.request("users/@me", {
       method: "GET",
     });
   }
 
-  async getUser(userId: Discord.Snowflake): Promise<Discord.user.PublicUser> {
+  getUser(userId: Discord.Snowflake): Promise<Discord.user.PublicUser> {
     return this.request(`users/${userId}`, {
       method: "GET",
     });
   }
 
-  async modifyCurrentUser(
+  modifyCurrentUser(
     data: Discord.user.Modify,
   ): Promise<Discord.user.PrivateUser> {
     return this.request("users/@me", {
@@ -1013,7 +1013,7 @@ export class RestClient {
     });
   }
 
-  async getCurrentUserGuilds(
+  getCurrentUserGuilds(
     params: Discord.user.GetGuilds,
   ): Promise<Discord.guild.CurrentUserGuild[]> {
     return this.request(`users/@me/guilds`, {
@@ -1028,7 +1028,7 @@ export class RestClient {
     });
   }
 
-  async createDM(
+  createDM(
     data: Discord.channel.CreateDM,
   ): Promise<Discord.channel.DMChannel> {
     return this.request("users/@me/channels", {
@@ -1037,7 +1037,7 @@ export class RestClient {
     });
   }
 
-  async createGroupDM(
+  createGroupDM(
     data: Discord.channel.CreateGroupDM,
   ): Promise<Discord.channel.GroupDMChannel> {
     return this.request("users/@me/channels", {
@@ -1046,7 +1046,7 @@ export class RestClient {
     });
   }
 
-  async getUserConnections(): Promise<Discord.user.Connection[]> {
+  getUserConnections(): Promise<Discord.user.Connection[]> {
     return this.request("users/@me/connections", {
       method: "GET",
     });
@@ -1055,7 +1055,7 @@ export class RestClient {
   //endregion
 
   //region Voice
-  async listVoiceRegions(): Promise<Discord.voice.Region[]> {
+  listVoiceRegions(): Promise<Discord.voice.Region[]> {
     return this.request("voice/regions", {
       method: "GET",
     });
@@ -1064,7 +1064,7 @@ export class RestClient {
   //endregion
 
   //region Webhook
-  async createWebhook(
+  createWebhook(
     channelId: Discord.Snowflake,
     data: Discord.webhook.Create,
     reason?: string,
@@ -1076,7 +1076,7 @@ export class RestClient {
     });
   }
 
-  async getChannelWebhooks(
+  getChannelWebhooks(
     channelId: Discord.Snowflake,
   ): Promise<Discord.webhook.Webhook[]> {
     return this.request(`channels/${channelId}/webhooks`, {
@@ -1084,7 +1084,7 @@ export class RestClient {
     });
   }
 
-  async getGuildWebhooks(
+  getGuildWebhooks(
     guildId: Discord.Snowflake,
   ): Promise<Discord.webhook.Webhook[]> {
     return this.request(`guilds/${guildId}/webhooks`, {
@@ -1092,7 +1092,7 @@ export class RestClient {
     });
   }
 
-  async getWebhook(
+  getWebhook(
     webhookId: Discord.Snowflake,
   ): Promise<Discord.webhook.Webhook> {
     return this.request(`webhooks/${webhookId}`, {
@@ -1100,7 +1100,7 @@ export class RestClient {
     });
   }
 
-  async getWebhookWithToken(
+  getWebhookWithToken(
     webhookId: Discord.Snowflake,
     webhookToken: string,
   ): Promise<Discord.webhook.Webhook> {
@@ -1109,7 +1109,7 @@ export class RestClient {
     });
   }
 
-  async modifyWebhook(
+  modifyWebhook(
     webhookId: Discord.Snowflake,
     data: Discord.webhook.Modify,
     reason?: string,
@@ -1121,7 +1121,7 @@ export class RestClient {
     });
   }
 
-  async modifyWebhookWithToken(
+  modifyWebhookWithToken(
     webhookId: Discord.Snowflake,
     webhookToken: string,
     data: Discord.webhook.Modify,
@@ -1155,25 +1155,19 @@ export class RestClient {
     });
   }
 
-  async executeWebhook(
+  executeWebhook(
     webhookId: Discord.Snowflake,
     webhookToken: string,
     data: Discord.webhook.ExecuteBody,
     params: Discord.webhook.ExecuteParams & { wait: true },
   ): Promise<Discord.message.Message>;
-  async executeWebhook(
+  executeWebhook(
     webhookId: Discord.Snowflake,
     webhookToken: string,
     data: Discord.webhook.ExecuteBody,
     params: Discord.webhook.ExecuteParams & { wait?: false },
   ): Promise<undefined>;
-  async executeWebhook(
-    webhookId: Discord.Snowflake,
-    webhookToken: string,
-    data: Discord.webhook.ExecuteBody,
-    params: Discord.webhook.ExecuteParams,
-  ): Promise<void | Discord.message.Message>;
-  async executeWebhook(
+  executeWebhook(
     webhookId: Discord.Snowflake,
     webhookToken: string,
     data: Discord.webhook.ExecuteBody,
@@ -1212,7 +1206,7 @@ export class RestClient {
     });
   }
 
-  async getWebhookMessage(
+  getWebhookMessage(
     webhookId: Discord.Snowflake,
     webhookToken: string,
     messageId: Discord.Snowflake,
@@ -1227,7 +1221,7 @@ export class RestClient {
     );
   }
 
-  async editWebhookMessage(
+  editWebhookMessage(
     webhookId: Discord.Snowflake,
     webhookToken: string,
     messageId: Discord.Snowflake,
@@ -1258,13 +1252,13 @@ export class RestClient {
   //endregion
 
   //region Gateway
-  async getGateway(): Promise<Discord.gateway.Gateway> {
+  getGateway(): Promise<Discord.gateway.Gateway> {
     return this.request("gateway", {
       method: "GET",
     });
   }
 
-  async getGatewayBot(): Promise<Discord.gateway.GatewayBot> {
+  getGatewayBot(): Promise<Discord.gateway.GatewayBot> {
     return this.request("gateway/bot", {
       method: "GET",
     });
@@ -1273,7 +1267,7 @@ export class RestClient {
   //endregion
 
   //region Interaction
-  async getGlobalApplicationCommands(applicationId: Discord.Snowflake): Promise<
+  getGlobalApplicationCommands(applicationId: Discord.Snowflake): Promise<
     Discord.interaction.ApplicationCommand[]
   > {
     return this.request(`applications/${applicationId}/commands`, {
@@ -1281,7 +1275,7 @@ export class RestClient {
     });
   }
 
-  async getGlobalApplicationCommand(
+  getGlobalApplicationCommand(
     applicationId: Discord.Snowflake,
     commandId: Discord.Snowflake,
   ): Promise<Discord.interaction.ApplicationCommand> {
@@ -1290,7 +1284,7 @@ export class RestClient {
     });
   }
 
-  async createGlobalApplicationCommand(
+  createGlobalApplicationCommand(
     applicationId: Discord.Snowflake,
     data: Discord.interaction.CreateGlobalApplicationCommand,
   ): Promise<Discord.interaction.ApplicationCommand> {
@@ -1300,7 +1294,7 @@ export class RestClient {
     });
   }
 
-  async editGlobalApplicationCommand(
+  editGlobalApplicationCommand(
     applicationId: Discord.Snowflake,
     commandId: Discord.Snowflake,
     data: Discord.interaction.EditGlobalApplicationCommand,
@@ -1326,7 +1320,7 @@ export class RestClient {
     );
   }
 
-  async getGuildApplicationCommands(
+  getGuildApplicationCommands(
     applicationId: Discord.Snowflake,
     guildId: Discord.Snowflake,
   ): Promise<Discord.interaction.ApplicationCommand[]> {
@@ -1338,7 +1332,7 @@ export class RestClient {
     );
   }
 
-  async bulkOverwriteGlobalApplicationCommands(
+  bulkOverwriteGlobalApplicationCommands(
     applicationId: Discord.Snowflake,
     data: Discord.interaction.ApplicationCommand[],
   ): Promise<Discord.interaction.ApplicationCommand[]> {
@@ -1351,7 +1345,7 @@ export class RestClient {
     );
   }
 
-  async createGuildApplicationCommand(
+  createGuildApplicationCommand(
     applicationId: Discord.Snowflake,
     guildId: Discord.Snowflake,
     data: Discord.interaction.CreateGuildApplicationCommand,
@@ -1365,7 +1359,7 @@ export class RestClient {
     );
   }
 
-  async getGuildApplicationCommand(
+  getGuildApplicationCommand(
     applicationId: Discord.Snowflake,
     guildId: Discord.Snowflake,
     commandId: Discord.Snowflake,
@@ -1378,7 +1372,7 @@ export class RestClient {
     );
   }
 
-  async editGuildApplicationCommand(
+  editGuildApplicationCommand(
     applicationId: Discord.Snowflake,
     guildId: Discord.Snowflake,
     commandId: Discord.Snowflake,
@@ -1406,7 +1400,7 @@ export class RestClient {
     );
   }
 
-  async bulkOverwriteGuildApplicationCommands(
+  bulkOverwriteGuildApplicationCommands(
     applicationId: Discord.Snowflake,
     guildId: Discord.Snowflake,
     data: Discord.interaction.ApplicationCommand[],
@@ -1434,7 +1428,7 @@ export class RestClient {
     );
   }
 
-  async getOriginalInteractionResponse(
+  getOriginalInteractionResponse(
     applicationId: Discord.Snowflake,
     interactionToken: Discord.Snowflake,
   ): Promise<Discord.message.Message> {
@@ -1446,7 +1440,7 @@ export class RestClient {
     );
   }
 
-  async editOriginalInteractionResponse(
+  editOriginalInteractionResponse(
     applicationId: Discord.Snowflake,
     interactionToken: Discord.Snowflake,
     data: Discord.webhook.EditMessage,
@@ -1472,7 +1466,7 @@ export class RestClient {
     );
   }
 
-  async createFollowupMessage(
+  createFollowupMessage(
     applicationId: Discord.Snowflake,
     interactionToken: Discord.Snowflake,
     data: Discord.webhook.ExecuteBody,
@@ -1488,7 +1482,7 @@ export class RestClient {
     );
   }
 
-  async editFollowupMessage(
+  editFollowupMessage(
     applicationId: Discord.Snowflake,
     interactionToken: Discord.Snowflake,
     messageId: Discord.Snowflake,
@@ -1516,7 +1510,7 @@ export class RestClient {
     );
   }
 
-  async getGuildApplicationCommandPermissions(
+  getGuildApplicationCommandPermissions(
     applicationId: Discord.Snowflake,
     guildId: Discord.Snowflake,
   ): Promise<Discord.interaction.GuildApplicationCommandPermissions> {
@@ -1528,7 +1522,7 @@ export class RestClient {
     );
   }
 
-  async getApplicationCommandPermissions(
+  getApplicationCommandPermissions(
     applicationId: Discord.Snowflake,
     guildId: Discord.Snowflake,
     commandId: Discord.Snowflake,
@@ -1541,7 +1535,7 @@ export class RestClient {
     );
   }
 
-  async editApplicationCommandPermissions(
+  editApplicationCommandPermissions(
     applicationId: Discord.Snowflake,
     guildId: Discord.Snowflake,
     commandId: Discord.Snowflake,
@@ -1556,7 +1550,7 @@ export class RestClient {
     );
   }
 
-  async batchEditApplicationCommandPermissions(
+  batchEditApplicationCommandPermissions(
     applicationId: Discord.Snowflake,
     guildId: Discord.Snowflake,
     data: Discord.interaction.BatchEditApplicationCommandPermissions,
