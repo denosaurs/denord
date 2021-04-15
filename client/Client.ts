@@ -1117,7 +1117,7 @@ export class Client extends EventEmitter<Events> {
     return new Message(this, message);
   }
 
-  async awaitMessages(
+  awaitMessages(
     channelId: string,
     filter: (msg: Message) => boolean,
     options: AwaitMessagesOptions,

@@ -20,15 +20,15 @@ export class TextChannel<T extends channel.TextChannel = channel.TextChannel>
    * Edits this channel. Returns a new instance.
    * If options.type is news, a NewsChannel is returned instead.
    */
-  async edit(
+  edit(
     options: EditOptions & { type?: "text" },
     reason?: string,
   ): Promise<TextChannel>;
-  async edit(
+  edit(
     options: EditOptions & { type: "news" },
     reason?: string,
   ): Promise<NewsChannel>;
-  async edit(
+  edit(
     options: EditOptions,
     reason?: string,
   ): Promise<TextChannel | NewsChannel> {
@@ -81,15 +81,15 @@ export class NewsChannel<T extends channel.NewsChannel = channel.NewsChannel>
    * Edits this channel. Returns a new instance.
    * If options.type is text, a TextChannel is returned instead.
    */
-  async edit(
+  edit(
     options: EditOptions & { type?: "news" },
     reason?: string,
   ): Promise<NewsChannel>;
-  async edit(
+  edit(
     options: EditOptions & { type: "text" },
     reason?: string,
   ): Promise<TextChannel>;
-  async edit(
+  edit(
     options: EditOptions,
     reason?: string,
   ): Promise<TextChannel | NewsChannel> {

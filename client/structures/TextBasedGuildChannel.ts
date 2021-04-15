@@ -90,7 +90,7 @@ export abstract class TextBasedGuildChannel<
   }
 
   /** Sends a new message to this channel. */
-  async sendMessage(data: SendMessageOptions): Promise<Message> {
+  sendMessage(data: SendMessageOptions): Promise<Message> {
     return this.client.sendMessage(this.id, data);
   }
 
@@ -118,7 +118,7 @@ export abstract class TextBasedGuildChannel<
   }
 
   /** Awaits for messages that fit the bounds given by the parameters. */
-  async awaitMessages(
+  awaitMessages(
     filter: (msg: Message) => boolean,
     options: AwaitMessagesOptions,
   ): Promise<Message[]> {
