@@ -1,8 +1,8 @@
-import type { AwaitMessagesOptions, Client } from "../Client.ts";
+import type { AwaitMessagesOptions, Client } from "../client.ts";
 import type { channel, Snowflake } from "../../discord_typings/mod.ts";
-import { User } from "./User.ts";
-import { Message, SendMessageOptions } from "./Message.ts";
-import { SnowflakeBase } from "./Base.ts";
+import { User } from "./user.ts";
+import { Message, SendMessageOptions } from "./message.ts";
+import { SnowflakeBase } from "./base.ts";
 
 export class DMChannel<T extends channel.DMChannel = channel.DMChannel>
   extends SnowflakeBase<T> {

@@ -10,18 +10,18 @@ import type {
   Snowflake,
   webhook,
 } from "../discord_typings/mod.ts";
-import { PrivateUser, User } from "./structures/User.ts";
+import { PrivateUser, User } from "./structures/user.ts";
 import {
   GatewayGuild,
   inverseSystemChannelFlags,
   RestGuild,
-} from "./structures/Guild.ts";
-import { GuildMember } from "./structures/GuildMember.ts";
-import { VoiceChannel } from "./structures/VoiceChannel.ts";
-import { DMChannel } from "./structures/DMChannel.ts";
-import { NewsChannel, TextChannel } from "./structures/TextNewsChannel.ts";
-import { CategoryChannel } from "./structures/CategoryChannel.ts";
-import { StoreChannel } from "./structures/StoreChannel.ts";
+} from "./structures/guild.ts";
+import { GuildMember } from "./structures/guild_member.ts";
+import { VoiceChannel } from "./structures/voice_channel.ts";
+import { DMChannel } from "./structures/dm_channel.ts";
+import { NewsChannel, TextChannel } from "./structures/text_news_channel.ts";
+import { CategoryChannel } from "./structures/category_channel.ts";
+import { StoreChannel } from "./structures/store_channel.ts";
 import {
   AllowedMentions,
   Message,
@@ -29,25 +29,25 @@ import {
   PartialEditedMessage,
   SendMessageOptions,
   unparseAllowedMentions,
-} from "./structures/Message.ts";
-import { Embed, unparseEmbed } from "./structures/Embed.ts";
-import { Emoji, GuildEmoji, parseEmoji } from "./structures/Emoji.ts";
-import { Role } from "./structures/Role.ts";
+} from "./structures/message.ts";
+import { Embed, unparseEmbed } from "./structures/embed.ts";
+import { Emoji, GuildEmoji, parseEmoji } from "./structures/emoji.ts";
+import { Role } from "./structures/role.ts";
 import {
   Activity,
   parsePresence,
   Presence,
   unparseActivity,
-} from "./structures/Presence.ts";
+} from "./structures/presence.ts";
 import {
   Invite,
   InviteCreate,
   parseInvite,
   parseMetadata,
-} from "./structures/Invite.ts";
-import { ExecuteWebhook, parseWebhook, Webhook } from "./structures/Webhook.ts";
-import { parseState, State } from "./structures/VoiceState.ts";
-import { StageVoiceChannel } from "./structures/StageVoiceChannel.ts";
+} from "./structures/invite.ts";
+import { ExecuteWebhook, parseWebhook, Webhook } from "./structures/webhook.ts";
+import { parseState, State } from "./structures/voice_state.ts";
+import { StageVoiceChannel } from "./structures/stage_voice_channel.ts";
 
 interface AwaitMessage {
   time?: number;

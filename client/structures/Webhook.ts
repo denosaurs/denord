@@ -4,10 +4,10 @@ import type {
   Snowflake,
   webhook,
 } from "../../discord_typings/mod.ts";
-import { User } from "./User.ts";
-import type { Client } from "../Client.ts";
-import type { SendMessageOptions } from "./Message.ts";
-import type { Embed } from "./Embed.ts";
+import { User } from "./user.ts";
+import type { Client } from "../client.ts";
+import type { SendMessageOptions } from "./message.ts";
+import type { Embed } from "./embed.ts";
 
 export interface Webhook {
   id: Snowflake;

@@ -1,5 +1,5 @@
 import type { ISO8601, Snowflake } from "./common.ts";
-import type { GuildMember } from "./guildMember.ts";
+import type { GuildMember } from "./guild_member.ts";
 
 export interface State {
   guild_id?: Snowflake;

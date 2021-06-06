@@ -1,2 +1,2 @@
-export { RestClient } from "./rest/RestClient.ts";
-export { ShardManager } from "./gateway/ShardManager.ts";
+export { RestClient } from "./rest/rest_client.ts";
+export { ShardManager } from "./gateway/shard_manager.ts";

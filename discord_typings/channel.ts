@@ -1,6 +1,6 @@
 import type { ISO8601, Snowflake } from "./common.ts";
 import type { PublicUser } from "./user.ts";
-import type { GuildMember } from "./guildMember.ts";
+import type { GuildMember } from "./guild_member.ts";
 
 export interface BaseChannel {
   id: Snowflake;

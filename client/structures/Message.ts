@@ -1,10 +1,10 @@
-import { SnowflakeBase } from "./Base.ts";
-import type { Client } from "../Client.ts";
+import { SnowflakeBase } from "./base.ts";
+import type { Client } from "../client.ts";
 import type { message, oauth2, Snowflake } from "../../discord_typings/mod.ts";
-import { User } from "./User.ts";
-import { GuildMember } from "./GuildMember.ts";
-import { Embed, parseEmbed, unparseEmbed } from "./Embed.ts";
-import { parseSticker, Sticker } from "./Sticker.ts";
+import { User } from "./user.ts";
+import { GuildMember } from "./guild_member.ts";
+import { Embed, parseEmbed, unparseEmbed } from "./embed.ts";
+import { parseSticker, Sticker } from "./sticker.ts";
 
 export interface AllowedMentions {
   parse: ["roles"?, "users"?, "everyone"?];

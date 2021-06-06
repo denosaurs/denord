@@ -1,5 +1,5 @@
-import { Base } from "./Base.ts";
-import type { Client } from "../Client.ts";
+import { Base } from "./base.ts";
+import type { Client } from "../client.ts";
 import type {
   guild,
   guildMember,

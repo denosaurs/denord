@@ -1,8 +1,8 @@
-import { SnowflakeBase } from "./Base.ts";
-import type { Client } from "../Client.ts";
+import { SnowflakeBase } from "./base.ts";
+import type { Client } from "../client.ts";
 import type { user } from "../../discord_typings/mod.ts";
 import { ImageFormat, ImageSize, imageURLFormatter } from "../utils.ts";
-import { DMChannel } from "./DMChannel.ts";
+import { DMChannel } from "./dm_channel.ts";
 
 const flagsMap = {
   "discordEmployee": 0x00001,

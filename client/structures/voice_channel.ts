@@ -1,7 +1,7 @@
-import type { Client } from "../Client.ts";
+import type { Client } from "../client.ts";
 import type { channel, Snowflake } from "../../discord_typings/mod.ts";
-import { PermissionOverwrite } from "./GuildChannel.ts";
-import { VoiceBasedChannel } from "./VoiceBasedChannel.ts";
+import { PermissionOverwrite } from "./guild_channel.ts";
+import { VoiceBasedChannel } from "./voice_based_channel.ts";
 
 export class VoiceChannel<T extends channel.VoiceChannel = channel.VoiceChannel>
   extends VoiceBasedChannel<T> {

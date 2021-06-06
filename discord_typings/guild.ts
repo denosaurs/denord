@@ -2,7 +2,7 @@ import type { ISO8601, Snowflake } from "./common.ts";
 import type { Role } from "./role.ts";
 import type { GuildEmoji } from "./emoji.ts";
 import type { State as VoiceState } from "./voice.ts";
-import type { GuildMember } from "./guildMember.ts";
+import type { GuildMember } from "./guild_member.ts";
 import type { Presence } from "./presence.ts";
 import type { PublicUser } from "./user.ts";
 import type { GuildChannels } from "./channel.ts";

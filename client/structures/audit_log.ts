@@ -1,11 +1,11 @@
-import { User } from "./User.ts";
+import { User } from "./user.ts";
 import type { auditLog, role, Snowflake } from "../../discord_typings/mod.ts";
-import type { Client } from "../Client.ts";
-import type { Integration } from "./Integration.ts";
+import type { Client } from "../client.ts";
+import type { Integration } from "./integration.ts";
 import { inverseMap } from "../utils.ts";
-import { parseWebhook, Webhook } from "./Webhook.ts";
-import type { PermissionOverwrite } from "./GuildChannel.ts";
-import { parsePermissionOverwritePermissions } from "./GuildChannel.ts";
+import { parseWebhook, Webhook } from "./webhook.ts";
+import type { PermissionOverwrite } from "./guild_channel.ts";
+import { parsePermissionOverwritePermissions } from "./guild_channel.ts";
 
 export interface AuditLog {
   webhooks: Webhook[];

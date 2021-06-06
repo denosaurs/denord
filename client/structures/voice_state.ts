@@ -1,6 +1,6 @@
 import type { Snowflake, voice } from "../../discord_typings/mod.ts";
-import { GuildMember } from "./GuildMember.ts";
-import type { Client } from "../Client.ts";
+import { GuildMember } from "./guild_member.ts";
+import type { Client } from "../client.ts";
 
 export interface State {
   guildId?: Snowflake;

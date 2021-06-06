@@ -1,7 +1,7 @@
 import type * as Discord from "../../discord_typings/mod.ts";
 import { URLs } from "../utils.ts";
-import { DiscordJSONError, HTTPError } from "./Error.ts";
-import { TaskQueue } from "./TaskQueue.ts";
+import { DiscordJSONError, HTTPError } from "./error.ts";
+import { TaskQueue } from "./task_queue.ts";
 
 /**
  * A client to make HTTP requests to Discord
@@ -69,6 +69,7 @@ export class RestClient {
 
       if (data !== undefined) {
         if (data.file) {
+          // deno-lint-ignore camelcase
           const { file, payload_json } = data;
 
           const form = new FormData();

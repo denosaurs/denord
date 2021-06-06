@@ -49,7 +49,7 @@ import type {
   ChunkEvent as GuildMembersChunkEvent,
   RemoveEvent as GuildMemberRemoveEvent,
   UpdateEvent as GuildMemberUpdateEvent,
-} from "./guildMember.ts";
+} from "./guild_member.ts";
 
 export interface Gateway {
   url: string;

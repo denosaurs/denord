@@ -2,12 +2,12 @@ import {
   GuildChannel,
   PermissionOverwrite,
   unparseEditPermissionOverwrite,
-} from "./GuildChannel.ts";
-import type { AwaitMessagesOptions, Client } from "../Client.ts";
+} from "./guild_channel.ts";
+import type { AwaitMessagesOptions, Client } from "../client.ts";
 import type { channel, Snowflake } from "../../discord_typings/mod.ts";
-import { NewsChannel, TextChannel } from "./TextNewsChannel.ts";
-import { Message, SendMessageOptions } from "./Message.ts";
-import { Invite, parseInvite } from "./Invite.ts";
+import { NewsChannel, TextChannel } from "./text_news_channel.ts";
+import { Message, SendMessageOptions } from "./message.ts";
+import { Invite, parseInvite } from "./invite.ts";
 
 export interface EditOptions {
   name?: string;

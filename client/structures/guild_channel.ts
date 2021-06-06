@@ -1,8 +1,8 @@
 import type { channel, Snowflake } from "../../discord_typings/mod.ts";
-import type { Client } from "../Client.ts";
-import { permissionMap } from "./Role.ts";
-import { SnowflakeBase } from "./Base.ts";
-import { inverseTargetTypeMap, Invite, parseInvite } from "./Invite.ts";
+import type { Client } from "../client.ts";
+import { permissionMap } from "./role.ts";
+import { SnowflakeBase } from "./base.ts";
+import { inverseTargetTypeMap, Invite, parseInvite } from "./invite.ts";
 
 export interface PermissionOverwrite {
   id: Snowflake;

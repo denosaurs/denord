@@ -1,13 +1,13 @@
-import type { Client } from "../Client.ts";
+import type { Client } from "../client.ts";
 import type { channel, Snowflake } from "../../discord_typings/mod.ts";
 import {
   GuildChannel,
   PermissionOverwrite,
   unparsePermissionOverwrite,
-} from "./GuildChannel.ts";
-import { Invite, parseInvite } from "./Invite.ts";
-import { VoiceChannel } from "./VoiceChannel.ts";
-import { StageVoiceChannel } from "./StageVoiceChannel.ts";
+} from "./guild_channel.ts";
+import { Invite, parseInvite } from "./invite.ts";
+import { VoiceChannel } from "./voice_channel.ts";
+import { StageVoiceChannel } from "./stage_voice_channel.ts";
 
 export class VoiceBasedChannel<
   T extends channel.VoiceBasedChannel = channel.VoiceBasedChannel,

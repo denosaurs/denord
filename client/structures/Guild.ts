@@ -1,9 +1,9 @@
-import { SnowflakeBase } from "./Base.ts";
+import { SnowflakeBase } from "./base.ts";
 import type {
   Client,
   GuildChannels,
   RequestGuildMembersOptions,
-} from "../Client.ts";
+} from "../client.ts";
 import type {
   channel,
   guild,
@@ -17,26 +17,26 @@ import {
   imageURLFormatter,
   inverseMap,
 } from "../utils.ts";
-import { Role } from "./Role.ts";
-import { GuildMember } from "./GuildMember.ts";
-import type { PermissionOverwrite } from "./GuildChannel.ts";
-import { unparsePermissionOverwrite } from "./GuildChannel.ts";
-import { AuditLog, inverseActionType, parseAuditLog } from "./AuditLog.ts";
-import { Integration, parseIntegration } from "./Integration.ts";
-import { GuildEmoji, parseEmoji } from "./Emoji.ts";
-import type { StoreChannel } from "./StoreChannel.ts";
-import type { CategoryChannel } from "./CategoryChannel.ts";
-import type { VoiceChannel } from "./VoiceChannel.ts";
-import type { NewsChannel, TextChannel } from "./TextNewsChannel.ts";
-import { parseState, State } from "./VoiceState.ts";
-import { parsePresence, Presence } from "./Presence.ts";
-import { MetadataInvite, parseMetadataInvite } from "./Invite.ts";
-import { parseWebhook, Webhook } from "./Webhook.ts";
+import { Role } from "./role.ts";
+import { GuildMember } from "./guild_member.ts";
+import type { PermissionOverwrite } from "./guild_channel.ts";
+import { unparsePermissionOverwrite } from "./guild_channel.ts";
+import { AuditLog, inverseActionType, parseAuditLog } from "./audit_log.ts";
+import { Integration, parseIntegration } from "./integration.ts";
+import { GuildEmoji, parseEmoji } from "./emoji.ts";
+import type { StoreChannel } from "./store_channel.ts";
+import type { CategoryChannel } from "./category_channel.ts";
+import type { VoiceChannel } from "./voice_channel.ts";
+import type { NewsChannel, TextChannel } from "./text_news_channel.ts";
+import { parseState, State } from "./voice_state.ts";
+import { parsePresence, Presence } from "./presence.ts";
+import { MetadataInvite, parseMetadataInvite } from "./invite.ts";
+import { parseWebhook, Webhook } from "./webhook.ts";
 import {
   parseWelcomeScreen,
   WelcomeScreen,
   WelcomeScreenChannel,
-} from "./WelcomeScreen.ts";
+} from "./welcome_screen.ts";
 
 const channelTypeMap = {
   "text": 0,

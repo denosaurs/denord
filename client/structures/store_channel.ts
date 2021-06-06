@@ -1,10 +1,10 @@
-import type { Client } from "../Client.ts";
+import type { Client } from "../client.ts";
 import type { channel, Snowflake } from "../../discord_typings/mod.ts";
 import {
   GuildChannel,
   PermissionOverwrite,
   unparseEditPermissionOverwrite,
-} from "./GuildChannel.ts";
+} from "./guild_channel.ts";
 
 export class StoreChannel<T extends channel.StoreChannel = channel.StoreChannel>
   extends GuildChannel<T> {

@@ -2,7 +2,7 @@ import type { Snowflake } from "./common.ts";
 import type { PublicUser } from "./user.ts";
 import type { Embed } from "./embed.ts";
 import type { BaseCreate as MessageBaseCreate } from "./message.ts";
-import type { GuildMember } from "./guildMember.ts";
+import type { GuildMember } from "./guild_member.ts";
 import type { Role } from "./role.ts";
 import type { TextBasedGuildChannel } from "./channel.ts";
 

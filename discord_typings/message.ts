@@ -1,5 +1,5 @@
 import type { ISO8601, Snowflake } from "./common.ts";
-import type { GuildMember } from "./guildMember.ts";
+import type { GuildMember } from "./guild_member.ts";
 import type { PublicUser } from "./user.ts";
 import type { Mention as ChannelMention } from "./channel.ts";
 import type { Embed } from "./embed.ts";
