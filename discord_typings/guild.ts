@@ -151,7 +151,7 @@ export interface Modify {
   public_updates_channel_id?: Snowflake | null;
   preferred_locale?: string | null;
   features?: Features[];
-  description?: string;
+  description?: string | null;
 }
 
 export type BanDeleteMessageDays = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;

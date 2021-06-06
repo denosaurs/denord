@@ -659,10 +659,10 @@ abstract class BaseGuild<T extends guild.BaseGuild> extends SnowflakeBase<T> {
 
 export class RestGuild<T extends guild.RESTGuild = guild.RESTGuild>
   extends BaseGuild<T> {
-  widgetEnabled!: boolean;
-  widgetChannelId!: Snowflake | null;
-  maxPresences!: number;
-  maxMembers!: number;
+  widgetEnabled: boolean = false;
+  widgetChannelId: Snowflake | null = null;
+  maxPresences: number = 0;
+  maxMembers: number = 0;
 
   constructor(client: Client, data: T) {
     super(client, data);

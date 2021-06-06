@@ -1,5 +1,5 @@
 import type { Snowflake } from "./common.ts";
-import type { AllowedMentions } from "./message.ts";
+import type { AllowedMentions, Create as MessageCreate } from "./message.ts";
 import type { Embed } from "./embed.ts";
 import type { GuildChannels } from "./channel.ts";
 import type { BaseGuild } from "./guild.ts";
@@ -34,7 +34,7 @@ export interface ExecuteParams {
 }
 
 export interface ExecuteBody
-  extends Omit<Create, "embed" | "nonce" | "message_reference"> {
+  extends Omit<MessageCreate, "embed" | "nonce" | "message_reference"> {
   username?: string;
   avatar_url?: string;
   embeds?: Embed[];

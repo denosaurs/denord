@@ -976,7 +976,7 @@ export class Client extends EventEmitter<Events> {
     }
   }
 
-  editWebhookMessage(
+  async editWebhookMessage(
     webhookId: Snowflake,
     token: string,
     messageId: Snowflake,
@@ -986,7 +986,7 @@ export class Client extends EventEmitter<Events> {
       allowedMentions?: AllowedMentions | null;
       file?: File | null;
     },
-  ): Promise<void> {
+  ): Promise<Message> {
     let convertedData: webhook.EditMessage = {
       content: options.content,
       embeds: options.embeds
@@ -1006,12 +1006,14 @@ export class Client extends EventEmitter<Events> {
       convertedData.file = null;
     }
 
-    return this.rest.editWebhookMessage(
+    const message = await this.rest.editWebhookMessage(
       webhookId,
       token,
       messageId,
       convertedData,
     );
+
+    return new Message(this, message);
   }
 
   deleteWebhookMessage(
