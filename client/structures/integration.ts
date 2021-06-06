@@ -1,6 +1,6 @@
 import type { integration, Snowflake } from "../../discord_typings/mod.ts";
-import { User } from "./User.ts";
-import type { Client } from "../Client.ts";
+import { User } from "./user.ts";
+import type { Client } from "../client.ts";
 
 export interface Integration {
   id: Snowflake;

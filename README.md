@@ -19,7 +19,7 @@ used.
 ## Example
 
 ```ts
-import { Client } from "https://deno.land/x/denord/src/Client.ts";
+import { Client } from "https://deno.land/x/denord/src/client.ts";
 
 const client = new Client();
 await client.connect("TOKEN");

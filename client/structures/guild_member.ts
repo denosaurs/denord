@@ -5,7 +5,7 @@ import type {
   guildMember,
   Snowflake,
 } from "../../discord_typings/mod.ts";
-import { User } from "./User.ts";
+import { User } from "./user.ts";
 
 export class GuildMember<
   T extends guildMember.GuildMember = guildMember.GuildMember,
