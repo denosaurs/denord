@@ -6,8 +6,7 @@ import {
   unparsePermissionOverwrite,
 } from "./guild_channel.ts";
 import { Invite, parseInvite } from "./invite.ts";
-import { VoiceChannel } from "./voice_channel.ts";
-import { StageVoiceChannel } from "./stage_voice_channel.ts";
+import { StageVoiceChannel, VoiceChannel } from "./voice_stage_channel.ts";
 
 export class VoiceBasedChannel<
   T extends channel.VoiceBasedChannel = channel.VoiceBasedChannel,

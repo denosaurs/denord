@@ -26,7 +26,7 @@ import { Integration, parseIntegration } from "./integration.ts";
 import { GuildEmoji, parseEmoji } from "./emoji.ts";
 import type { StoreChannel } from "./store_channel.ts";
 import type { CategoryChannel } from "./category_channel.ts";
-import type { VoiceChannel } from "./voice_channel.ts";
+import type { VoiceChannel } from "./voice_stage_channel.ts";
 import type { NewsChannel, TextChannel } from "./text_news_channel.ts";
 import { parseState, State } from "./voice_state.ts";
 import { parsePresence, Presence } from "./presence.ts";

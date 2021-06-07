@@ -17,7 +17,10 @@ import {
   RestGuild,
 } from "./structures/guild.ts";
 import { GuildMember } from "./structures/guild_member.ts";
-import { VoiceChannel } from "./structures/voice_channel.ts";
+import {
+  StageVoiceChannel,
+  VoiceChannel,
+} from "./structures/voice_stage_channel.ts";
 import { DMChannel } from "./structures/dm_channel.ts";
 import { NewsChannel, TextChannel } from "./structures/text_news_channel.ts";
 import { CategoryChannel } from "./structures/category_channel.ts";
@@ -47,7 +50,6 @@ import {
 } from "./structures/invite.ts";
 import { ExecuteWebhook, parseWebhook, Webhook } from "./structures/webhook.ts";
 import { parseState, State } from "./structures/voice_state.ts";
-import { StageVoiceChannel } from "./structures/stage_voice_channel.ts";
 
 interface AwaitMessage {
   time?: number;
@@ -966,6 +968,8 @@ export class Client extends EventEmitter<Events> {
       token,
       convertedData,
       {
+        // TODO: dont ts-ignore
+        // @ts-ignore
         wait,
       },
     );
